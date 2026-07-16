@@ -1,0 +1,41 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import PrayerForm from "@/components/prayers/PrayerForm";
+import { createPrayer } from "@/lib/prayers/prayerActions";
+
+interface NewPrayerClientProps {
+  sectionNames: string[];
+}
+
+export default function NewPrayerClient({ sectionNames }: NewPrayerClientProps): React.ReactElement {
+  const router = useRouter();
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSave = (sectionName: string, text: string): void => {
+    setIsSaving(true);
+    setError(null);
+    createPrayer(sectionName, text).then((result) => {
+      setIsSaving(false);
+      if (result.success) {
+        router.push("/prayers");
+      } else {
+        setError(result.error ?? "Unable to create this Prayer right now.");
+      }
+    });
+  };
+
+  return (
+    <PrayerForm
+      sectionNames={sectionNames}
+      initialSectionName=""
+      initialText=""
+      isSaving={isSaving}
+      error={error}
+      submitLabel="Create Prayer"
+      onSubmit={handleSave}
+    />
+  );
+}
