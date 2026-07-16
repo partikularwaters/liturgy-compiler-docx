@@ -108,7 +108,8 @@
       "Bash(\"/c/Program Files/LibreOffice/program/soffice.exe\" --headless --convert-to pdf \"G:\\\\My Drive\\\\_Works\\\\Liturgy\\\\Reformed Life Bulletins\\\\UPDATED SAMPLE Bulletin.docx\")",
       "Bash(pdftoppm -jpeg -r 120 \"UPDATED SAMPLE Bulletin.pdf\" page)",
       "Bash(ls /mingw64/bin/pdf* 2>&1)",
-      "Bash(python -c \"import fitz; print\\('ok'\\)\")"
+      "Bash(python -c \"import fitz; print\\('ok'\\)\")",
+      "Bash(rm -rf /tmp/bulletin_render /tmp/bulletin_unpack 2>/dev/null; true)"
     ],
     "defaultMode": "default"
   }
