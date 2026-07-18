@@ -3,7 +3,7 @@
 import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
 import { normalizeTypography } from "@/lib/text/typographic";
-import type { FormulaItem } from "@/types/liturgy";
+import type { FormulaItem, TextMark } from "@/types/liturgy";
 
 export async function addFormula(
   liturgyId: string,
@@ -58,6 +58,45 @@ export async function addFormula(
   if (updateError) {
     console.error("[lib/liturgy/addFormulaAction]", updateError.message);
     return { success: false, error: "Unable to place this Formula right now." };
+  }
+
+  return { success: true };
+}
+
+// Feature 25: edits a Formula item already placed into a Section -- Minister
+// labeling and Vesper's Church Covenant span-tagging both need to mark up
+// this specific instance's displayed text, and until now no edit path
+// existed for FormulaItem at all (it was placed once via addFormula and
+// never touched again). Mirrors updateVerbalCue/updatePrayer's shape.
+export async function updateFormulaItem(
+  liturgyId: string,
+  sectionIndex: number,
+  itemId: string,
+  overrideText: string | null,
+  visibility: "both" | "leader_only",
+  marks: TextMark[] = []
+): Promise<{ success: boolean; error?: string }> {
+  const section = await getSectionContext(liturgyId, sectionIndex);
+  if (!section) {
+    return { success: false, error: "Unable to find that Section right now." };
+  }
+
+  const items = section.items.map((item) =>
+    item.id === itemId && item.type === "formula"
+      ? {
+          ...item,
+          overrideText: overrideText ? normalizeTypography(overrideText) : null,
+          visibility,
+          marks,
+        }
+      : item
+  );
+
+  const { error } = await supabase.from("sections").update({ items }).eq("id", section.id);
+
+  if (error) {
+    console.error("[lib/liturgy/addFormulaAction/updateFormulaItem]", error.message);
+    return { success: false, error: "Unable to update this Formula right now." };
   }
 
   return { success: true };

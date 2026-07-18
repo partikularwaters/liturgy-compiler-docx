@@ -7,6 +7,10 @@ export interface TargetSection {
   templateName: string;
   sectionName: string;
   citations: string[];
+  // Feature 27: dynamic-naming ("Psalm/Hymn of ...") Sections are the
+  // song-slots the Amen Rule applies to -- lets the Reader show that
+  // checkbox only where it's relevant.
+  dynamicNaming: boolean;
 }
 
 export async function getTargetSection(liturgyId: string, sectionIndex: number): Promise<TargetSection | null> {
@@ -40,5 +44,6 @@ export async function getTargetSection(liturgyId: string, sectionIndex: number):
     templateName: template.name,
     sectionName: sectionDef.name,
     citations,
+    dynamicNaming: sectionDef.dynamic_naming,
   };
 }

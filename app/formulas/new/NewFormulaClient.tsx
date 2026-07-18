@@ -22,7 +22,7 @@ export default function NewFormulaClient({
     createFormula(sectionName, name, defaultText).then((result) => {
       setIsSaving(false);
       if (result.success) {
-        router.push("/formulas");
+        router.push("/library");
       } else {
         setError(result.error ?? "Unable to create this Formula right now.");
       }

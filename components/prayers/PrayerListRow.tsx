@@ -17,10 +17,10 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSave = (sectionName: string, text: string): void => {
+  const handleSave = (sectionName: string, text: string, kind: "prayer" | "guide"): void => {
     setIsSaving(true);
     setError(null);
-    updatePrayer(prayer.id, sectionName, text).then((result) => {
+    updatePrayer(prayer.id, sectionName, text, kind).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setIsEditing(false);
@@ -38,6 +38,7 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
           sectionNames={sectionNames}
           initialSectionName={prayer.sectionName}
           initialText={prayer.text}
+          initialKind={prayer.kind}
           isSaving={isSaving}
           error={error}
           submitLabel="Save"

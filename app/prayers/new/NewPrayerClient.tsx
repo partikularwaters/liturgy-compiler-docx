@@ -14,13 +14,13 @@ export default function NewPrayerClient({ sectionNames }: NewPrayerClientProps):
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSave = (sectionName: string, text: string): void => {
+  const handleSave = (sectionName: string, text: string, kind: "prayer" | "guide"): void => {
     setIsSaving(true);
     setError(null);
-    createPrayer(sectionName, text).then((result) => {
+    createPrayer(sectionName, text, kind).then((result) => {
       setIsSaving(false);
       if (result.success) {
-        router.push("/prayers");
+        router.push("/library");
       } else {
         setError(result.error ?? "Unable to create this Prayer right now.");
       }

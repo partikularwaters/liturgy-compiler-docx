@@ -5,16 +5,18 @@ import { useState } from "react";
 interface VerbalCueFormProps {
   initialText: string;
   initialVisibility: "both" | "leader_only";
+  initialRubric?: boolean;
   isSaving: boolean;
   error: string | null;
   submitLabel: string;
-  onSubmit: (text: string, visibility: "both" | "leader_only") => void;
+  onSubmit: (text: string, visibility: "both" | "leader_only", rubric: boolean) => void;
   onCancel: () => void;
 }
 
 export default function VerbalCueForm({
   initialText,
   initialVisibility,
+  initialRubric = false,
   isSaving,
   error,
   submitLabel,
@@ -23,6 +25,7 @@ export default function VerbalCueForm({
 }: VerbalCueFormProps): React.ReactElement {
   const [text, setText] = useState(initialText);
   const [visibility, setVisibility] = useState<"both" | "leader_only">(initialVisibility);
+  const [rubric, setRubric] = useState(initialRubric);
 
   return (
     <div className="bg-surface-secondary border border-border rounded-md p-4 flex flex-col gap-3">
@@ -54,12 +57,17 @@ export default function VerbalCueForm({
         </select>
       </div>
 
+      <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">
+        <input type="checkbox" checked={rubric} onChange={(e) => setRubric(e.target.checked)} />
+        Rubric style (instructional aside, rendered Sentence case + italic)
+      </label>
+
       {error && <p className="text-sm text-error">{error}</p>}
 
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(text, visibility)}
+          onClick={() => onSubmit(text, visibility, rubric)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >

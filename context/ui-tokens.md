@@ -99,8 +99,10 @@ className="bg-purple-500 text-gray-600"
   /* Citation red — Scripture reference small-caps text (Compile View, PDF).
      Deliberately a distinct token from --color-error, not a reuse of it — reusing
      error would make red mean both "something's wrong" and "this is a Bible
-     reference" simultaneously. */
-  --color-citation: #C0392B;
+     reference" simultaneously. Value corrected 2026-07-16 (Feature 24) to the
+     confirmed real hex #C00000 extracted from the reference bulletin docx
+     (redesign-plan-v1.1.md §AB) — was a provisional guess (#C0392B) before. */
+  --color-citation: #C00000;
 
   /* Border radius */
   --radius-sm: 4px;

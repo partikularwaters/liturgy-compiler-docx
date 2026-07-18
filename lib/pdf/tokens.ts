@@ -6,10 +6,12 @@
 export const pdfColors = {
   background: "#F7F6F2",
   surface: "#FFFFFF",
+  surfaceSecondary: "#F1EFE9",
   border: "#E3DFD5",
   textPrimary: "#22201C",
   textSecondary: "#6B6558",
   textMuted: "#A39C8C",
   accentLight: "#F3E3E5",
   accentDark: "#5C1F27",
+  citation: "#C00000",
 };

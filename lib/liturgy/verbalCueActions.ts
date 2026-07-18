@@ -9,7 +9,8 @@ export async function addVerbalCue(
   liturgyId: string,
   sectionIndex: number,
   text: string,
-  visibility: "both" | "leader_only"
+  visibility: "both" | "leader_only",
+  rubric: boolean = false
 ): Promise<{ success: boolean; error?: string }> {
   if (!text.trim()) {
     return { success: false, error: "Verbal Cue text is required." };
@@ -25,6 +26,7 @@ export async function addVerbalCue(
     type: "verbal_cue",
     text: normalizeTypography(text),
     visibility,
+    rubric,
   };
 
   const { error } = await supabase
@@ -44,7 +46,8 @@ export async function updateVerbalCue(
   sectionIndex: number,
   itemId: string,
   text: string,
-  visibility: "both" | "leader_only"
+  visibility: "both" | "leader_only",
+  rubric: boolean = false
 ): Promise<{ success: boolean; error?: string }> {
   if (!text.trim()) {
     return { success: false, error: "Verbal Cue text is required." };
@@ -58,7 +61,7 @@ export async function updateVerbalCue(
   const normalizedText = normalizeTypography(text);
   const items = section.items.map((item) =>
     item.id === itemId && item.type === "verbal_cue"
-      ? { ...item, text: normalizedText, visibility }
+      ? { ...item, text: normalizedText, visibility, rubric }
       : item
   );
 

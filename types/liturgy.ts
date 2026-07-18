@@ -32,11 +32,39 @@ export interface TemplateSection {
   item_types?: Item["type"][];
 }
 
+// Feature 25: Leader/Congregation/Minister/Small-Caps span tagging
+// (redesign-plan-v1.1.md §U) -- structured spans over an item's own `text`,
+// never baked into the raw saved string, so un-marking is lossless. `start`/
+// `end` are character offsets into that item's `text` (0-indexed,
+// end-exclusive, same convention as String.slice). Assumed non-overlapping
+// and sorted by `start` -- lib/text/marks.ts's applyMarks() depends on this.
+export interface TextMark {
+  start: number;
+  end: number;
+  type: "leader" | "congregation" | "minister" | "small_caps";
+}
+
 export interface SelectionItem {
   id: string;
   type: "selection";
   text: string;
   citation: string;
+  // Feature 27: Amen Rule -- does this song-slot piece customarily end in a
+  // sung Amen. Only meaningful for Selections placed into a dynamic-naming
+  // ("Psalm/Hymn of ...") Section; Leader Guide only, never the Bulletin
+  // (redesign-plan-v1.1.md §X). Optional/defensive, same pattern as
+  // item_types -- a missing value means "no," the common case for non-song
+  // Selections.
+  amenExpected?: boolean;
+  // Feature 25: only meaningful on Call to Worship / Prayer of Invocation
+  // Selections (redesign-plan-v1.1.md §U) -- absent/empty means "render
+  // exactly as before," so every pre-existing Selection is unaffected.
+  marks?: TextMark[];
+  // Feature-request (2026-07-18): Benediction's Trinitarian Seal -- appends
+  // a fixed, bolded closing line immediately after the Selection's own text
+  // rather than requiring it to be typed/retyped by hand. Only meaningful on
+  // Benediction Selections; absent means no seal appended.
+  trinitarianSeal?: "en" | "fil";
 }
 
 export interface Formula {
@@ -52,6 +80,10 @@ export interface FormulaItem {
   formulaId: string;
   overrideText: string | null;
   visibility: "both" | "leader_only";
+  // Feature 25: Minister piece + Vesper's Church Covenant portion --
+  // offsets into the *displayed* text (overrideText ?? the library
+  // Formula's defaultText), same convention as SelectionItem.marks.
+  marks?: TextMark[];
 }
 
 export interface VerbalCueItem {
@@ -59,12 +91,25 @@ export interface VerbalCueItem {
   type: "verbal_cue";
   text: string;
   visibility: "both" | "leader_only";
+  // Feature 26: "Rubric style" (redesign-plan-v1.1.md §N-T/§V) -- an
+  // instructional aside rather than spoken narration, e.g. Confession of
+  // Sin's (Morning) closing cue. Rendered Sentence case + italic instead of
+  // the default treatment. Optional/defensive, same pattern as item_types --
+  // a missing value means "not a rubric," the common case.
+  rubric?: boolean;
 }
 
 export interface Prayer {
   id: string;
   sectionName: string;
   text: string;
+  // Feature 27: Prayer Guides -- 'guide' entries are structural reference
+  // material (per redesign-plan-v1.1.md §W's checklists) shown next to
+  // "Add Prayer" on the Sections that need one, never placeable as an
+  // actual liturgy item themselves. Defaults to 'prayer' at the DB level
+  // (migration 20260716010000_prayer_guides.sql), so every pre-existing row
+  // keeps its current meaning.
+  kind: "prayer" | "guide";
 }
 
 export interface PrayerItem {
@@ -79,6 +124,26 @@ export interface SermonItem {
   passage: string;
 }
 
+// Feature 21: shared "Songs" library (redesign-plan-v1.1.md §L), tagged by
+// kind like Prayer's Feature 27 addition. Replaces Selection entirely in
+// the 5 dynamic song Sections. `attribution` means versification for a
+// psalm, author for a hymn -- one field, meaning depends on `kind`.
+export interface Song {
+  id: string;
+  sectionName: string;
+  kind: "psalm" | "hymn";
+  title: string;
+  attribution: string | null;
+  yearPublished: string | null;
+  notes: string | null;
+}
+
+export interface SongItem {
+  id: string;
+  type: "song";
+  songId: string;
+}
+
 // Feature 20: "Existing Selections" library -- auto-populated by
 // addSelectionAction whenever a Selection is placed into a Section,
 // independent of whether the parent liturgy is ever saved. Browsable on
@@ -91,7 +156,7 @@ export interface ScriptureSelection {
   text: string;
 }
 
-export type Item = SelectionItem | FormulaItem | VerbalCueItem | PrayerItem | SermonItem;
+export type Item = SelectionItem | FormulaItem | VerbalCueItem | PrayerItem | SermonItem | SongItem;
 
 export interface CompiledSection extends TemplateSection {
   items: Item[];

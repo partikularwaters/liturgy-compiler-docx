@@ -8,12 +8,15 @@ import PrayerListRow from "@/components/prayers/PrayerListRow";
 import ScriptureSelectionRow from "@/components/selections/ScriptureSelectionRow";
 
 export default async function LibraryPage(): Promise<React.ReactElement> {
-  const [formulas, prayers, scriptureSelections, sectionNames] = await Promise.all([
+  const [formulas, allPrayers, scriptureSelections, sectionNames] = await Promise.all([
     getFormulas(),
     getPrayers(),
     getScriptureSelections(),
     getSectionNames(),
   ]);
+
+  const prayers = allPrayers.filter((p) => p.kind === "prayer");
+  const guides = allPrayers.filter((p) => p.kind === "guide");
 
   return (
     <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-8">
@@ -62,14 +65,31 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
       </div>
 
       <div className="flex flex-col gap-3">
+        <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Guides</h2>
+        <p className="text-[13px] text-text-muted">
+          Reference outlines shown next to "Add Prayer" on the Sections that need one (redesign-plan-v1.1.md
+          §W) — never placed into a liturgy directly.
+        </p>
+        {guides.length === 0 ? (
+          <p className="text-sm text-text-muted">No guides yet.</p>
+        ) : (
+          <div className="bg-surface border border-border rounded-lg px-6">
+            {guides.map((guide) => (
+              <PrayerListRow key={guide.id} prayer={guide} sectionNames={sectionNames} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3">
         <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">
-          Existing Selections
+          Existing Scripture
         </h2>
         <p className="text-[13px] text-text-muted">
-          Auto-saved from every Selection added via the Reader — browse only, not directly editable.
+          Auto-saved from every Scripture item added via the Reader — browse only, not directly editable.
         </p>
         {scriptureSelections.length === 0 ? (
-          <p className="text-sm text-text-muted">No Selections added yet.</p>
+          <p className="text-sm text-text-muted">No Scripture items added yet.</p>
         ) : (
           <div className="bg-surface border border-border rounded-lg px-6">
             {scriptureSelections.map((selection) => (

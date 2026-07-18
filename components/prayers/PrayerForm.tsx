@@ -6,10 +6,11 @@ interface PrayerFormProps {
   sectionNames: string[];
   initialSectionName: string;
   initialText: string;
+  initialKind?: "prayer" | "guide";
   isSaving: boolean;
   error: string | null;
   submitLabel: string;
-  onSubmit: (sectionName: string, text: string) => void;
+  onSubmit: (sectionName: string, text: string, kind: "prayer" | "guide") => void;
   onCancel?: () => void;
 }
 
@@ -17,6 +18,7 @@ export default function PrayerForm({
   sectionNames,
   initialSectionName,
   initialText,
+  initialKind = "prayer",
   isSaving,
   error,
   submitLabel,
@@ -25,6 +27,7 @@ export default function PrayerForm({
 }: PrayerFormProps): React.ReactElement {
   const [sectionName, setSectionName] = useState(initialSectionName || sectionNames[0] || "");
   const [text, setText] = useState(initialText);
+  const [kind, setKind] = useState<"prayer" | "guide">(initialKind);
 
   return (
     <div className="flex flex-col gap-3">
@@ -46,6 +49,20 @@ export default function PrayerForm({
         </select>
       </div>
       <div className="flex flex-col gap-1">
+        <label className="text-[13px] font-medium text-text-secondary" htmlFor="prayer-kind">
+          Kind
+        </label>
+        <select
+          id="prayer-kind"
+          value={kind}
+          onChange={(e) => setKind(e.target.value as "prayer" | "guide")}
+          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
+        >
+          <option value="prayer">Prayer (placeable in a liturgy)</option>
+          <option value="guide">Guide (reference outline only, per redesign-plan-v1.1.md §W)</option>
+        </select>
+      </div>
+      <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="prayer-text">
           Text
         </label>
@@ -61,7 +78,7 @@ export default function PrayerForm({
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(sectionName, text)}
+          onClick={() => onSubmit(sectionName, text, kind)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >

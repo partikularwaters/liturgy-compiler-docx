@@ -1,0 +1,81 @@
+// Tagalog book names for the Ang Dating Biblia (1905) canon -- the Reader is
+// hardcoded to AB1905 (no translation switcher exists, per Feature 02's
+// scope decision), so every citation built from it should be named in
+// Tagalog by default, matching this project's Tagalog-first/English-second
+// convention -- not the English keys `lib/bible/canon.ts` uses internally
+// for chapter/verse lookups and highlight storage. Keyed by the canonical
+// English name so callers don't need a second identifier system; falls back
+// to the English name if a book is somehow missing (defensive, shouldn't
+// happen since this covers all 66).
+export const BOOK_NAMES_TAGALOG: Record<string, string> = {
+  Genesis: "Genesis",
+  Exodus: "Exodo",
+  Leviticus: "Levitico",
+  Numbers: "Mga Bilang",
+  Deuteronomy: "Deuteronomio",
+  Joshua: "Josue",
+  Judges: "Mga Hukom",
+  Ruth: "Ruth",
+  "1 Samuel": "1 Samuel",
+  "2 Samuel": "2 Samuel",
+  "1 Kings": "1 Mga Hari",
+  "2 Kings": "2 Mga Hari",
+  "1 Chronicles": "1 Mga Cronica",
+  "2 Chronicles": "2 Mga Cronica",
+  Ezra: "Ezra",
+  Nehemiah: "Nehemias",
+  Esther: "Esther",
+  Job: "Job",
+  Psalms: "Mga Awit",
+  Proverbs: "Mga Kawikaan",
+  Ecclesiastes: "Mangangaral",
+  "Song of Solomon": "Awit ng mga Awit",
+  Isaiah: "Isaias",
+  Jeremiah: "Jeremias",
+  Lamentations: "Mga Panaghoy",
+  Ezekiel: "Ezekiel",
+  Daniel: "Daniel",
+  Hosea: "Oseas",
+  Joel: "Joel",
+  Amos: "Amos",
+  Obadiah: "Abdias",
+  Jonah: "Jonas",
+  Micah: "Mikas",
+  Nahum: "Nahum",
+  Habakkuk: "Habacuc",
+  Zephaniah: "Sofonias",
+  Haggai: "Hagai",
+  Zechariah: "Zacarias",
+  Malachi: "Malakias",
+  Matthew: "Mateo",
+  Mark: "Marcos",
+  Luke: "Lucas",
+  John: "Juan",
+  Acts: "Mga Gawa",
+  Romans: "Mga Taga-Roma",
+  "1 Corinthians": "1 Mga Taga-Corinto",
+  "2 Corinthians": "2 Mga Taga-Corinto",
+  Galatians: "Mga Taga-Galacia",
+  Ephesians: "Mga Taga-Efeso",
+  Philippians: "Mga Taga-Filipos",
+  Colossians: "Mga Taga-Colosas",
+  "1 Thessalonians": "1 Mga Taga-Tesalonica",
+  "2 Thessalonians": "2 Mga Taga-Tesalonica",
+  "1 Timothy": "1 Kay Timoteo",
+  "2 Timothy": "2 Kay Timoteo",
+  Titus: "Kay Tito",
+  Philemon: "Kay Filemon",
+  Hebrews: "Mga Hebreo",
+  James: "Santiago",
+  "1 Peter": "1 Pedro",
+  "2 Peter": "2 Pedro",
+  "1 John": "1 Juan",
+  "2 John": "2 Juan",
+  "3 John": "3 Juan",
+  Jude: "Judas",
+  Revelation: "Apocalipsis",
+};
+
+export function bookNameTagalog(englishName: string): string {
+  return BOOK_NAMES_TAGALOG[englishName] ?? englishName;
+}

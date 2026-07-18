@@ -5,7 +5,8 @@ import { normalizeTypography } from "@/lib/text/typographic";
 
 export async function createPrayer(
   sectionName: string,
-  text: string
+  text: string,
+  kind: "prayer" | "guide" = "prayer"
 ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
   if (!text.trim()) {
     return { success: false, error: "Prayer text is required." };
@@ -13,7 +14,7 @@ export async function createPrayer(
 
   const { data, error } = await supabase
     .from("prayers")
-    .insert({ section_name: sectionName, text: normalizeTypography(text) })
+    .insert({ section_name: sectionName, text: normalizeTypography(text), kind })
     .select("id")
     .single();
 
@@ -28,7 +29,8 @@ export async function createPrayer(
 export async function updatePrayer(
   id: string,
   sectionName: string,
-  text: string
+  text: string,
+  kind?: "prayer" | "guide"
 ): Promise<{ success: boolean; error?: string }> {
   if (!sectionName.trim() || !text.trim()) {
     return { success: false, error: "Section and text are required." };
@@ -36,7 +38,11 @@ export async function updatePrayer(
 
   const { error } = await supabase
     .from("prayers")
-    .update({ section_name: sectionName, text: normalizeTypography(text) })
+    .update({
+      section_name: sectionName,
+      text: normalizeTypography(text),
+      ...(kind ? { kind } : {}),
+    })
     .eq("id", id);
 
   if (error) {

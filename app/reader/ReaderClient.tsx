@@ -13,6 +13,14 @@ import { addSelection } from "@/lib/liturgy/addSelectionAction";
 import { buildCitation, buildSelectionText, parseCitationVerses } from "@/lib/liturgy/citations";
 import type { BibleBook, BibleChapter, HighlightColor, VerseHighlights } from "@/types/bible";
 import type { TargetSection } from "@/lib/liturgy/getTargetSection";
+import { getSelectionMarks } from "@/lib/liturgy/markableSections";
+import { TRINITARIAN_SEAL_SECTIONS } from "@/lib/liturgy/trinitarianSeal";
+import type { TextMark } from "@/types/liturgy";
+
+// Feature 22: mirrors addSelectionAction.ts's REFERENCE_ONLY_SECTIONS -- kept
+// as a separate constant since the Reader is a client component and can't
+// import the "use server" action file's top-level constant directly.
+const REFERENCE_ONLY_SECTIONS = ["The Lord's Discourses", "Words of Institution", "Closing of the Table"];
 
 interface ReaderClientProps {
   books: BibleBook[];
@@ -128,19 +136,33 @@ export default function ReaderClient({
     targetSection && candidateCitation ? targetSection.citations.includes(candidateCitation) : false;
   const targetLabel = targetSection ? `${targetSection.templateName} → ${targetSection.sectionName}` : "";
 
-  const handleSaveSelection = (citation: string, text: string): void => {
+  const handleSaveSelection = (
+    citation: string,
+    text: string,
+    amenExpected: boolean,
+    marks: TextMark[],
+    trinitarianSeal: "en" | "fil" | null
+  ): void => {
     if (!targetSection) return;
     setIsSaving(true);
     setSaveError(null);
     setSuccessMessage(null);
-    addSelection(targetSection.liturgyId, targetSection.sectionIndex, citation, text).then((result) => {
+    addSelection(
+      targetSection.liturgyId,
+      targetSection.sectionIndex,
+      citation,
+      text,
+      amenExpected,
+      marks,
+      trinitarianSeal
+    ).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setSelectedVerses(new Set());
         setSuccessMessage(`Successfully added to ${targetSection.sectionName}`);
         router.refresh();
       } else {
-        setSaveError(result.error ?? "Unable to save this Selection right now.");
+        setSaveError(result.error ?? "Unable to save this Scripture item right now.");
       }
     });
   };
@@ -184,6 +206,12 @@ export default function ReaderClient({
                 isSaving={isSaving}
                 saveError={saveError}
                 onSave={handleSaveSelection}
+                textOptional={targetSection ? REFERENCE_ONLY_SECTIONS.includes(targetSection.sectionName) : false}
+                isSongSlot={targetSection?.dynamicNaming ?? false}
+                availableMarks={targetSection ? getSelectionMarks(targetSection.sectionName) : []}
+                allowTrinitarianSeal={
+                  targetSection ? TRINITARIAN_SEAL_SECTIONS.includes(targetSection.sectionName) : false
+                }
               />
             ) : (
               <p className="text-sm text-text-muted">Click the + beside a verse to add it to this Section.</p>

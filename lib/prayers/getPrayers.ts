@@ -2,7 +2,7 @@ import { supabase } from "@/lib/db/supabase";
 import type { Prayer } from "@/types/liturgy";
 
 export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
-  let query = supabase.from("prayers").select("id, section_name, text");
+  let query = supabase.from("prayers").select("id, section_name, text, kind");
 
   if (sectionName) {
     query = query.eq("section_name", sectionName);
@@ -15,5 +15,10 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
     return [];
   }
 
-  return data.map((row) => ({ id: row.id, sectionName: row.section_name, text: row.text }));
+  return data.map((row) => ({
+    id: row.id,
+    sectionName: row.section_name,
+    text: row.text,
+    kind: row.kind as "prayer" | "guide",
+  }));
 }

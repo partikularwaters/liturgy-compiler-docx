@@ -21,8 +21,10 @@ const ibarraRealNova = Ibarra_Real_Nova({ subsets: ["latin"], weight: ["400","60
 Apply all three font variable classes to the `<html>` tag in root layout. Never use a fallback system font for any of the three.
 
 - **Inter (`--font-sans`)** — all UI chrome: nav, buttons, labels, badges, form inputs, timestamps
-- **Old Standard TT (`--font-serif-display`)** — liturgy and Section display headings (e.g. "Call to Worship" as shown in the Compile View and PDF exports)
+- **Old Standard TT (`--font-serif-display`)** — liturgy and Section display headings *outside the Compile View/export surfaces* (e.g. the Reader's chapter heading) — see the exception below, this is no longer used inside the Compiler itself
 - **Ibarra Real Nova (`--font-serif-body`)** — the actual displayed Scripture/liturgical body text (Selections, Formulas, Prayers) — chosen specifically for its strong multilingual diacritic support, which bilingual Filipino/English liturgical text needs
+
+**Exception, Feature 28 Part A (2026-07-16): the Compile View and PDF export use Ibarra Real Nova exclusively, no Old Standard TT.** Per Madrid's direct spec — "every typeface in the Compiler and export" is Ibarra Real Nova, distinguishing headings from body by weight/size/case (bold, uppercase, larger) rather than by switching families. `SectionCard`'s Section names, the Compile View's bulletin title/metadata, and `LiturgyDocument`'s title/column-title/section-heading styles were all switched from `font-serif-display`/`"Old Standard TT"` to `font-serif-body`/`"Ibarra Real Nova"`. Old Standard TT remains the correct choice for the Reader (`VerseDisplay`'s chapter heading) and `LiturgyWebView` (the public mobile reading page, a deliberately different surface from the Compiler/export) — this exception is scoped narrowly to the Compile View and its PDF, not a project-wide font swap.
 
 **Invariant (2026-07-15): any serif text rendered `italic` must use a real italic font file, never a browser-synthesized oblique.** Both `Old_Standard_TT` and `Ibarra_Real_Nova` loaders must include `style: ["normal", "italic"]` — omitting it (the original state of this codebase until this fix) means the browser fakes italics by skewing the upright glyphs, which drops the font's actual italic design (proper ligatures, swashes, distinct letterforms). Verified via `document.fonts`: with `style` set, a genuine `italic` weight-700 Ibarra Real Nova face loads and reports `status: "loaded"` rather than being synthesized. Check this whenever adding a new serif font or a new italic usage — an `italic` class with no matching `style` entry in the loader is the bug pattern to watch for.
 
@@ -53,7 +55,7 @@ Apply all three font variable classes to the `<html>` tag in root layout. Never 
 
 ## Cards
 
-Every Section in the Compile View, and every list item in the Formula/Prayer libraries, lives in a card.
+Every list item in the Formula/Prayer libraries lives in a card.
 
 ```
 background:    bg-surface
@@ -64,6 +66,8 @@ box-shadow:    0px 1px 3px rgba(34, 32, 28, 0.08)
 ```
 
 Never use colored card backgrounds — always `bg-surface`. Color goes inside cards via badges and text, never on the card surface itself. (The Top Bar's solid `bg-accent` fill is chrome, not a card, and is the one place this rule doesn't apply — see Top Bar above.)
+
+**Exception, Feature 28 Part A (2026-07-16): `SectionCard` no longer uses the card box.** Per Madrid's direct spec, Morning's Compile View is meant to "look plain as it should look in the printed bulletin" — the card border/shadow/background were stripped entirely (`bg-surface border rounded-lg shadow` → plain `flex flex-col gap-2`). This is the one other deliberate departure from "every Section lives in a card," alongside the Top Bar's chrome exception above.
 
 ---
 
@@ -204,6 +208,20 @@ font-weight:   600 (primary) / 500 (secondary)
 ```
 
 Same `bg-accent`/`bg-surface` background pairing as standard Primary/Secondary otherwise.
+
+**Add-item outline (Feature 28 Part A, 2026-07-16)** — the "+ Selection"/"+ Formula"/"+ Cue"/"+ Prayer"/"+ Sermon" triggers inside `SectionCard`, ~25% smaller than Secondary and transparent-fill instead of `bg-surface`, matching the reference bulletin's compact plus-icon buttons:
+
+```
+background:    transparent
+border:        1px solid border-border
+border-radius: 6px (rounded-md)
+padding:       6px 12px
+font-size:     11px
+color:         text-accent-dark
+hover:         bg-surface-secondary
+```
+
+Sits in its own row below the Section name (not beside it, per the same spec) — see `SectionCard` in `ui-registry.md`.
 
 ---
 

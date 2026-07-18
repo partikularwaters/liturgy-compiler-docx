@@ -2,6 +2,7 @@ import LiturgyWebView from "@/components/liturgy/LiturgyWebView";
 import { getLiturgy } from "@/lib/liturgy/getLiturgy";
 import { getFormulas } from "@/lib/formulas/getFormulas";
 import { getPrayers } from "@/lib/prayers/getPrayers";
+import { getSongs } from "@/lib/songs/getSongs";
 
 interface LiturgyViewPageProps {
   params: Promise<{ id: string }>;
@@ -9,10 +10,11 @@ interface LiturgyViewPageProps {
 
 export default async function LiturgyViewPage({ params }: LiturgyViewPageProps): Promise<React.ReactElement> {
   const { id } = await params;
-  const [liturgy, formulas, prayers] = await Promise.all([
+  const [liturgy, formulas, prayers, songs] = await Promise.all([
     getLiturgy(id),
     getFormulas(),
     getPrayers(),
+    getSongs(),
   ]);
 
   if (!liturgy) {
@@ -23,5 +25,5 @@ export default async function LiturgyViewPage({ params }: LiturgyViewPageProps):
     );
   }
 
-  return <LiturgyWebView liturgy={liturgy} formulas={formulas} prayers={prayers} />;
+  return <LiturgyWebView liturgy={liturgy} formulas={formulas} prayers={prayers} songs={songs} />;
 }

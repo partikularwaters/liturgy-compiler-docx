@@ -40,7 +40,9 @@
   /* v1.1 — provisional, revisited later in v1 */
   --color-cta-yellow: #F0B429;
   --color-cta-yellow-foreground: #3A2B00;
-  --color-citation: #C0392B;
+  /* Feature 24: confirmed real value from the reference bulletin docx
+     (redesign-plan-v1.1.md §AB), not a provisional guess. */
+  --color-citation: #C00000;
 
   --radius-sm: 4px;
   --radius-md: 8px;
