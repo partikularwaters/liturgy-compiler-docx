@@ -5,6 +5,7 @@ import { getLiturgy } from "@/lib/liturgy/getLiturgy";
 import { getFormulas } from "@/lib/formulas/getFormulas";
 import { getPrayers } from "@/lib/prayers/getPrayers";
 import { getSongs } from "@/lib/songs/getSongs";
+import { getScriptureSelections } from "@/lib/selections/getScriptureSelections";
 import { groupSectionsByPageColumn } from "@/lib/liturgy/groupSectionsByPageColumn";
 import { isSunday, parseLocalDate } from "@/lib/liturgy/lordsDay";
 
@@ -14,11 +15,12 @@ interface CompileViewPageProps {
 
 export default async function CompileViewPage({ params }: CompileViewPageProps): Promise<React.ReactElement> {
   const { id } = await params;
-  const [liturgy, formulas, prayers, songs] = await Promise.all([
+  const [liturgy, formulas, prayers, songs, scriptureSelections] = await Promise.all([
     getLiturgy(id),
     getFormulas(),
     getPrayers(),
     getSongs(),
+    getScriptureSelections(),
   ]);
 
   if (!liturgy) {
@@ -97,6 +99,7 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
               formulas={formulas}
               prayers={prayers}
               songs={songs}
+              scriptureSelections={scriptureSelections}
             />
           ))}
         </div>
@@ -126,6 +129,7 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
                     formulas={formulas}
                     prayers={prayers}
                     songs={songs}
+                    scriptureSelections={scriptureSelections}
                   />
                 ))}
               </div>

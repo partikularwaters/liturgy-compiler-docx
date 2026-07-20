@@ -325,8 +325,9 @@ Madrid ran `supabase/migrations/20260716020000_songs.sql`. Closed out with two d
 
 **Done (2026-07-16), Call to Worship / Prayer of Invocation piece (Leader/Congregation/Small Caps only):** `TextMark { start, end, type }` added to `types/liturgy.ts`, stored on `SelectionItem.marks`. `lib/text/marks.ts`'s `applyMarks()` splits text into segments by mark, shared by `MarkedText.tsx` (Compile View), the PDF's inline rendering, and `LiturgyWebView`. Marking happens in `AddSelectionPanel` at add-time (a new `markable` prop, gated to `"Call to Worship"`/`"Prayer of Invocation"` in `ReaderClient.tsx`) — select a text range in the textarea, click a label button, offsets are recorded via `textarea.selectionStart`/`selectionEnd`. Editing the text after marking clears all marks rather than risk stale offsets (a documented limitation, not silently wrong). `normalizeTypography()` confirmed length-preserving (every substitution is 1-char-for-1-char) so offsets survive the server-side typographic pass unchanged. PDF has no italic/small-caps glyph limitation to work around here since the marking treatment is layout-based (indent + label), not font-style-based — unlike Feature 26's rubric italic, this one degrades identically in both CSS and PDF. Verified live end-to-end: marked a real Congregation span, confirmed the 24px indent + "Congr:" label rendered correctly in the Compile View and in a real PDF export (`pdftotext -layout`), then removed the test item.
 
-**Still open:** Minister labeling and the Church Covenant portion of Vesper's Affirmation of Faith both require marking *Formula* text, not Selection text — and `FormulaItem` currently has no inline-editing UI in `SectionCard` at all (Formula items are placed once via `AddFormulaPanel` and never edited afterward). That's a real, identifiable prerequisite, not a vague gap: building Minister support means first building Formula-item inline editing, then extending `marks` to `FormulaItem` and reusing the same `applyMarks()`/rendering machinery already built here.
-- `**bold**` markdown remains the live option everywhere this tool doesn't apply
+**DONE (2026-07-18) — Minister + Church Covenant piece, closing out Feature 25 entirely.** `FormulaItem` gained the same `marks?: TextMark[]` field as `SelectionItem`; `lib/liturgy/addFormulaAction.ts`'s `updateFormulaItem()` is the first-ever edit path for an already-placed Formula (previously placed once via `AddFormulaPanel` and never touched again — the exact prerequisite this section originally flagged as blocking). New `FormulaEditForm.tsx` mirrors `AddSelectionPanel`'s marking UX, parameterized by an `availableMarks` prop. `SectionCard.tsx`'s `FORMULA_MARK_SECTIONS` whitelist: `"Assurance of Pardon"` → `["minister", "congregation"]` (Congregation added in a same-day follow-up once Madrid caught Absolution's own dialogue needing it too), `"Charge"`/`"The Great Commission"`/`"Benediction"` → `["minister"]`, `"Affirmation of Faith / Church Covenant"` → `["congregation", "small_caps"]`. All three renderers (Compile View, PDF, Web View) widened their "is this a marked item?" check from `item.type === "selection"` to `item.type === "selection" || item.type === "formula"`.
+- Small Caps was later generalized (2026-07-18, same-day follow-up pass) from "Call to Worship/Prayer of Invocation only" to **every Section that can hold a Selection** — `lib/liturgy/markableSections.ts`'s `getSelectionMarks()` replaced the old static two-Section dict. Reasoning: Small Caps is a per-word reverential-capitalization convention (divine names), meaningful on any Scripture text, unlike the Congregation/Minister dialogue treatment which stays genuinely scoped to Sections that alternate speaking parts.
+- `**bold**` markdown remains the live option everywhere this tool doesn't apply — and is now universally available via a dedicated Bold button (`lib/text/toggleBold.ts`) on the Add/Edit Scripture forms, independent of whether a Section has a marking toolbar at all.
 
 ### 26 Verbal Cue Defaults & Rubric
 
@@ -385,6 +386,35 @@ Full spec in `redesign-plan-v1.1.md` §AA (Madrid's direct spec, 2026-07-15). Sp
 
 ---
 
+## Phase 8 — Direct-Observation Refinements (post-v1.1, 2026-07-18)
+
+Not part of the original v1.1 scope — Madrid drove the app directly across several sessions on 2026-07-18 and this phase is the accumulated result. Unlike Phases 1-7, this wasn't pre-scoped in `redesign-plan-v1.1.md`; each item below is a real bug or gap caught by actual use, fixed the same day it was reported. Grouped here after the fact for a coherent record, not built in this order originally — see `progress-tracker.md`'s Session Memory Bank for the full blow-by-blow.
+
+**New feature, not a fix:**
+- **Trinitarian Seal** — a Benediction-only toggle (None/Filipino/English) that appends the exact wording Madrid supplied (`lib/liturgy/trinitarianSeal.ts`) immediately after a Selection's own text, rendered bold via the existing `**bold**` convention. Live preview identical to the Congregation/Minister tool's.
+- **Universal item deletion** — every item type (including Song, which has no edit form) gained a trash-icon delete button, via one generic `lib/liturgy/removeItemAction.ts` shared across all six item types. Closed a real standing gap (Benediction ending up with two Trinitarian-formula placements and no way to remove the stray one).
+
+**Correctness fixes:**
+- Cue ordering — a Verbal Cue now always renders first in a Section regardless of add order (`lib/liturgy/sortSectionItems.ts`); Scripture now always precedes a Formula in the same Section (the Assurance-of-Pardon "proof text, then declaration" pattern).
+- Header-reference mechanic generalized three times over: from "sole Selection item only" to (1) any number of Selections in a Section (citations joined with "; "), (2) a Creed/Church-Covenant Formula's own name when there's no Selection, (3) a single Song's title (italic, citation-red only for a Psalm) — all three now shown inline with the Section title, matching the reference bulletin's layout, in the Compile View, PDF, *and* Web View via one shared helper, `lib/liturgy/prepareSectionRender.ts`.
+- Multi-Selection paragraph merge — when a Section draws from more than one passage, the texts now concatenate into one naturally-flowing paragraph (marks offset-shifted correctly) instead of rendering as separate blocks.
+- Mark-editing no longer wipes existing marks on every keystroke (`lib/text/marks.ts`'s `shiftMarksForEdit()` resizes only the marks actually touched by an edit).
+- En dash for verse ranges, applied both at write time and retroactively at *display* time (`lib/liturgy/formatCitation()`, called centrally from `resolveItemText.ts`) — covers Selections, Metrical Psalter titles, and pre-existing citations with no migration needed.
+- PDF-specific: Small Caps no longer forces a line break around itself (was wrapping every marked/unmarked segment in its own block `<View>`); the header-reference citation gets its uppercase small-caps substitute; Song titles render genuinely italic (a real italic Ibarra Real Nova `.woff` was sourced and confirmed embedded); Prayer Guides now actually reach the exported Leader Guide PDF (existed in the Compile View since Feature 27, never wired into the PDF); pagination moved from a top-left header label to a fixed bottom-right footer; margins tightened to 0.3in top/bottom, 0.25in left/right; page size changed to 13in×8in landscape for the 3-column layout.
+- A real conflation bug: a Metrical Psalter's title, once it joined the header-reference line, incorrectly went small-caps — `HeaderInfo.styled: boolean` was doing two unrelated jobs (citation-red color, small-caps) at once; split into independent `citationColor`/`smallCaps` flags.
+- "No items yet" removed everywhere (Compile View, PDF, Web View) — an empty Section now just shows its heading.
+- Body text justified everywhere (Compile View, PDF, Web View).
+- Two stale-redirect 404 bugs fixed (`/formulas/new`, `/prayers/new` redirected to routes deleted back in Feature 20).
+- A hydration-mismatch console error fixed (`suppressHydrationWarning` on `<html>` — caused by a browser extension injecting attributes, not an app bug).
+
+**UI polish:**
+- New shared icon set (`components/liturgy/icons.tsx`, stroke-width 2) — pencil for Edit, trash for Delete, eraser for Clear, download icons on Guide/Bulletin, a new `CopyLinkButton.tsx` (clipboard + "Copy Link" tooltip) replacing the old "View / Share Liturgy" text link.
+- `+ Scripture`/`+ Cue`/etc. buttons invert color (box fill + text swap) on hover instead of a neutral gray hover.
+- Web View overhaul: typography brought up to date with the Compile View's actual current classes (it had drifted since Feature 28's redesign), and the compiler's own top nav bar is now hidden on `/liturgy/[id]/view` (`TopNavLinks.tsx` returns `null` for that route) — a public congregation-facing share link has no business showing internal nav.
+- Section-to-Section spacing reduced (was ~32px, now ~16px) to match Madrid's MS Word convention (12pt paragraph + 6pt space-before).
+
+---
+
 ## Feature Count
 
 | Phase | Name | Features |
@@ -398,3 +428,33 @@ Full spec in `redesign-plan-v1.1.md` §AA (Madrid's direct spec, 2026-07-15). Sp
 | 6 | v1.1 — Shell & Compile View Redesign | 5 |
 | 7 | v1.1 — Content Model | 9 |
 | **v1.1 Total** | | **14** |
+| 8 | Post-v1.1 Direct-Observation Refinements | ~30 individual fixes, not separately numbered |
+
+**All of v1 and v1.1 (Phases 1-7, 28 features) plus Phase 8's refinement pass are complete as of 2026-07-18.** The only genuinely open item anywhere in the shipped scope is Feature 26's default-Verbal-Cue-seeding, blocked on Madrid supplying real per-Section sample-script content (not a code gap). See `progress-tracker.md` for current status and `project-overview.md`'s Roadmap section for the narrative version of what follows.
+
+---
+
+# v2 (Draft) — Editing Maturity & Library Completeness
+
+**Drafted 2026-07-18, not yet approved feature-by-feature the way v1.1 was** (v1.1 had `redesign-plan-v1.1.md`'s many rounds of direct decisions before this file turned it into build-ready phases — v2 hasn't had that pass). Listed roughly in dependency order, not final phase numbers.
+
+- **Template/Section editing.** Reorder, rename, create Sections within a Template — Templates stop being two hardcoded rows. Almost certainly gates the item-table migration below, since a freely-reorderable Section list is a much better argument for "each item is its own row, not a position in a jsonb array" than the current fixed structure is.
+- **Item storage migration** — `sections.items` jsonb array → a proper child table, one row per item. Already decided in `architecture.md`, deliberately deferred to land here rather than v1 or v3.
+- **Library completeness**, each independently buildable once decided: Formula delete (no delete path exists for Formula today, unlike every item type as of Phase 8); Scripture Library (`scripture_selections`) edit-in-place (today browse-only); Scripture Library direct-add from `/library` (today only reachable via the Reader's add-to-Section flow); the Congregation/Minister/Small-Caps marking toolbar available when editing a library entry, not just a placed item.
+- **Songs Library management page** — real create/edit/delete for Psalm/Hymn entries from `/library`, replacing today's placeholder row and the "can only create one while placing it into a Section" limitation.
+- **Vesper's Compile View 3-column layout** — needs the open architecture question below resolved first (fixed page/column assignment like Morning's, vs. continuous flow with per-Section overrides), since building Vesper's version of a design that might get replaced for both templates shortly after would be wasted work.
+- **Continuous-flow-with-overrides investigation** (the open question from Phase 8's session): prototype what a continuous-flow Compile View with a manual "push this Section to the next column" control would look like, compare directly against the current fixed-assignment model, and let Madrid choose before committing either template to a specific mechanism.
+- **Not phase-gated, do whenever the input arrives:** default Verbal Cue seeding once Madrid supplies real per-Section bilingual sample-script content; an audit-and-cleanup pass on Formula text with legacy manually-typed speaker-label prefixes (Absolution is the confirmed instance).
+
+# v3 (Draft) — Multi-User & Discovery
+
+**Also drafted 2026-07-18, not yet approved.** Depends on v2's item-table migration for items 2-3 below; everything else is independent.
+
+- **Supabase Auth + role-based Formula access control** — `formulas.access_level` has sat unused since Feature 08, reserved for exactly this. Needs a real decision on which roles exist (presider/deacon/preacher per `project-overview.md`'s Target User) and what each can/can't edit.
+- **Universal search** across all liturgies/Formulas/Prayers/Songs — needs the item-table migration; not buildable against jsonb arrays at reasonable query cost.
+- **Cross-day duplicate flagging + coherence score** — same item-table dependency as search; likely builds on the same underlying query layer.
+- **Vesper's PDF export** — no physical Vesper bulletin has ever existed (unlike Morning, which had a real reference document to build against), so this needs its own "what should this look like" design pass, not a mechanical port of Morning's `LiturgyDocument.tsx`.
+- **Automated rotation-cycle assignment** for Vesper's recurring readings, replacing the current manual handbook-referenced lookup.
+- **Reformed Life PowerPoint Builder integration** — external system; needs a scoping conversation with whoever owns that tool before this can even become a real feature entry.
+- **MBB hover-preview toggle** — BGLinks (the widget Feature 14 uses) only supports one active translation globally; a live toggle needs either a DOM-teardown-and-relink approach or accepting a page reload on switch. Real design work, not a data change.
+- **AB2001/MBB text extraction into this app's own database** — gated on Philippine Bible Society's response to the adaptation-rights request (drafted in the CTP planning stage, still unsent/unanswered as of this writing). Not schedulable against this project's own timeline.

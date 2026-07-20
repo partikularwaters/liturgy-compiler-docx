@@ -5,6 +5,8 @@ export const TRINITARIAN_SEAL_TEXT: Record<"en" | "fil", string> = {
   en: "In the name of the Father, of the Son, and of the Holy Spirit. Amen.",
 };
 
-// Only Benediction ends in a Trinitarian Seal -- shared between the Reader
-// (add time) and the Compile View (edit time) so they can't drift.
-export const TRINITARIAN_SEAL_SECTIONS = ["Benediction"];
+// Which Sections may close with a Trinitarian Seal -- shared between the
+// Reader (add time) and the Compile View (edit time) so they can't drift.
+// Benediction seals its Scripture Selection; Assurance of Pardon seals the
+// Absolution Formula (2026-07-20, extended from Benediction-only).
+export const TRINITARIAN_SEAL_SECTIONS = ["Benediction", "Assurance of Pardon"];

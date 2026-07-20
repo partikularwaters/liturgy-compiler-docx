@@ -47,9 +47,7 @@ imports → types → component/function → exports
 
 ## API / Backend Conventions
 
-**[UNDECIDED — proposed default below, needs your reaction]**
-
-For [decision: Server Actions vs. API routes], I'd default to: **Next.js Server Actions for all data mutations** (creating a Liturgy, saving an Item, editing a Formula) — this is an internal single-user tool with no public API surface to expose, so Server Actions avoid the extra boilerplate of a REST-shaped route for every mutation. **API routes reserved for cases needing raw HTTP semantics** — specifically, streaming the generated PDF back for download in Phase 4. Sound right?
+**Decided, confirmed by the shipped codebase:** Next.js Server Actions for all data mutations (creating a Liturgy, saving an Item, editing a Formula, deleting an Item via `removeItemAction.ts`) — this is an internal single-user tool with no public API surface to expose, so Server Actions avoid the extra boilerplate of a REST-shaped route for every mutation. The one API route in the codebase is `app/api/liturgy/[id]/export/route.ts` (PDF streaming) — the sole case needing raw HTTP semantics a Server Action can't provide.
 
 ```typescript
 // Server Action structure
@@ -94,9 +92,10 @@ None — no analytics in v1, per project-overview.md.
 
 | Variable | Used In |
 | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | `lib/` — Supabase client init |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `lib/` — Supabase client init (client-side reads) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server Actions / API routes only — never exposed to the client |
+| `NEXT_PUBLIC_SUPABASE_URL` | `lib/db/supabase.ts` — the one place the Supabase client is instantiated |
+| `SUPABASE_SERVICE_ROLE_KEY` | `lib/db/supabase.ts` — server-side only, never exposed to the client |
+
+**Corrected 2026-07-18** — this table previously also listed `NEXT_PUBLIC_SUPABASE_ANON_KEY` as used for "client-side reads." No such variable is used anywhere in the codebase — there is no browser Supabase client in this app at all (see `library-docs.md`'s Usage Pattern 1); every read and write goes through `lib/db/supabase.ts`'s single server-only client via a Server Action or Server Component. Both required env vars must be set in any deployment target (e.g. Vercel's Project Settings → Environment Variables) — the app fails at build/module-load time (`createClient(undefined, undefined)` throws immediately) if either is missing, which surfaces as `Failed to collect page data for /api/...` during a production build.
 
 ---
 
@@ -123,3 +122,20 @@ Approved dependencies for this project:
 - `tailwindcss` (v4) — styling
 
 Do not install any other packages without updating this list first.
+
+---
+
+## Shared Helpers Over Per-Surface Reimplementation
+
+This project renders the same compiled Liturgy content across three surfaces (Compile View, PDF export, Web View) that must never visually drift from each other. The established pattern: when a rendering rule is shared by two or more surfaces, put it in one function in `lib/liturgy/` or `lib/text/` and have every surface call it — never reimplement the same logic three times with three chances to diverge. Concrete precedents: `resolveItemText.ts` ("what does this item display"), `sectionTitle.ts` (dynamic Section naming), `applyMarks()` (mark-segment splitting), `prepareSectionRender.ts` (header-reference/merge layout). When a genuinely new per-surface constraint shows up (e.g. react-pdf can't render arbitrary React components, so `MarkedText.tsx` can't be imported into the PDF), the fallback is each surface implementing the same branch logic independently against the same shared low-level helper (`applyMarks()`) — not three independent implementations of the whole rule from scratch.
+
+## Icon Components
+
+Shared icon set lives in `components/liturgy/icons.tsx` — one named export per icon (`PencilIcon`, `TrashIcon`, `ClearIcon`, `NoteIcon`, `DownloadIcon`, `CopyLinkIcon`, `CheckIcon`), each a small inline SVG, `strokeWidth="2"`, accepting `size`/`className` props. Check this file before hand-rolling a new inline `<svg>` in a component — most icon needs in this app are already covered, and a new one-off icon should be added here rather than inlined at its call site, so future icon-weight/style changes stay a one-file edit.
+
+## Deployment (Vercel)
+
+The Vercel project is connected to this repo's `main` branch and auto-deploys on push. Two things worth knowing from the first real deploy (2026-07-18):
+
+- **Environment variables must be set in Vercel's Project Settings → Environment Variables** (same two values as `.env.local` — see Environment Variables above) before the first build; missing them causes a build-time crash (`Failed to collect page data for /api/...`), not a runtime error, since `lib/db/supabase.ts` creates its client at module-load time.
+- **If a deployment looks stale after a fix**, check the specific deployment's **Source** line (commit SHA) before assuming the code is wrong — Vercel's "Redeploy" on an old failed build re-deploys *that build's commit*, not necessarily your latest push. When in doubt, push a fresh commit (an empty one is fine — `git commit --allow-empty`) to force a new deployment unambiguously tied to the current `main` HEAD.

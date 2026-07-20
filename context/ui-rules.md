@@ -98,30 +98,32 @@ Label:             13px / 500 / 18px / text-text-secondary
 Muted / timestamp: 12px / 400 / 16px / text-text-muted
 ```
 
-**Liturgical display headings (Old Standard TT)** — e.g. a Section's own title as rendered inside a card or PDF:
+**Liturgical display headings (Old Standard TT)** — the Reader's chapter heading and `LiturgyWebView`'s Section headings only (see the Fonts section's Feature 28 Part A exception — the Compile View/PDF use Ibarra Real Nova for headings instead):
 
 ```
 22px / 600 / 30px line-height / text-text-primary
 ```
 
-**Liturgical body text (Ibarra Real Nova)** — Selections, Formulas, Prayers as displayed:
+**Liturgical body text (Ibarra Real Nova)** — Selections, Formulas, Prayers as displayed. **Corrected 2026-07-18: 16px / 1.6, not the original 17px / 1.75** — dropped a size at Feature 28 Part A (matching the reference bulletin's real body size) and this doc's own Typography Hierarchy was never updated to match at the time; confirmed current across `SectionCard`'s `BodyText`/`MarkedText`, the PDF (`fontSize: 12` = 12pt ≈ 16px at screen DPI), and `LiturgyWebView` (brought into alignment 2026-07-18 after drifting since Feature 28 — see Fonts section):
 
 ```
-17px / 400 / 1.75 line-height / text-text-primary
-Congregational/unison lines (bold markdown): 17px / 700 / 1.75
+16px / 400 / 1.6 line-height / text-text-primary / text-justify (justified 2026-07-18, all three surfaces)
+Congregational/unison lines (bold markdown): 16px / 700 / 1.6
 ```
 
-**v1.1 additions:**
+**v1.1 additions, updated 2026-07-18:**
 
 ```
-Scripture citation (universal):         small caps, text-citation
-Metrical Psalm title (congregation-facing): title case, italic, text-citation
-Hymn title (congregation-facing):       title case, italic, text-text-primary (no red — not Scripture)
-Rubric-styled Verbal Cue:               sentence case, italic, text-text-primary
-Homepage hero line (2026-07-15):        32px / 700 / 1.4 line-height / font-serif-body / italic, left-aligned (revised from the original 22px/font-serif-display/centered treatment — bigger, bolder, and switched fonts per direct feedback)
+Scripture citation (universal, en-dash-normalized): small caps, text-citation
+Metrical Psalm title (congregation-facing):         title case, italic, text-citation, NOT small-caps (see below)
+Hymn title (congregation-facing):                   title case, italic, text-text-primary (no red — not Scripture)
+Rubric-styled Verbal Cue:                            sentence case, italic, text-text-primary
+Homepage hero line (2026-07-15):                     32px / 700 / 1.4 line-height / font-serif-body / italic, left-aligned
 ```
 
-Leader/Congregation/Minister responsive-reading spans (see the Leader/Congregation/Minister Tool section below) inherit the surrounding body-text size/weight — the speaker label itself ("Ldr:", "Congr:", "Min:") renders in small caps to distinguish it from the spoken content that follows.
+**Real bug fixed 2026-07-18: a Metrical Psalter's title must never go small-caps, even when it shares the header-reference mechanic with Scripture citations.** The two are visually similar (both citation-red) but semantically different — small-caps is a *reference* typesetting convention, and a Psalm title is naturally-cased prose, not a reference. `prepareSectionRender.ts`'s `HeaderInfo` carries `citationColor`/`smallCaps` as two independent flags for exactly this reason — a Selection citation gets both, a Psalm title gets only `citationColor` (plus `italic`).
+
+Leader/Congregation/Minister responsive-reading spans (see the Leader/Congregation/Minister Tool section below) inherit the surrounding body-text size/weight — the speaker label itself ("Min:"/"Congr:") renders in small caps to distinguish it from the spoken content that follows. **As of 2026-07-18, the Congregation-marked span (label + text) also renders fully bold**, and a Congregation/Minister block gets `mb-2` (≈8px) spacing after it — deliberate, replacing what had read as an unintentionally huge gap (traced to old manually-typed "Minister:"/"Congregation:" text prefixes stacking with the new automatic label on legacy Formula content; the underlying prose in those specific instances still needs a manual cleanup pass, flagged separately, not a CSS bug).
 
 ---
 
@@ -153,13 +155,15 @@ Reverses the neutral-gray/square-not-circle marker decisions from the original b
 
 When compiling a Selection, `ReaderClient.tsx` switches from a single `max-w-[960px]` column to a two-column `flex items-start gap-6` layout: a `w-[340px] shrink-0 sticky top-8` sidebar (the `AddSelectionPanel`/hint text, then the success message below it — reversed from the original above-the-panel placement) beside a `flex-1 min-w-0` reading column holding `VerseDisplay`. `items-start` on the flex row aligns the sidebar's top edge with the reading column's top edge on initial layout; `sticky top-8` then keeps it pinned as the reader scrolls a long chapter — a real CSS mechanism, not an overlay, so the reading column genuinely narrows to make room rather than the panel floating on top of it. Plain browsing (no `liturgyId` in the URL) is unaffected — no sidebar renders, `VerseDisplay` sits alone in the original single `max-w-[960px]` column, verified live at both states.
 
-## Leader / Congregation / Minister / Small Caps Tool (v1.1)
+## Leader / Congregation / Minister / Small Caps Tool (v1.1, completed 2026-07-18)
 
-A span-tagging tool for responsive-reading text, available only on Call to Worship, Prayer of Invocation (both templates), and the Church Covenant portion of Affirmation of Faith/Church Covenant (Vesper). Three independent tags — **Leader**, **Congregation**, **Minister** (Minister further restricted to Assurance of Pardon, Charge, Great Commission, Benediction only) — plus a manual **Small Caps** mark for the Divine Name (YHWH → "PANGINOON"/"LORD").
+A span-tagging tool for responsive-reading text, on both `SelectionItem` and `FormulaItem` (Formula support added 2026-07-18 — the tool originally only reached Selection text). Three independent tags — **Leader** (implicit default, no button needed), **Congregation**, **Minister** (Minister scoped to Formula-based Sections: Assurance of Pardon, Charge, Great Commission, Benediction) — plus **Small Caps**, now available on **every Section that can hold a Selection** (`lib/liturgy/markableSections.ts`'s `getSelectionMarks()`), not just the two dialogue Sections. Congregation stays scoped to the Sections that genuinely alternate speaking parts: Call to Worship, Prayer of Invocation, Assurance of Pardon (Formula), and the Church Covenant portion of Affirmation of Faith/Church Covenant (Formula, Vesper).
 
-- Tags are stored as separate structured spans (start/end position + type) attached to the item's text — **never baked into the raw saved text**. Un-marking a span is a clean, lossless operation; the underlying prose is never mutated.
-- Display: a Leader/Congregation/Minister-tagged span renders with its speaker label ("Ldr:"/"Congr:"/"Min:", small caps) prefixed, indented per standard responsive-reading convention.
-- Everywhere else in the app, the existing `**bold**` markdown convention (`lib/text/markdown.ts`) remains the live option for marking congregational/unison lines — this tool doesn't replace it, just supersedes it in practice on the four Sections listed above.
+- Tags are stored as separate structured spans (start/end position + type) attached to the item's `text`/`overrideText` — **never baked into the raw saved text**. Un-marking a span is a clean, lossless operation; the underlying prose is never mutated. Editing the text no longer wipes existing marks (fixed 2026-07-18, `shiftMarksForEdit()`) — only marks actually touched by the edit shift/resize.
+- Display: a Congregation-tagged span renders indented + labeled ("Congr:", small caps) + **fully bold** (label and text both); a Minister-tagged span renders flush-left + labeled ("Min:", small caps), normal weight; a Small-Caps-tagged span renders inline with no label, `font-variant: small-caps`. A `mb-2` gap follows every Congregation/Minister block.
+- The marking toolbar's live preview (`MarkEditor.tsx`) is **always visible**, even on Sections with no marking toolbar at all (i.e. `availableMarks` empty) — it's the only way to confirm `**bold**` markdown formatting before saving, since a plain `<textarea>` can't render markdown itself. A universal **Bold** button (separate from this tool, `lib/text/toggleBold.ts`) is available on every Add/Edit Scripture form regardless of Section.
+- Everywhere else in the app, the existing `**bold**` markdown convention (`lib/text/markdown.ts`) remains the live option for marking congregational/unison lines — this tool doesn't replace it, just supersedes it in practice on the Sections listed above.
+- PDF-specific: Congregation/Minister each get their own block (a real line break); Leader and Small Caps flow inline in one shared `<Text>` — a real bug (fixed 2026-07-18) had every segment, including plain unmarked text, wrapped in its own block `<View>`, which read as "marking a word turns it into its own paragraph." Small Caps substitutes `textTransform: "uppercase"` in the PDF (react-pdf has no small-caps glyph support) — this is layout-based marking (indent + label), the one part of this tool with no PDF/CSS rendering gap; the small-caps *typography* itself is the one genuine platform limitation.
 
 ## Verbal Cue Defaults (v1.1)
 
@@ -218,10 +222,10 @@ border-radius: 6px (rounded-md)
 padding:       6px 12px
 font-size:     11px
 color:         text-accent-dark
-hover:         bg-surface-secondary
+hover:         bg-accent-dark, text-accent-foreground, border-accent-dark (box+text color invert — changed 2026-07-18 from the original hover:bg-surface-secondary, per Madrid's direct request for these specific buttons)
 ```
 
-Sits in its own row below the Section name (not beside it, per the same spec) — see `SectionCard` in `ui-registry.md`.
+Sits in its own row below the Section name (not beside it, per the same spec) — see `SectionCard` in `ui-registry.md`. Labels are now "+ Scripture" (not "+ Selection" — UI-facing wording only, changed 2026-07-18; the underlying type/table/action names are all still `selection`/`Selection`, deliberately not renamed).
 
 ---
 
@@ -264,6 +268,26 @@ Every list that can be empty needs one — the homepage's recent-liturgies previ
 
 **Heading-only Sections (v1.1):** Prayer Meeting and The Lord's Table (Vesper) intentionally show no item picker at all — just their Section heading, and for The Lord's Table, a single administrator-name field beneath it. This isn't a not-yet-built empty state; it's the deliberate final behavior for these two Sections.
 
+**Removed 2026-07-18: an empty Section's "No items yet" text.** A freshly-started Section (no items placed) now shows only its heading, no placeholder line, in all three renderers (Compile View, PDF, Web View) — per Madrid's direct "just a line break" preference. This is the one exception to "every list that can be empty needs [short descriptive text]" above — a Section isn't a list in the same sense a library/history page is, and the Add-button row right below the heading already makes clear there's nothing there yet.
+
+---
+
+## Trinitarian Seal (Benediction, added 2026-07-18)
+
+A Selection-only toggle, available exclusively on Benediction (`lib/liturgy/trinitarianSeal.ts`'s `TRINITARIAN_SEAL_SECTIONS`): None / Filipino / English. The exact wording came from Madrid, not authored by the agent — liturgically significant text this project never fabricates, same discipline as Formula/Prayer's empty seed data. Appends the chosen text as `**bold**` markdown immediately after the Selection's own text (not folded into the stored string — resolved at display time in `resolveItemText.ts`), so it reuses the existing bold-rendering path everywhere rather than a new one. UI: a radio group (None/Filipino/English) plus a live preview identical in shape to the Congregation/Minister tool's, on both `AddSelectionPanel` (add-time) and `SelectionEditForm` (edit-time).
+
+## Item Deletion
+
+Every item type (Selection, Formula, Verbal Cue, Prayer, Sermon, Song) can be removed from a Section via a trash-icon button (`TrashIcon`, see Icon Set below) next to its Edit control — added 2026-07-18, closing a real standing gap (no item type had a delete path before this). One shared confirm-then-delete flow (`window.confirm`, then `lib/liturgy/removeItemAction.ts`'s `removeItem()`) for all six types — never a per-type delete action. Song items get a delete button with no accompanying Edit button, since there's no edit form for a placed Song yet.
+
+## Icon Set
+
+Shared icons live in `components/liturgy/icons.tsx` (see `code-standards.md`) — `PencilIcon` for every "Edit" affordance (replaced plain-text "Edit" links project-wide, 2026-07-18), `TrashIcon` for delete, `ClearIcon` (a circled X) for the marking toolbar's Clear action, `NoteIcon` for the marking toolbar's collapsible how-it-works help, `DownloadIcon` prefixing the Guide/Bulletin download buttons (which now read just "Guide"/"Bulletin", not "Download Leader Guide"/"Download Congregation Bulletin"), `CopyLinkIcon`/`CheckIcon` for `CopyLinkButton.tsx` (replaced the old "View / Share Liturgy" text link — click copies the Web View URL to the clipboard, shows a "Copy Link" hover tooltip, and briefly swaps to a checkmark on success). All stroke-width 2.
+
+## PDF Export — Page Format (2026-07-18)
+
+Morning's 3-column PDF: **13in × 8in landscape** (`[936, 576]` points — replaced A4 portrait, gives the 3 columns a wider page), margins **0.3in top/bottom, 0.25in left/right** (tightened from a uniform 48pt to maximize page use), and pagination moved from a top-left "Page N" label to a **fixed bottom-right footer** (`position: "absolute", bottom, right`). Vesper's fallback flat-layout PDF (unused, no link points to it — see Compile View Layout below) still uses A4 portrait, unaffected.
+
 ---
 
 ## Tailwind v4 Note
@@ -283,3 +307,5 @@ This project uses Tailwind v4. Tokens are defined with `@theme` in globals.css �
 - Never bake a Leader/Congregation/Minister/Small Caps span tag into an item's raw saved text — always a separate structured mark (v1.1, see Leader/Congregation/Minister Tool above)
 - Never use `text-citation` (or reuse `text-error`) for anything other than a Scripture citation or an actual error state — the two must stay semantically distinct even though both are red-family (v1.1)
 - Never offer Add Selection on the five dynamic song Sections (Psalm/Hymn of Adoration, Propitiation, Proclamation, Dedication, Communion) — those take Psalm/Hymn only, a Scripture-reading Selection doesn't belong in a sung slot (v1.1)
+- Never show the compiler's own top nav bar on the public Liturgy Web View (`/liturgy/[id]/view`) — it's meant to be the liturgy alone, shared with a congregation member who has no reason to see internal nav (2026-07-18)
+- Never apply small-caps to a Metrical Psalm title, even though it shares the citation-red color with a Scripture citation — small-caps is a reference-only convention, a Psalm title is naturally-cased prose (2026-07-18, see Typography Hierarchy above)

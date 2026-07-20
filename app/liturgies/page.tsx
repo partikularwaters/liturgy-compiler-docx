@@ -2,6 +2,9 @@ import Link from "next/link";
 import { getLiturgies } from "@/lib/liturgy/getLiturgies";
 import { formatLiturgyName } from "@/lib/liturgy/formatLiturgyName";
 
+// Same reasoning as app/page.tsx — always reflect the live liturgy list.
+export const dynamic = "force-dynamic";
+
 export default async function LiturgiesPage(): Promise<React.ReactElement> {
   const liturgies = await getLiturgies();
 

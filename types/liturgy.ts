@@ -44,7 +44,19 @@ export interface TextMark {
   type: "leader" | "congregation" | "minister" | "small_caps";
 }
 
-export interface SelectionItem {
+// Trinitarian Seal -- appends a fixed, bolded closing line ("In the name of
+// the Father...") immediately after an item's own displayed text, instead of
+// requiring it to be typed/retyped by hand. Not tied to any one item type --
+// Benediction seals a Selection, Assurance of Pardon seals the Absolution
+// Formula -- any item type that can meaningfully end a Section may `extends`
+// this. See lib/liturgy/trinitarianSeal.ts's TRINITARIAN_SEAL_SECTIONS for
+// which Sections allow it; resolveItemText.ts appends it generically for
+// whichever item type actually carries the field.
+export interface TrinitarianSealable {
+  trinitarianSeal?: "en" | "fil";
+}
+
+export interface SelectionItem extends TrinitarianSealable {
   id: string;
   type: "selection";
   text: string;
@@ -60,11 +72,6 @@ export interface SelectionItem {
   // Selections (redesign-plan-v1.1.md §U) -- absent/empty means "render
   // exactly as before," so every pre-existing Selection is unaffected.
   marks?: TextMark[];
-  // Feature-request (2026-07-18): Benediction's Trinitarian Seal -- appends
-  // a fixed, bolded closing line immediately after the Selection's own text
-  // rather than requiring it to be typed/retyped by hand. Only meaningful on
-  // Benediction Selections; absent means no seal appended.
-  trinitarianSeal?: "en" | "fil";
 }
 
 export interface Formula {
@@ -74,7 +81,7 @@ export interface Formula {
   defaultText: string;
 }
 
-export interface FormulaItem {
+export interface FormulaItem extends TrinitarianSealable {
   id: string;
   type: "formula";
   formulaId: string;

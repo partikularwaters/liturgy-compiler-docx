@@ -74,7 +74,8 @@ export async function updateFormulaItem(
   itemId: string,
   overrideText: string | null,
   visibility: "both" | "leader_only",
-  marks: TextMark[] = []
+  marks: TextMark[] = [],
+  trinitarianSeal: "en" | "fil" | null = null
 ): Promise<{ success: boolean; error?: string }> {
   const section = await getSectionContext(liturgyId, sectionIndex);
   if (!section) {
@@ -88,6 +89,7 @@ export async function updateFormulaItem(
           overrideText: overrideText ? normalizeTypography(overrideText) : null,
           visibility,
           marks,
+          trinitarianSeal: trinitarianSeal ?? undefined,
         }
       : item
   );

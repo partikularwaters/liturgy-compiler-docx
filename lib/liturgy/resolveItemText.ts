@@ -21,24 +21,14 @@ export interface ResolvedItem {
 // drift apart. leaderOnly is true only for Formula/Verbal Cue items whose
 // visibility is set to 'leader_only' (Selection/Prayer have no visibility
 // flag); the Bulletin export and the "Leader only" badge both key off it.
-export function resolveItemText(
-  item: Item,
-  formulas: Formula[],
-  prayers: Prayer[],
-  songs: Song[] = []
-): ResolvedItem {
+// Exported separately so callers that need an item's displayed text
+// *without* a Trinitarian Seal appended (e.g. FormulaEditForm's textarea,
+// which must edit the underlying override text, not a seal baked on top of
+// it) can get it without duplicating the per-type resolution logic above.
+export function resolveBase(item: Item, formulas: Formula[], prayers: Prayer[], songs: Song[] = []): ResolvedItem {
   switch (item.type) {
-    case "selection": {
-      // Trinitarian Seal: a fixed, bolded closing line appended immediately
-      // after the Selection's own text (Benediction) -- `**bold**` markdown
-      // so it renders bold everywhere parseBoldSegments already runs,
-      // without a new rendering path. Appended to (not folded into)
-      // item.text, so item.marks' offsets -- which only ever index into the
-      // original text -- stay valid; the seal itself is never markable.
-      const seal = item.trinitarianSeal ? TRINITARIAN_SEAL_TEXT[item.trinitarianSeal] : null;
-      const text = seal ? (item.text ? `${item.text} **${seal}**` : `**${seal}**`) : item.text;
-      return { label: formatCitation(item.citation), text, leaderOnly: false, rubric: false };
-    }
+    case "selection":
+      return { label: formatCitation(item.citation), text: item.text, leaderOnly: false, rubric: false };
     case "formula": {
       const formula = formulas.find((f) => f.id === item.formulaId);
       const text = item.overrideText ?? formula?.defaultText ?? "(Formula not found)";
@@ -73,4 +63,33 @@ export function resolveItemText(
       };
     }
   }
+}
+
+// Single source of truth for "what does this Item actually display" — used by
+// both the Compile View (SectionCard) and the PDF export, so they can never
+// drift apart. leaderOnly is true only for Formula/Verbal Cue items whose
+// visibility is set to 'leader_only' (Selection/Prayer have no visibility
+// flag); the Bulletin export and the "Leader only" badge both key off it.
+export function resolveItemText(
+  item: Item,
+  formulas: Formula[],
+  prayers: Prayer[],
+  songs: Song[] = []
+): ResolvedItem {
+  const resolved = resolveBase(item, formulas, prayers, songs);
+
+  // Trinitarian Seal: a fixed, bolded closing line appended immediately
+  // after whichever item type carries it (TrinitarianSealable) -- `**bold**`
+  // markdown so it renders bold everywhere parseBoldSegments already runs,
+  // without a new rendering path. Appended to (not folded into) the
+  // resolved text, so an item's own `marks` offsets -- which only ever index
+  // into its raw stored text -- stay valid; the seal itself is never
+  // markable. Generic across item types on purpose: Benediction seals a
+  // Selection, Assurance of Pardon seals the Absolution Formula.
+  if ("trinitarianSeal" in item && item.trinitarianSeal) {
+    const seal = TRINITARIAN_SEAL_TEXT[item.trinitarianSeal];
+    resolved.text = resolved.text ? `${resolved.text} **${seal}**` : `**${seal}**`;
+  }
+
+  return resolved;
 }

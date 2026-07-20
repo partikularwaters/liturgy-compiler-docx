@@ -136,3 +136,57 @@ On the Compile View (`app/liturgy/[id]/page.tsx`): whenever a liturgy has no `pa
 `app/reader/ReaderClient.tsx` (2026-07-13; layout rebuilt 2026-07-15) — when a Section target is active, a persistent bar (`bg-accent-light rounded-lg px-4 py-3`, `flex justify-between`) sits above everything else: "Compiling: {template} → {section}" on the left, a "← Back to Liturgy" link (`text-sm font-medium text-accent-dark underline`) to `/liturgy/{liturgyId}` on the right. Added because the only prior signal that you were mid-compilation was a plain muted hint line, and the only way back to the Compile View was the browser's own Back button. At the time this originally shipped, `SidebarLinks.tsx` was split out from `Sidebar.tsx` for the same "Liturgies" vs. "Bible Reader" active-state reason; that split's descendant is now `TopNavLinks.tsx` (see TopNav entry above, Feature 15) — the underlying `liturgyId`-aware active-state logic carried forward, only the container changed from vertical Sidebar to horizontal TopNav.
 
 **Below the banner, the page layout itself now branches (Feature 19).** With a Section target active: `flex items-start gap-6` — a `w-[340px] shrink-0 sticky top-8` sidebar (`AddSelectionPanel`/hint text, then the success message) beside a `flex-1 min-w-0` column holding `VerseDisplay`. `items-start` aligns both columns' top edges on initial layout; `sticky top-8` keeps the sidebar pinned as the reader scrolls a long chapter. Without a Section target (plain browsing), the page is unchanged from before — a single `max-w-[960px]` column with just `VerseDisplay`, no sidebar. Verified live at both states via `getComputedStyle` (`position: sticky`, `top: 32px` on the sidebar when targeting; sidebar absent, `max-w-[960px]` container when not).
+
+---
+
+## 2026-07-18 Refinement Pass — new components + revisions to the entries above
+
+A large direct-observation pass (Phase 8 in `build-plan.md`). New components below; existing entries above are revised in spirit but not rewritten line-by-line — treat this section as authoritative wherever it conflicts with older prose above (e.g. `SectionCard`'s body-text size, `LiturgyDocument`'s page format).
+
+### icons.tsx
+`components/liturgy/icons.tsx` — shared icon set, one named export per icon (`PencilIcon`, `TrashIcon`, `ClearIcon`, `NoteIcon`, `DownloadIcon`, `CopyLinkIcon`, `CheckIcon`), each a small inline SVG, `size`/`className` props, `strokeWidth="2"` uniformly. Check here before hand-rolling a new inline `<svg>` anywhere in the app.
+
+### CitationField
+`components/liturgy/CitationField.tsx` — the citation is a value first, a field second: renders as plain hoverable text (`text-citation [font-variant:small-caps]`) by default, with a small `PencilIcon` toggle that switches it to an editable `<input>`. Calls `window.BGLinks?.linkVerses()` on toggle-close (a local state change, not a route change, so `ScriptureLinker`'s own mount/pathname-based re-scan wouldn't otherwise pick it up) — confirmed live that BibleGateway generates a real `<a class="bibleref">` hover link on the citation mid-composition, before the Selection is even saved. Used by both `AddSelectionPanel` and `SelectionEditForm`.
+
+### MarkEditor
+`components/liturgy/MarkEditor.tsx` — the shared Leader/Congregation/Minister/Small-Caps toolbar + live preview, extracted out of `AddSelectionPanel`'s and `FormulaEditForm`'s near-duplicate implementations, now also used by `SelectionEditForm`. No "Mark selected text:" label (the buttons speak for themselves); the how-it-works instructions collapse behind a `NoteIcon` toggle instead of always showing; "Clear" is a `ClearIcon` button, not text. **The preview (reusing `MarkedText`) always renders, even when `availableMarks` is empty** — the toolbar buttons themselves are the only part gated on `availableMarks.length > 0`. This was a real fix, not just a nicety: hiding the whole component on non-markable Sections (the original behavior) made `**bold**` markdown formatting look broken everywhere outside the two dialogue Sections, since there was no way to see it take effect before saving.
+
+### SelectionEditForm
+`components/liturgy/SelectionEditForm.tsx` — the edit path for an already-placed Selection item, mirroring `FormulaEditForm`'s shape (`CitationField` + textarea + Bold button + `MarkEditor` + Trinitarian Seal toggle when applicable + Amen checkbox when applicable). This was the single missing edit path in the whole item-type system before 2026-07-18 — every other item type had gained one earlier; Selection's absence was the actual root cause of "I can't apply Small Caps after using Congregation," since there was nowhere to reopen a saved Selection's marking toolbar.
+
+### FormulaEditForm
+`components/liturgy/FormulaEditForm.tsx` — revised 2026-07-18 to use `MarkEditor` (previously had its own inline copy of the same toolbar/preview code) and gained `marks: TextMark[]` support, the first time Formula content could be span-marked at all (see `architecture.md`'s Item shape).
+
+### CopyLinkButton
+`components/liturgy/CopyLinkButton.tsx` — replaces the old "View / Share Liturgy" text link on the Compile View. Icon button (`CopyLinkIcon`/`CheckIcon`), "Copy Link" hover tooltip, copies `${window.location.origin}${path}` to the clipboard on click and briefly shows a checkmark. Takes a `path` (not a full URL) since the parent is a Server Component with no access to the actual browser-facing origin.
+
+### removeItemAction (not a component, but the standing delete mechanism)
+`lib/liturgy/removeItemAction.ts`'s `removeItem()` — one generic Server Action for deleting any of the six item types from a Section (all live in the same `items` jsonb array, so removal is always the same filter operation). Wired into `SectionCard.tsx` behind a `window.confirm` guard and a `TrashIcon` button next to every item's controls, including Song (no Edit button, delete only). Closed a real standing gap Madrid hit directly (Benediction ending up with two Trinitarian-formula placements, no way to remove the stray one).
+
+### SectionCard — revised 2026-07-18 (major pass, on top of every entry above)
+- **Body text dropped to 16px / 1.6 line-height, justified** (`text-justify`) — see `ui-rules.md`'s Typography Hierarchy for the correction this made to a stale 17px reference.
+- **Every "Edit" text link replaced with a `PencilIcon` button**; every item gained a `TrashIcon` delete button alongside it (see `removeItemAction` above).
+- **Header-reference mechanic generalized three times over**, now living in a shared `prepareSectionRender.ts`-equivalent inline logic (`SectionCard` keeps its own copy since it alone needs `editingItemId` awareness): (1) any number of Selection citations join with "; ", not just a sole one; (2) absent any Selection, a Creed/Church-Covenant Formula's own name appears instead, in plain (not citation-red/small-caps) styling; (3) absent both, a lone Song's title appears, italic, citation-red only if it's a Psalm. `TITLE_IN_HEADER_SECTIONS` = `["Affirmation of Faith", "Affirmation of Faith / Church Covenant"]` for case (2).
+- **Multi-Selection paragraph merge:** when a Section has more than one Selection, they now render as one flowing paragraph (`MarkedText` fed a concatenated text + offset-shifted combined marks) instead of separate blocks — with small "Edit {citation}" / delete controls per source passage below the merged paragraph. Falls back to normal per-item rendering while one of the merged Selections is being actively edited.
+- **"+ Selection" relabeled "+ Scripture"** (UI text only — `SelectionItem`/`addSelectionAction`/`scripture_selections` etc. all keep their original names).
+- **Trinitarian Seal toggle** wired into `SelectionEditForm` for Benediction (see the Trinitarian Seal section in `ui-rules.md`).
+- **"No items yet" removed** — an empty Section shows only its heading now.
+- **En dash applied at display time**, not just write time — `formatCitation()` called on every citation shown in a header, so pre-existing citations display correctly with no migration.
+
+### LiturgyDocument (PDF) — revised 2026-07-18 (major pass)
+- **Page format:** Morning's 3-column PDF is now 13in × 8in landscape (was A4 portrait), margins 0.3in top/bottom / 0.25in left/right (was a uniform 48pt), pagination moved to a fixed bottom-right footer (was a top-left "Page N" label).
+- **Now built on `prepareSectionRender.ts`** (shared with `LiturgyWebView`) instead of its own inline item-mapping logic — gained the full header-reference/merge treatment described in `SectionCard`'s entry above, which the PDF had never had at all before this pass (despite an earlier session's log incorrectly claiming it was "mirrored").
+- **Real Small-Caps bug fixed:** every marked segment, including plain unmarked text between marks, was being wrapped in its own block-level `<View>` — forcing a line break around every mark, including Small Caps, which shouldn't break at all. Fixed via `groupMarkSegments()`, grouping consecutive non-block (Leader/Small-Caps) segments into one shared inline-flowing `<Text>`; only Congregation/Minister still get their own block.
+- **Song titles now genuinely italic** — a real italic Ibarra Real Nova `.woff` was sourced (same Google css2-API technique as the original two weights, this time returning woff instead of ttf; fontkit/react-pdf supports woff directly) and confirmed embedded via the exported PDF's raw `BaseFont` entries. This closes the "no italic face registered" gap noted in every earlier Feature 21/26/28 entry above.
+- **Prayer Guides now actually render in the Leader Guide** — existed in the Compile View (`PrayerGuidePanel`) since Feature 27 but the PDF export never referenced `guides`/`PRAYER_GUIDE_SECTIONS` at all; a real, confirmed gap, now closed.
+- **Body text justified** (`textAlign: "justify"`).
+- `pdfColors` gained `surfaceSecondary: "#F1EFE9"` for the Prayer Guide panel's background.
+
+### LiturgyWebView — revised 2026-07-18 (typography + nav overhaul)
+- **Typography brought back in line with the Compile View's actual current classes** — this component had been running Feature-15-era styling (17px non-justified body, `font-serif-display` 19-22px headings) that never got updated when Feature 28 changed the Compile View's look; now matches exactly (16px justified body, `font-serif-body` uppercase-bold headings).
+- **Gained the same `prepareSectionRender.ts`-based header-reference/merge/label-removal treatment as the PDF** — previously had none of it.
+- **No more top nav bar on this route.** `TopNavLinks.tsx` now returns `null` when the pathname matches `/liturgy/[id]/view` — its wrapping `<nav>` moved from `TopNav.tsx` into `TopNavLinks.tsx` itself so hiding it doesn't leave an empty colored strip behind. A public, congregation-shareable page has no business showing the compiler's own navigation.
+
+### PrayerGuidePanel — revised 2026-07-18
+No component change, but now also consumed by `LiturgyDocument` (PDF) — see that entry above. The Compile View panel itself (`components/liturgy/PrayerGuidePanel.tsx`) is unchanged.

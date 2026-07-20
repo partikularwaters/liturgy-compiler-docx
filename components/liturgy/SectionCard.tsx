@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import AddFormulaPanel from "@/components/liturgy/AddFormulaPanel";
+import AddExistingSelectionPanel from "@/components/liturgy/AddExistingSelectionPanel";
 import AddPrayerPanel from "@/components/liturgy/AddPrayerPanel";
 import AddSongPanel from "@/components/liturgy/AddSongPanel";
 import PrayerGuidePanel from "@/components/liturgy/PrayerGuidePanel";
@@ -16,7 +17,7 @@ import { addVerbalCue, updateVerbalCue } from "@/lib/liturgy/verbalCueActions";
 import { updateFormulaItem } from "@/lib/liturgy/addFormulaAction";
 import { updateSelectionItem } from "@/lib/liturgy/addSelectionAction";
 import { saveSermonPassage } from "@/lib/liturgy/sermonActions";
-import { resolveItemText } from "@/lib/liturgy/resolveItemText";
+import { resolveItemText, resolveBase } from "@/lib/liturgy/resolveItemText";
 import { sectionTitle } from "@/lib/liturgy/sectionTitle";
 import { sortSectionItems } from "@/lib/liturgy/sortSectionItems";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
@@ -26,7 +27,7 @@ import { parseBoldSegments } from "@/lib/text/markdown";
 import { updatePrayer } from "@/lib/prayers/prayerActions";
 import { removeItem } from "@/lib/liturgy/removeItemAction";
 import { PencilIcon, TrashIcon } from "@/components/liturgy/icons";
-import type { CompiledSection, Formula, Item, Prayer, Song, TextMark } from "@/types/liturgy";
+import type { CompiledSection, Formula, Item, Prayer, ScriptureSelection, Song, TextMark } from "@/types/liturgy";
 
 const ALL_ITEM_TYPES: Item["type"][] = ["selection", "formula", "verbal_cue", "prayer", "sermon", "song"];
 
@@ -86,6 +87,7 @@ interface SectionCardProps {
   formulas: Formula[];
   prayers: Prayer[];
   songs: Song[];
+  scriptureSelections: ScriptureSelection[];
 }
 
 // Feature 21: title-only display for a Song item -- Title Case + italic
@@ -186,9 +188,11 @@ export default function SectionCard({
   formulas,
   prayers,
   songs,
+  scriptureSelections,
 }: SectionCardProps): React.ReactElement {
   const router = useRouter();
   const sectionFormulas = formulas.filter((f) => f.sectionName === section.name);
+  const sectionScriptureSelections = scriptureSelections.filter((s) => s.sectionName === section.name);
   // Feature 27: 'guide'-kind entries are reference material, never
   // placeable as an actual liturgy item -- keep them out of AddPrayerPanel's
   // picker entirely.
@@ -196,6 +200,7 @@ export default function SectionCard({
   const sectionGuides = prayers.filter((p) => p.sectionName === section.name && p.kind === "guide");
   const sectionPsalms = songs.filter((s) => s.sectionName === section.name && s.kind === "psalm");
   const sectionHymns = songs.filter((s) => s.sectionName === section.name && s.kind === "hymn");
+  const [isAddingExistingSelection, setIsAddingExistingSelection] = useState(false);
   const [isAddingFormula, setIsAddingFormula] = useState(false);
   const [isAddingVerbalCue, setIsAddingVerbalCue] = useState(false);
   const [isAddingPrayer, setIsAddingPrayer] = useState(false);
@@ -320,11 +325,12 @@ export default function SectionCard({
     itemId: string,
     text: string,
     visibility: "both" | "leader_only",
-    marks: TextMark[]
+    marks: TextMark[],
+    trinitarianSeal: "en" | "fil" | null
   ): void => {
     setIsSaving(true);
     setError(null);
-    updateFormulaItem(liturgyId, sectionIndex, itemId, text, visibility, marks).then((result) => {
+    updateFormulaItem(liturgyId, sectionIndex, itemId, text, visibility, marks, trinitarianSeal).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setEditingItemId(null);
@@ -431,9 +437,21 @@ export default function SectionCard({
       </div>
       <div className="flex items-center gap-2 flex-wrap">
         {allowedTypes.includes("selection") && (
-          <Link href={`/reader?liturgyId=${liturgyId}&sectionIndex=${sectionIndex}`} className={addButtonClass}>
-            + Scripture
-          </Link>
+          <>
+            <Link href={`/reader?liturgyId=${liturgyId}&sectionIndex=${sectionIndex}`} className={addButtonClass}>
+              + Scripture
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setIsAddingExistingSelection((prev) => !prev);
+              }}
+              className={addButtonClass}
+            >
+              + From Library
+            </button>
+          </>
         )}
         {allowedTypes.includes("formula") && (
           <button type="button" onClick={() => setIsAddingFormula((prev) => !prev)} className={addButtonClass}>
@@ -503,6 +521,17 @@ export default function SectionCard({
       </div>
 
       {PRAYER_GUIDE_SECTIONS.includes(section.name) && <PrayerGuidePanel guides={sectionGuides} />}
+
+      {isAddingExistingSelection && (
+        <div className="mb-4">
+          <AddExistingSelectionPanel
+            scriptureSelections={sectionScriptureSelections}
+            liturgyId={liturgyId}
+            sectionIndex={sectionIndex}
+            onDone={() => setIsAddingExistingSelection(false)}
+          />
+        </div>
+      )}
 
       {isAddingFormula && (
         <div className="mb-4">
@@ -700,14 +729,16 @@ export default function SectionCard({
               return (
                 <li key={item.id}>
                   <FormulaEditForm
-                    initialText={resolved.text}
+                    initialText={resolveBase(item, formulas, prayers, songs).text}
                     initialVisibility={item.visibility}
                     initialMarks={item.marks ?? []}
+                    initialTrinitarianSeal={item.trinitarianSeal ?? null}
                     availableMarks={FORMULA_MARK_SECTIONS[section.name] ?? []}
+                    allowTrinitarianSeal={TRINITARIAN_SEAL_SECTIONS.includes(section.name)}
                     isSaving={isSaving}
                     error={error}
-                    onSubmit={(text, visibility, marks) =>
-                      handleUpdateFormulaItem(item.id, text, visibility, marks)
+                    onSubmit={(text, visibility, marks, trinitarianSeal) =>
+                      handleUpdateFormulaItem(item.id, text, visibility, marks, trinitarianSeal)
                     }
                     onCancel={() => {
                       setError(null);

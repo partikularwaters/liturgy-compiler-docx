@@ -176,7 +176,15 @@
       "Bash(pdftotext -layout /tmp/final_check_v4.pdf -)",
       "Bash(awk 'NR==390,NR==460' \"C:\\\\Users\\\\Madpers\\\\Projects\\\\liturgy-compiler\\\\lib\\\\pdf\\\\LiturgyDocument.tsx\")",
       "Bash(curl -s -o /tmp/final_v5.pdf -w \"HTTP %{http_code}\\\\n\" \"http://localhost:3000/api/liturgy/6bb68ec6-c7c8-4fad-be5a-94913331e3de/export?audience=guide\")",
-      "Bash(pdftotext -layout /tmp/final_v5.pdf -)"
+      "Bash(pdftotext -layout /tmp/final_v5.pdf -)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object -Unique OwningProcess | ForEach-Object { Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, Path, StartTime })",
+      "PowerShell(Get-Process node -ErrorAction SilentlyContinue | Select-Object Id, StartTime, @{N='CmdLine';E={\\(Get-CimInstance Win32_Process -Filter \"ProcessId=$\\($_.Id\\)\"\\).CommandLine}})",
+      "Bash(git commit --allow-empty -m ' *)",
+      "Bash(git push *)",
+      "Bash(node --env-file=.env.local \"C:\\\\Users\\\\Madpers\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-Madpers-Projects-liturgy-compiler\\\\67d3f6c2-1282-4cfe-8ca0-7eaec2233c63\\\\scratchpad\\\\check_liturgies.mjs\")",
+      "Bash(node --env-file=.env.local __tmp_check_liturgies.mjs)",
+      "Bash(node --env-file=.env.local __tmp_delete_liturgies.mjs)",
+      "Bash(node --env-file=.env.local __tmp_cleanup_test_liturgy.mjs)"
     ],
     "defaultMode": "default"
   }

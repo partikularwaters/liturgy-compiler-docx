@@ -32,17 +32,26 @@
 │   └── api/                     # Route handlers (Lord's Day calc, PDF generation, etc.)
 ├── components/
 │   ├── ui/                      # Design-token-driven primitives
-│   └── liturgy/                 # Section, Item, template-specific components
+│   └── liturgy/                 # Section, Item, template-specific components, plus icons.tsx
+│                                 # (shared icon set — pencil/trash/clear/note/download/copy-link/check, stroke-width 2)
 ├── lib/
 │   ├── bible/                   # Bible-provider abstraction (single interface; AB1905/BSB/AB2001/MBB behind it)
-│   ├── liturgy/                 # Lord's Day calculation, dedup logic, template definitions, Section-context resolution
+│   ├── liturgy/                 # Lord's Day calculation, dedup logic, template definitions, Section-context resolution,
+│   │                             # item removal (removeItemAction.ts), item ordering (sortSectionItems.ts), citation
+│   │                             # en-dash formatting (formatCitation.ts), Trinitarian Seal text (trinitarianSeal.ts),
+│   │                             # markable-Section rules (markableSections.ts), and prepareSectionRender.ts — the
+│   │                             # single shared "how does a Section's items lay out" helper used by the PDF and Web
+│   │                             # View (see Invariants)
 │   ├── formulas/                # Formula library reads/writes (added Feature 08)
 │   ├── prayers/                 # Prayer library reads/writes (added Feature 10; gains `guide` kind in v1.1)
 │   ├── songs/                    # Psalm/Hymn ("Songs") library reads/writes (v1.1)
 │   ├── selections/                # Scripture Text Library ("Existing Selections") reads/writes (v1.1)
-│   ├── text/                    # Typographic normalization + markdown bold parsing; gains span-tag (marks) handling for the Leader/Congregation/Minister/Small Caps tool (v1.1)
-│   └── pdf/                     # Guide/Bulletin generation — Morning only as of v1.1
-└── types/                       # Shared TypeScript types (Liturgy, Section, Item, Formula, Prayer, Song, and v1.1 additions)
+│   ├── text/                    # Typographic normalization, markdown bold parsing, span-tag (marks) handling
+│   │                             # (applyMarks/shiftMarksForEdit in marks.ts), bold-toggle (toggleBold.ts),
+│   │                             # textarea autosize (autosize.ts)
+│   └── pdf/                     # Guide/Bulletin generation — Morning's 3-column layout only; Vesper falls back to a
+│                                 # flat single-column PDF nothing links to (Vesper uses the Web View instead)
+└── types/                       # Shared TypeScript types (Liturgy, Section, Item, Formula, Prayer, Song, TextMark)
 ```
 
 ---
@@ -54,7 +63,7 @@
 | `app/` | Pages and route handlers only. No business logic. |
 | `components/` | UI only. No direct DB calls. |
 | `lib/bible/` | The Bible-provider abstraction — the only place that knows which translation source is active. Nothing outside this folder calls a translation source directly. |
-| `lib/liturgy/` | Lord's Day computation, Selection dedup rule, template/Section definitions, Section item-type whitelist (v1.1). No UI concerns. |
+| `lib/liturgy/` | Lord's Day computation, Selection dedup rule, template/Section definitions, Section item-type whitelist (v1.1), item removal/ordering, citation formatting, and `prepareSectionRender.ts` (the single source of truth for header-reference/multi-Selection-merge layout, shared by the PDF and Web View). No UI concerns. |
 | `lib/songs/` | Psalm/Hymn ("Songs") library reads/writes (v1.1). |
 | `lib/selections/` | Scripture Text Library reads/writes (v1.1) — auto-save on every Selection submission, independent of whether the parent liturgy is saved. |
 | `lib/pdf/` | PDF generation only, reading compiled Liturgy data — no data mutation. Morning only as of v1.1. |
@@ -115,9 +124,7 @@ User shares the URL directly; no PDF generated for Vesper in v1
 
 ## Database Schema
 
-**[UNDECIDED — proposed default below, needs your reaction]**
-
-For the actual table shapes, I'd default to:
+All tables below are live and shipped. The hybrid relational/jsonb split (decided in the CTP planning stage) has held up through v1 and all of v1.1 without needing revision — see the "Decided" note near the end of this section.
 
 ### `templates`
 
@@ -151,24 +158,26 @@ For the actual table shapes, I'd default to:
 | template_section_index | integer | Which Template slot this fills |
 | items | jsonb | Ordered array of Item objects (see below) |
 
-**Item shape (within `sections.items` jsonb):**
+**Item shape (within `sections.items` jsonb) — as actually shipped, `types/liturgy.ts`:**
 ```json
 {
-  "type": "selection" | "formula" | "verbal_cue" | "prayer" | "psalm" | "hymn",
-  "text": "markdown string (optional for selection — blank for long-reading Sections that store only a citation, v1.1)",
-  "citation": "Ps 95:1-3 (optional, selection only)",
-  "formula_id": "uuid (formula only, references formulas table)",
-  "override_text": "markdown string (formula only, optional per-instance override)",
-  "prayer_id": "uuid (prayer only, references prayers table, optional if newly written)",
-  "song_id": "uuid (psalm/hymn only, references songs table, v1.1)",
-  "visibility": "both" | "leader_only",
-  "marks": "SpanTag[] (optional — Leader/Congregation/Minister/Small Caps spans on selection.text or formula.overrideText/defaultText, v1.1, see Invariants)"
+  "type": "selection" | "formula" | "verbal_cue" | "prayer" | "sermon" | "song",
+  "text": "markdown string (selection only — blank for long-reading Sections that store only a citation)",
+  "citation": "Ps 95:1-3 (selection only, en-dash-normalized via lib/liturgy/formatCitation.ts)",
+  "amenExpected": "boolean, optional (selection only, song-slot Sections)",
+  "trinitarianSeal": "'en' | 'fil', optional (selection only, Benediction) — appended as **bold** markdown after `text` at display time, never folded into the stored string",
+  "marks": "TextMark[], optional (selection and formula only — see Invariants)",
+  "formulaId": "uuid (formula only, references formulas table)",
+  "overrideText": "markdown string or null (formula only, optional per-instance override)",
+  "visibility": "'both' | 'leader_only' (formula and verbal_cue only)",
+  "prayerId": "uuid (prayer only, references prayers table)",
+  "passage": "string (sermon only)",
+  "songId": "uuid (song only, references songs table)",
+  "rubric": "boolean, optional (verbal_cue only)"
 }
 ```
 
-**Implementation status (2026-07-16):** the original four Item variants (`SelectionItem`, `FormulaItem`, `VerbalCueItem`, `PrayerItem`, `types/liturgy.ts`) are built and shipped, Phase 3 (Features 07-10) is complete. Two corrections to this doc's original proposal from that phase, both confirmed live: `PrayerItem` is `{ id, type: 'prayer', prayerId }` only — no `override_text`, no `visibility` (Prayer has no override mechanic and always shows in both Guide and Bulletin, unlike Formula/Verbal Cue). And `formulas` gained `section_name` — Formula turned out to need the same per-Section scoping as Prayer, a retrofit applied 2026-07-13.
-
-**v1.1 additions, approved but not yet implemented** (see `redesign-plan-v1.1.md`): `PsalmItem`/`HymnItem` (reference-only, no body text, see the `songs` table below), `SelectionItem.text` becomes genuinely optional (not just falsy) for the handful of long-reading Sections (The Lord's Discourses, Words of Institution, Closing of the Table) where only the citation is wanted, and a `marks` field on `SelectionItem`/`FormulaItem` for the Leader/Congregation/Minister/Small Caps tool.
+**Fully implemented as of 2026-07-18.** `Item = SelectionItem | FormulaItem | VerbalCueItem | PrayerItem | SermonItem | SongItem`. Two corrections to the original proposal, both confirmed live: `PrayerItem` is `{ id, type: 'prayer', prayerId }` only — no `overrideText`, no `visibility` (Prayer has no override mechanic and always shows in both Guide and Bulletin, unlike Formula/Verbal Cue). And `formulas` gained `section_name` — Formula turned out to need the same per-Section scoping as Prayer, a retrofit applied 2026-07-13. `PsalmItem`/`HymnItem` from the original v1.1 proposal were consolidated into one `SongItem { songId }` referencing the shared `songs` table's `kind` column, rather than two separate item types — simpler, and `kind` was already the established pattern from `prayers`.
 
 ### `formulas`
 
@@ -289,6 +298,11 @@ Rules the AI agent must never violate:
 - All liturgical text content (Selection, Formula, Prayer, Verbal Cue) is normalized to typographic quotation marks and apostrophes (' ' " ") at write-time, in `lib/text/typographic.ts` — never left as straight marks (' ") in storage. This runs once, on save, so the Compile View, Leader Guide, and Congregation Bulletin all inherit correct typography automatically rather than each needing to re-apply it. **Implemented 2026-07-14** — `normalizeTypography()` is wired into all six write paths (`addSelectionAction`, `addFormulaAction`'s override text, `formulaActions.createFormula`/`updateFormula`, `prayerActions.createPrayer`/`updatePrayer`, `verbalCueActions.addVerbalCue`/`updateVerbalCue`). This invariant was documented since the CTP planning stage but had zero implementation until a `/review` audit caught it.
 - A Formula or Prayer placed into a Section must belong to that Section (`section_name` match) — enforced server-side in `addFormulaAction`/`addPrayerAction` via `lib/liturgy/getSectionContext.ts`, not just by the Add panel filtering which entries it shows. Added 2026-07-14 after a `/review` audit found the 2026-07-13 Section-scoping retrofit was only enforced in the UI — a Server Action called directly (bypassing the filtered picker) would have silently written a mismatched pair. **This pattern extends to Songs and Existing Selections (v1.1) — apply the same server-side check when those write actions are built, not just UI filtering.**
 - No hardcoded hex values or raw Tailwind color classes in components — use tokens from ui-tokens.md.
-- **(v1.1, approved, not yet implemented)** Leader/Congregation/Minister/Small Caps span tags are never baked into an item's raw saved `text`/`overrideText`/`defaultText` — always stored separately, as the `marks` field on the Item. Un-marking a span must be a clean, lossless operation that never mutates the underlying prose.
-- **(v1.1, approved, not yet implemented)** A Section only offers the Item types listed in its `templates.sections[].item_types` whitelist — "Add Selection" etc. must not appear on a Section that doesn't list it, matching `redesign-plan-v1.1.md` §Y exactly. This is the deliberate resolution of the long-standing "per-Section item-type restriction" gap noted throughout Phase 3's build.
-- **(v1.1, approved, not yet implemented)** A non-Sunday `service_date` never displays a Lord's Day number anywhere in the app (Compile View, PDF, Liturgy History, naming convention) — `getLordsDayNumber()`'s computation itself is unchanged, this is purely a display suppression rule.
+- Leader/Congregation/Minister/Small Caps span tags are never baked into an item's raw saved `text`/`overrideText` — always stored separately, as the `marks` field on `SelectionItem` and `FormulaItem`. Un-marking a span is a clean, lossless operation that never mutates the underlying prose. Editing the text after marks exist no longer wipes them (as it did through 2026-07-18's earlier passes) — `lib/text/marks.ts`'s `shiftMarksForEdit()` diffs old vs. new text and resizes/shifts only the marks actually touched by the edit.
+- A Section only offers the Item types listed in its `templates.sections[].item_types` whitelist — "Add Selection" etc. must not appear on a Section that doesn't list it. Governs adding only; an already-placed item never disappears if its type later drops off the whitelist.
+- A non-Sunday `service_date` never displays a Lord's Day number anywhere in the app (Compile View, PDF, Liturgy History, naming convention) — `getLordsDayNumber()`'s computation itself is unchanged, this is purely a display suppression rule.
+- **Citations are always run through `lib/liturgy/formatCitation()` before being displayed** — converts a verse-range hyphen to an en dash (e.g. "47:5-9" → "47:5–9"). Applied centrally in `resolveItemText.ts` (Selection labels, Song titles) and in the header-reference builders (`prepareSectionRender.ts`, `SectionCard.tsx`), not re-applied ad hoc per renderer — this is what let the fix apply retroactively to already-saved citations with no migration.
+- **`prepareSectionRender.ts` is the single source of truth for how a Section's items lay out** (header-reference text — Selection citations, a Creed/Church-Covenant Formula's name, or a lone Song's title — plus the multi-Selection merged-paragraph text/marks), shared by the PDF export and the Web View. `SectionCard.tsx` (Compile View) keeps its own parallel logic rather than importing this helper, since it alone needs editing-state awareness (falling back to per-item rendering while a Selection is being edited) that the two read-only surfaces never need — but any change to the header-reference or merge rules must be applied in both places, or the three surfaces will drift.
+- Deleting an item (any of the six types) goes through one generic action, `lib/liturgy/removeItemAction.ts`'s `removeItem()` — never a per-type delete function. All six item types live in the same `items` jsonb array, so removal is always the same array-filter operation regardless of type.
+- Small Caps marking is available on every Section that can hold a Selection (`lib/liturgy/markableSections.ts`'s `getSelectionMarks()`) — it's a per-word reverential-capitalization convention (divine names), not scoped like the Leader/Congregation/Minister dialogue treatment, which stays genuinely restricted to Sections that alternate speaking parts.
+- The public Liturgy Web View (`/liturgy/[id]/view`) never shows the app's own top nav bar — `TopNavLinks.tsx` returns `null` for that route. A page meant to be shared by URL with a congregation member has no business exposing internal compiler navigation.

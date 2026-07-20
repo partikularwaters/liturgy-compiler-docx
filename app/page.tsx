@@ -4,6 +4,10 @@ import { formatLiturgyName } from "@/lib/liturgy/formatLiturgyName";
 
 const RECENT_COUNT = 5;
 
+// Always reads the live liturgy list — otherwise a newly created liturgy can
+// be missing from this page until the next deploy if Next statically caches it.
+export const dynamic = "force-dynamic";
+
 export default async function Home(): Promise<React.ReactElement> {
   const liturgies = await getLiturgies();
   const recent = liturgies.slice(0, RECENT_COUNT);
