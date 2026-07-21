@@ -80,3 +80,15 @@ export async function updateScriptureSelection(
 
   return { success: true, companionSaved };
 }
+
+// Direct feedback (2026-07-22): the Scripture Library had no delete path at
+// all, unlike every other library type (Formula/Prayer/Song).
+export async function deleteScriptureSelection(id: string): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabase.from("scripture_selections").delete().eq("id", id);
+
+  if (error) {
+    console.error("[lib/selections/scriptureSelectionActions/deleteScriptureSelection]", error.message);
+    return { success: false, error: "Unable to delete this Scripture item right now." };
+  }
+  return { success: true };
+}

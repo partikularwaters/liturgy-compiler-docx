@@ -189,8 +189,14 @@ export default function ReaderClient({
     <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-6">
       <h1 className="text-[28px] font-bold leading-9 text-text-primary">Bible Reader</h1>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      {/* Direct feedback (2026-07-22): AB/BSB toggle and Highlight picker
+          weren't aligned with the Book/Chapter selects -- BookChapterPicker
+          is a two-row block (label above select), while these are single-row
+          controls, so `items-center` centered them against its full height
+          instead of its actual select inputs. `items-end` bottom-aligns
+          everything to the selects themselves. */}
+      <div className="flex items-end justify-between">
+        <div className="flex items-end gap-4">
           <BookChapterPicker
             books={books}
             selectedBook={chapter.book}
@@ -227,13 +233,17 @@ export default function ReaderClient({
       </div>
 
       {targetSection && (
-        <div className="flex items-center justify-between bg-accent-light rounded-lg px-4 py-3">
-          <p className="text-sm font-medium text-accent-dark">Compiling: {targetLabel}</p>
+        // Direct feedback (2026-07-22): shrunk and shortened -- this bar was
+        // reading as more prominent than the actual Reader controls above it.
+        <div className="flex items-center justify-between bg-accent-light rounded-md px-3 py-1.5">
+          <p className="text-[12px] text-accent-dark truncate" title={targetLabel}>
+            → {targetSection.sectionName}
+          </p>
           <Link
             href={`/liturgy/${targetSection.liturgyId}`}
-            className="text-sm font-medium text-accent-dark underline shrink-0"
+            className="text-[12px] font-medium text-accent-dark underline shrink-0"
           >
-            ← Back to Liturgy
+            ← Liturgy
           </Link>
         </div>
       )}

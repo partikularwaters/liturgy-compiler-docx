@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { HomeIcon } from "@/components/liturgy/icons";
 
 export default function TopNavLinks(): React.ReactElement | null {
   const pathname = usePathname();
@@ -26,33 +27,46 @@ export default function TopNavLinks(): React.ReactElement | null {
 
   return (
     <nav className="w-full bg-accent">
-      <div className="max-w-[960px] mx-auto px-8 h-14 flex items-center justify-end gap-6">
+      <div className="max-w-[960px] mx-auto px-8 h-14 flex items-center justify-between gap-6">
         <Link
-          href="/liturgies"
+          href="/"
+          title="Home"
           className={
-            isLiturgiesActive
-              ? "text-sm font-semibold text-accent-foreground"
-              : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+            isHomepage
+              ? "text-accent-foreground"
+              : "text-accent-foreground/70 hover:text-accent-foreground"
           }
         >
-          Liturgies
+          <HomeIcon size={20} />
         </Link>
-        <Link
-          href="/reader"
-          className={
-            isReaderActive
-              ? "text-sm font-semibold text-accent-foreground"
-              : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
-          }
-        >
-          Bible Reader
-        </Link>
-        <Link
-          href={ctaHref}
-          className="bg-cta-yellow text-cta-yellow-foreground rounded-md px-4 py-2 text-sm font-medium"
-        >
-          {ctaLabel}
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link
+            href="/liturgies"
+            className={
+              isLiturgiesActive
+                ? "text-sm font-semibold text-accent-foreground"
+                : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+            }
+          >
+            Liturgies
+          </Link>
+          <Link
+            href="/reader"
+            className={
+              isReaderActive
+                ? "text-sm font-semibold text-accent-foreground"
+                : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+            }
+          >
+            Bible Reader
+          </Link>
+          <Link
+            href={ctaHref}
+            className="bg-cta-yellow text-cta-yellow-foreground rounded-md px-4 py-2 text-sm font-medium"
+          >
+            {ctaLabel}
+          </Link>
+        </div>
       </div>
     </nav>
   );

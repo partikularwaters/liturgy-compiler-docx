@@ -13,7 +13,35 @@ export default async function Home(): Promise<React.ReactElement> {
   const recent = liturgies.slice(0, RECENT_COUNT);
 
   return (
-    <div className="max-w-[960px] mx-auto p-8 flex flex-col items-start text-left gap-8">
+    <>
+      {/* Banner image -- adjust the four values below.
+          ANGLE: 0 = straight. Negative tilts so text reads upward left-to-right.
+          OVERSIZE: how much bigger than 100% width the image is. If you see the
+            page background peeking through any corner (check at a few browser
+            widths), increase this number until it's gone -- this is what
+            prevents gaps, and a bigger ANGLE or bigger HORIZONTAL shift both
+            need a bigger OVERSIZE to stay gap-free.
+          HORIZONTAL: -50 = centered. Move toward 0 to shift the image right,
+            more negative to shift left.
+          VERTICAL: which part of the source page shows. More negative moves
+            the visible window further down the page.
+          TINT_OPACITY: strength of the accent-color tint over the image, 0-1.
+            Uses the site's actual --color-accent token (bg-accent), not a
+            hardcoded color -- if the brand color ever changes, this updates
+            with it automatically. Set to 0 to remove the tint entirely. */}
+      <div className="w-full h-[4in] overflow-hidden relative bg-surface-secondary">
+        <img
+          src="/images/Calvin-Absolution.png"
+          alt=""
+          className="absolute top-1/2 left-1/2 max-w-none"
+          style={{
+            width: "calc(100% + 100px)", // OVERSIZE
+            transform: "translate(-49%, -41.5%) rotate(-9deg)", // HORIZONTAL, VERTICAL, ANGLE
+          }}
+        />
+        <div className="absolute inset-0 bg-cta-yellow mix-blend-multiply" style={{ opacity: 0.18 }} /> {/* TINT_OPACITY */}
+      </div>
+      <div className="max-w-[960px] mx-auto p-8 flex flex-col items-start text-left gap-8">
       <p className="font-serif-body text-[32px] leading-[1.4] font-bold text-text-primary italic max-w-[820px]">
         Glory be to the Father, and to the Son, and to the Holy Spirit; as it was in the
         beginning, is now, and ever shall be, world without end. Amen.
@@ -61,6 +89,7 @@ export default async function Home(): Promise<React.ReactElement> {
           View all liturgies →
         </Link>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -37,6 +37,51 @@ export function TranslateIcon({ size = 16, className }: IconProps): React.ReactE
   );
 }
 
+// Direct feedback (2026-07-22): the nav had no direct link back to the
+// homepage -- a plain house glyph, same stroke convention as the rest.
+export function HomeIcon({ size = 16, className }: IconProps): React.ReactElement {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M3 9.5 10 3l7 6.5" />
+      <path d="M4.5 8.5V17h11V8.5" />
+      <path d="M8 17v-5h4v5" />
+    </svg>
+  );
+}
+
+// Direct feedback (2026-07-22): Prayer Guide's icon-button toggle -- a
+// simple open-book glyph (reference material), same stroke convention as
+// the rest of this set.
+export function GuideIcon({ size = 16, className }: IconProps): React.ReactElement {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M10 5.5c-1-1-2.5-1.5-4.5-1.5v10c2 0 3.5.5 4.5 1.5" />
+      <path d="M10 5.5c1-1 2.5-1.5 4.5-1.5v10c-2 0-3.5.5-4.5 1.5" />
+      <path d="M10 5.5v10" />
+    </svg>
+  );
+}
+
 export function TrashIcon({ size = 16, className }: IconProps): React.ReactElement {
   return (
     <svg

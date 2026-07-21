@@ -5,6 +5,7 @@ import { useState } from "react";
 import FormulaForm from "@/components/formulas/FormulaForm";
 import { updateFormula, deleteFormula } from "@/lib/formulas/formulaActions";
 import { TrashIcon } from "@/components/liturgy/icons";
+import LibraryTextPreview from "@/components/library/LibraryTextPreview";
 import type { Formula, TextMark } from "@/types/liturgy";
 
 interface FormulaListRowProps {
@@ -72,7 +73,7 @@ export default function FormulaListRow({
       <div>
         <p className="text-[13px] text-text-secondary">{formula.sectionName}</p>
         <p className="text-sm font-medium text-text-primary">{formula.name}</p>
-        <p className="text-sm text-text-secondary mt-1">{formula.defaultText}</p>
+        <LibraryTextPreview title={formula.name} text={formula.defaultText} className="text-sm text-text-secondary mt-1" />
         {error && <p className="text-sm text-error mt-1">{error}</p>}
       </div>
       <div className="flex items-center gap-3 shrink-0">

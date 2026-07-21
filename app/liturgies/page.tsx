@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLiturgies } from "@/lib/liturgy/getLiturgies";
-import { formatLiturgyName } from "@/lib/liturgy/formatLiturgyName";
+import LiturgyListRow from "@/components/liturgy/LiturgyListRow";
 
 // Same reasoning as app/page.tsx — always reflect the live liturgy list.
 export const dynamic = "force-dynamic";
@@ -33,15 +33,7 @@ export default async function LiturgiesPage(): Promise<React.ReactElement> {
       ) : (
         <div className="bg-surface border border-border rounded-lg overflow-hidden">
           {liturgies.map((liturgy, index) => (
-            <Link
-              key={liturgy.id}
-              href={`/liturgy/${liturgy.id}`}
-              className={`block px-6 py-3 text-sm text-text-primary hover:bg-surface-secondary ${
-                index < liturgies.length - 1 ? "border-b border-border" : ""
-              }`}
-            >
-              {formatLiturgyName(liturgy)}
-            </Link>
+            <LiturgyListRow key={liturgy.id} liturgy={liturgy} isLast={index === liturgies.length - 1} />
           ))}
         </div>
       )}

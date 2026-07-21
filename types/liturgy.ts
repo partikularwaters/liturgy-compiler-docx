@@ -118,6 +118,16 @@ export interface VerbalCueItem {
   // the default treatment. Optional/defensive, same pattern as item_types --
   // a missing value means "not a rubric," the common case.
   rubric?: boolean;
+  // v2, direct feedback (2026-07-22): a second-language variant of this cue
+  // -- scoped in the UI to Confession of Sin's rubric only, but a generic
+  // field here like rubric/amenExpected above. Both texts are freely typed
+  // by Madrid through the Verbal Cue form, not a fixed hardcoded pair (this
+  // differs from Trinitarian Seal's TRINITARIAN_SEAL_TEXT constant, since a
+  // Verbal Cue's wording isn't a single fixed liturgical formula). Absent
+  // means "no alternate authored yet"; showAlternate absent/false means
+  // "show `text`," the correct default for every pre-existing cue.
+  textAlternate?: string;
+  showAlternate?: boolean;
 }
 
 export interface Prayer {
@@ -187,6 +197,20 @@ export type Item = SelectionItem | FormulaItem | VerbalCueItem | PrayerItem | Se
 
 export interface CompiledSection extends TemplateSection {
   items: Item[];
+  // v2 item 2: continuous-flow authoring -- "start this Section at the top
+  // of the next Word column" is a per-liturgy authoring decision (this
+  // week's actual content), not a template default, so it lives on the
+  // `sections` instance row (column_break_before), not on
+  // TemplateSection/templates.sections. Defaults to false in the DB and
+  // here -- absent/missing (a pre-migration row) means "no break," the
+  // correct default matching every liturgy's current visual layout.
+  columnBreakBefore: boolean;
+  // Direct feedback (2026-07-22): Prayer Guide redesigned from an
+  // always-expanded box into an icon-button toggle; once revealed, an
+  // "add this to the Leader's Guide" checkbox controls whether *this*
+  // liturgy's docx export actually includes it. Defaults true -- matches
+  // every guide-bearing Section's current export behavior.
+  showPrayerGuide: boolean;
 }
 
 export interface LiturgySummary {
@@ -203,4 +227,9 @@ export interface CompiledLiturgy {
   serviceDate: string;
   lordsDayNumber: number;
   sections: CompiledSection[];
+  // v2, direct feedback (2026-07-22): whether the exported docx appends
+  // "~ End of {templateName} ~" at the very end. Defaults to true in the DB
+  // (matches Madrid's actual practice of adding this by hand every time,
+  // with removal being the rare exception when a week's layout is tight).
+  showEndNote: boolean;
 }

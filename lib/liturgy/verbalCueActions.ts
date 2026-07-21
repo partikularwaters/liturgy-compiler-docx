@@ -10,7 +10,9 @@ export async function addVerbalCue(
   sectionIndex: number,
   text: string,
   visibility: "both" | "leader_only",
-  rubric: boolean = false
+  rubric: boolean = false,
+  textAlternate: string = "",
+  showAlternate: boolean = false
 ): Promise<{ success: boolean; error?: string }> {
   if (!text.trim()) {
     return { success: false, error: "Verbal Cue text is required." };
@@ -27,6 +29,8 @@ export async function addVerbalCue(
     text: normalizeTypography(text),
     visibility,
     rubric,
+    ...(textAlternate.trim() ? { textAlternate: normalizeTypography(textAlternate) } : {}),
+    showAlternate,
   };
 
   const { error } = await supabase
@@ -47,7 +51,9 @@ export async function updateVerbalCue(
   itemId: string,
   text: string,
   visibility: "both" | "leader_only",
-  rubric: boolean = false
+  rubric: boolean = false,
+  textAlternate: string = "",
+  showAlternate: boolean = false
 ): Promise<{ success: boolean; error?: string }> {
   if (!text.trim()) {
     return { success: false, error: "Verbal Cue text is required." };
@@ -59,9 +65,10 @@ export async function updateVerbalCue(
   }
 
   const normalizedText = normalizeTypography(text);
+  const normalizedAlternate = textAlternate.trim() ? normalizeTypography(textAlternate) : undefined;
   const items = section.items.map((item) =>
     item.id === itemId && item.type === "verbal_cue"
-      ? { ...item, text: normalizedText, visibility, rubric }
+      ? { ...item, text: normalizedText, visibility, rubric, textAlternate: normalizedAlternate, showAlternate }
       : item
   );
 

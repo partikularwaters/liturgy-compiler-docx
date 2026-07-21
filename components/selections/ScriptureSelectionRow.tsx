@@ -2,11 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { updateScriptureSelection } from "@/lib/selections/scriptureSelectionActions";
+import { deleteScriptureSelection, updateScriptureSelection } from "@/lib/selections/scriptureSelectionActions";
 import { autosizeTextarea } from "@/lib/text/autosize";
 import { shiftMarksForEdit } from "@/lib/text/marks";
 import { getSelectionMarks } from "@/lib/liturgy/markableSections";
 import MarkEditor from "@/components/liturgy/MarkEditor";
+import { TrashIcon } from "@/components/liturgy/icons";
+import LibraryTextPreview from "@/components/library/LibraryTextPreview";
 import type { ScriptureSelection, TextMark } from "@/types/liturgy";
 
 interface ScriptureSelectionRowProps {
@@ -35,6 +37,20 @@ export default function ScriptureSelectionRow({
   useEffect(() => {
     autosizeTextarea(textareaRef.current);
   }, [text]);
+
+  const handleDelete = (): void => {
+    if (!window.confirm(`Delete "${selection.citation}"? This cannot be undone.`)) return;
+    setIsSaving(true);
+    setError(null);
+    deleteScriptureSelection(selection.id).then((result) => {
+      setIsSaving(false);
+      if (result.success) {
+        router.refresh();
+      } else {
+        setError(result.error ?? "Unable to delete this Scripture item right now.");
+      }
+    });
+  };
 
   const handleSave = (): void => {
     setIsSaving(true);
@@ -116,15 +132,27 @@ export default function ScriptureSelectionRow({
           {selection.sectionName} · {selection.translation === "en" ? "BSB" : "AB"}
         </p>
         <p className="text-sm font-medium text-text-primary">{selection.citation}</p>
-        <p className="text-sm text-text-secondary mt-1">{selection.text}</p>
+        <LibraryTextPreview title={selection.citation} text={selection.text} className="text-sm text-text-secondary mt-1" />
       </div>
-      <button
-        type="button"
-        onClick={() => setIsEditing(true)}
-        className="text-sm font-medium text-accent-dark shrink-0"
-      >
-        Edit
-      </button>
+      <div className="flex items-center gap-3 shrink-0">
+        <button
+          type="button"
+          onClick={() => setIsEditing(true)}
+          className="text-sm font-medium text-accent-dark"
+        >
+          Edit
+        </button>
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={isSaving}
+          title="Delete"
+          className="text-text-muted hover:text-error disabled:opacity-50"
+        >
+          <TrashIcon size={16} />
+        </button>
+      </div>
+      {error && !isEditing && <p className="text-[12px] text-error">{error}</p>}
     </div>
   );
 }

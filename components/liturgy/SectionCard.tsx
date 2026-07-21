@@ -43,6 +43,11 @@ const ALL_ITEM_TYPES: Item["type"][] = ["selection", "formula", "verbal_cue", "p
 // as ReaderClient.tsx).
 const REFERENCE_ONLY_SECTIONS = ["The Lord's Discourses", "Words of Institution", "Closing of the Table"];
 
+// v2, direct feedback (2026-07-22): Confession of Sin's Silent Confession
+// rubric is the only Verbal Cue that needs a second-language toggle -- every
+// other cue keeps the single-text form.
+const ALTERNATE_LANGUAGE_CUE_SECTIONS = ["Confession of Sin"];
+
 // Feature 27: Sections needing a Prayer Guide reference panel, per
 // redesign-plan-v1.1.md §W's table -- "Prayer after Communion" there refers
 // to the Section actually named "Closing of the Table" in both templates.
@@ -300,11 +305,13 @@ export default function SectionCard({
   const handleAddVerbalCue = (
     text: string,
     visibility: "both" | "leader_only",
-    rubric: boolean
+    rubric: boolean,
+    textAlternate: string,
+    showAlternate: boolean
   ): void => {
     setIsSaving(true);
     setError(null);
-    addVerbalCue(liturgyId, sectionIndex, text, visibility, rubric).then((result) => {
+    addVerbalCue(liturgyId, sectionIndex, text, visibility, rubric, textAlternate, showAlternate).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setIsAddingVerbalCue(false);
@@ -319,19 +326,23 @@ export default function SectionCard({
     itemId: string,
     text: string,
     visibility: "both" | "leader_only",
-    rubric: boolean
+    rubric: boolean,
+    textAlternate: string,
+    showAlternate: boolean
   ): void => {
     setIsSaving(true);
     setError(null);
-    updateVerbalCue(liturgyId, sectionIndex, itemId, text, visibility, rubric).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        setEditingItemId(null);
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to update this Verbal Cue right now.");
+    updateVerbalCue(liturgyId, sectionIndex, itemId, text, visibility, rubric, textAlternate, showAlternate).then(
+      (result) => {
+        setIsSaving(false);
+        if (result.success) {
+          setEditingItemId(null);
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to update this Verbal Cue right now.");
+        }
       }
-    });
+    );
   };
 
   const handleUpdateFormulaItem = (
@@ -552,7 +563,14 @@ export default function SectionCard({
         )}
       </div>
 
-      {PRAYER_GUIDE_SECTIONS.includes(section.name) && <PrayerGuidePanel guides={sectionGuides} />}
+      {PRAYER_GUIDE_SECTIONS.includes(section.name) && (
+        <PrayerGuidePanel
+          guides={sectionGuides}
+          liturgyId={liturgyId}
+          sectionIndex={sectionIndex}
+          showPrayerGuide={section.showPrayerGuide}
+        />
+      )}
 
       {isAddingExistingSelection && (
         <div className="mb-4">
@@ -595,6 +613,7 @@ export default function SectionCard({
           <VerbalCueForm
             initialText=""
             initialVisibility="leader_only"
+            allowAlternateLanguage={ALTERNATE_LANGUAGE_CUE_SECTIONS.includes(section.name)}
             isSaving={isSaving}
             error={error}
             submitLabel="Add Verbal Cue"
@@ -739,11 +758,14 @@ export default function SectionCard({
                     initialText={item.text}
                     initialVisibility={item.visibility}
                     initialRubric={item.rubric ?? false}
+                    allowAlternateLanguage={ALTERNATE_LANGUAGE_CUE_SECTIONS.includes(section.name)}
+                    initialTextAlternate={item.textAlternate ?? ""}
+                    initialShowAlternate={item.showAlternate ?? false}
                     isSaving={isSaving}
                     error={error}
                     submitLabel="Save"
-                    onSubmit={(text, visibility, rubric) =>
-                      handleUpdateVerbalCue(item.id, text, visibility, rubric)
+                    onSubmit={(text, visibility, rubric, textAlternate, showAlternate) =>
+                      handleUpdateVerbalCue(item.id, text, visibility, rubric, textAlternate, showAlternate)
                     }
                     onCancel={() => {
                       setError(null);

@@ -5,6 +5,7 @@ import { useState } from "react";
 import PrayerForm from "@/components/prayers/PrayerForm";
 import { updatePrayer, deletePrayer } from "@/lib/prayers/prayerActions";
 import { TrashIcon } from "@/components/liturgy/icons";
+import LibraryTextPreview from "@/components/library/LibraryTextPreview";
 import type { Prayer } from "@/types/liturgy";
 
 interface PrayerListRowProps {
@@ -68,7 +69,11 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
     <div className="border-b border-border py-4 flex items-start justify-between gap-4">
       <div>
         <p className="text-[13px] text-text-secondary">{prayer.sectionName}</p>
-        <p className="text-sm text-text-primary mt-1">{prayer.text}</p>
+        <LibraryTextPreview
+          title={prayer.kind === "guide" ? "Prayer Guide" : "Prayer"}
+          text={prayer.text}
+          className="text-sm text-text-primary mt-1"
+        />
         {error && <p className="text-sm text-error mt-1">{error}</p>}
       </div>
       <div className="flex items-center gap-3 shrink-0">

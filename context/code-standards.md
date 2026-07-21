@@ -118,7 +118,8 @@ Approved dependencies for this project:
 
 - `next`, `react`, `typescript` — framework and language
 - `@supabase/supabase-js` — database client
-- `@react-pdf/renderer` — PDF generation
+- `@react-pdf/renderer` — PDF generation (frozen; retained until docx export is proven stable, see build-plan.md v2 item 1)
+- `docx` — .docx generation (v2 item 1), replacing `@react-pdf/renderer` as the export mechanism going forward
 - `tailwindcss` (v4) — styling
 
 Do not install any other packages without updating this list first.

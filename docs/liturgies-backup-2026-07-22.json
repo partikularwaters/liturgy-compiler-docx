@@ -1,0 +1,1080 @@
+{
+  "backedUpAt": "2026-07-21T19:32:31.366Z",
+  "liturgies": [
+    {
+      "id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_id": "e1f269c8-af33-4dc7-b03b-fc4a467f4d39",
+      "service_date": "2026-08-02",
+      "lords_day_number": 31,
+      "created_at": "2026-07-20T05:05:22.725+00:00",
+      "updated_at": "2026-07-20T05:05:22.725+00:00"
+    },
+    {
+      "id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_id": "e1f269c8-af33-4dc7-b03b-fc4a467f4d39",
+      "service_date": "2026-08-09",
+      "lords_day_number": 32,
+      "created_at": "2026-07-21T15:13:37.370311+00:00",
+      "updated_at": "2026-07-21T15:13:37.370311+00:00"
+    },
+    {
+      "id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_id": "e1f269c8-af33-4dc7-b03b-fc4a467f4d39",
+      "service_date": "2026-07-12",
+      "lords_day_number": 28,
+      "created_at": "2026-07-20T01:19:21.728054+00:00",
+      "updated_at": "2026-07-20T01:19:21.728054+00:00"
+    }
+  ],
+  "sections": [
+    {
+      "id": "2ef08907-c7cf-4027-8ff7-75b44931243d",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 5,
+      "items": [
+        {
+          "id": "046f0d14-f3e8-4b3e-a442-536fd42aa708",
+          "type": "prayer",
+          "prayerId": "e81b7f13-2c5a-4f0e-9b57-b34dfa664a48"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "a4f2bbf8-d354-4376-8e51-821a5112eaf2",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 4,
+      "items": [
+        {
+          "id": "8db66e66-3762-45c6-998f-08f500ed8689",
+          "text": "Kung Ikaw, Panginoon, ay magtatala ng mga kasamaan,\nO Panginoon, sino kayang **makakatagal**?\nNgunit sa Iyo’y may kapatawaran,\nupang Ikaw ay katakutan.",
+          "type": "selection",
+          "marks": [
+            {
+              "end": 20,
+              "type": "small_caps",
+              "start": 11
+            },
+            {
+              "end": 63,
+              "type": "small_caps",
+              "start": 54
+            }
+          ],
+          "citation": "Psalms 130:3–4",
+          "amenExpected": false
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "5acdd618-b42a-48c3-b91e-4057f2518e5d",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 2,
+      "items": [
+        {
+          "id": "0259b4bc-16b6-4bbf-8450-ca49885e8a0c",
+          "type": "song",
+          "songId": "3d9f4022-dbbd-4e8e-800b-fe8c11c59c6d"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "83b4db00-bc1f-494e-bb3e-fd1d6e50f24e",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 8,
+      "items": [],
+      "column_break_before": false
+    },
+    {
+      "id": "7c457eaf-0c8b-4ea4-8b02-f52369f48d66",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 15,
+      "items": [],
+      "column_break_before": false
+    },
+    {
+      "id": "364f394c-9203-4545-b165-c4ea7117a0bd",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 17,
+      "items": [
+        {
+          "id": "ce868da6-c044-4f02-9ab4-f5e5e874408b",
+          "text": "Ngayon sa Kanya na may kakayahang mag-ingat sa inyo mula sa pagkatisod, at sa inyo’y makapaghaharap na walang kapintasan sa harapan ng Kanyang **kaluwalhatian** na may malaking kagalakan, sa iisang Diyos na ating Tagapagligtas, sa pamamagitan ni Jesu-Cristo na ating Panginoon, Sumakanya nawa ang kaluwalhatian, ang karangalan, ang kapangyarihan at ang kapamahalaan, bago pa ang lahat ng panahon, at ngayon at magpakailanman.",
+          "type": "selection",
+          "marks": [],
+          "citation": "Jude 1:24–25",
+          "amenExpected": false,
+          "trinitarianSeal": "fil"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "6128ded1-2ec9-40c8-a9c6-add5e66ee960",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 6,
+      "items": [
+        {
+          "id": "c25d2781-e510-467a-ad72-4c48c6cf943b",
+          "type": "song",
+          "songId": "3e42db63-6adb-4743-9351-40e33fa094ba"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "369557d8-ac9f-465c-8f67-54095b675ed5",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 9,
+      "items": [
+        {
+          "id": "3790aa6a-5ee9-4b2a-ab03-28b1979fa11a",
+          "type": "song",
+          "songId": "bc456d60-d74e-42bc-9057-67156e0a0402"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "c2daf380-87a4-442b-bec8-79985ec17dc1",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 10,
+      "items": [
+        {
+          "id": "bc1382a5-a42e-4134-9f93-a5aa965f7777",
+          "type": "sermon",
+          "passage": "Ephesians 2:1–12"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "ef428823-127b-4dc5-a38a-7742be88a867",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 12,
+      "items": [
+        {
+          "id": "858e1ef1-0a46-4afa-bd35-dd6d300de37c",
+          "type": "formula",
+          "marks": [],
+          "formulaId": "9b9f25f5-ca54-4c41-ad07-590022f08667",
+          "visibility": "leader_only",
+          "overrideText": "**Sumasampalataya ako sa Diyos, ang Amang Makapangyarihan-sa-lahat,\n        maylikha ng langit at lupa.\nSumasampalataya ako kay Jesu-Cristo, ang Kanyang bugtong na Anak,\n                na ating Panginoon,\n        na ipinagdalantao sa pamamagitan ng Banal na Espiritu,\n        at ipinanganak ni Birheng Maria.\n        Nagdusa sa ilalim ni Poncio Pilato,\n        ipinako sa krus, namatay, at inilibing;\n        Siya ay bumaba sa mga patay.\n        Sa ikatlong araw Siya ay nabuhay na muli;\n        Siya ay umakyat sa langit,\n        Siya ay naluklok sa kanang kamay ng Ama,\n        at mula roon Siya ay babalik upang hatulan\n                ang mga buhay at ang mga patay.\nSumasampalataya ako sa Banal na Espiritu,\n        sa banal na pangkalahatang Iglesya,\n        sa kapulungan ng mga banal,\n        sa kapatawaran ng mga kasalanan,\n        sa muling pagkabuhay ng katawan,\n        at sa buhay na walang hanggan. Amen.**"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "da1fcef5-661a-420a-8a80-ec12855f81a2",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 11,
+      "items": [
+        {
+          "id": "356b8fb5-2f40-45b3-9695-aff69a45c717",
+          "type": "song",
+          "songId": "bda7965f-c27d-4d49-9ce2-ed549bcd0d3a"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "18d84180-f1fa-4600-9a7f-11e6c4a18aa2",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 3,
+      "items": [
+        {
+          "id": "fac8549e-9b4d-41e3-9f50-4b5bd2722754",
+          "text": "Binigkas ng Diyos ang lahat ng salitang ito, na sinasabi, Ako ang Panginoon mong Diyos na naglabas sa iyo sa lupain ng Ehipto, mula sa bahay ng pagkaalipin:\n**1   Huwag kang magkakaroon ng ibang mga diyos sa harap Ko.\n2   Huwag kang gagawa para sa iyong sarili ng anumang diyus-diyosan.\n3   Huwag mong gagamitin ang pangalan ng Panginoon mong Diyos sa walang kabuluhan;\n4   Alalahanin mo ang araw ng Sabbath, upang ingatan itong banal. \n5   Igalang mo ang iyong ama at ang iyong ina.\n6   Huwag kang papatay.\n7   Huwag kang mangangalunya.\n8   Huwag kang magnanakaw.\n9   Huwag kang magiging sinungaling na saksi laban sa iyong kapwa.\n10   Huwag mong iimbutin ang anumang bagay ng iyong kapwa.**",
+          "type": "selection",
+          "marks": [
+            {
+              "end": 76,
+              "type": "small_caps",
+              "start": 66
+            },
+            {
+              "end": 692,
+              "type": "small_caps",
+              "start": 157
+            }
+          ],
+          "citation": "Exodus 20:1–17",
+          "amenExpected": false
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "4a1892ea-dd67-4dbc-a985-cc976c60bba1",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 13,
+      "items": [
+        {
+          "id": "b8ffa954-9dfa-4324-b699-e8b57244a939",
+          "text": "At ito ang ibig kong sabihin: Ang **naghahasik **nang bahagya ay mag-aani rin nang bahagya, at ang naghahasik nang sagana ay mag-aani rin nang sagana. Ang bawat isa ay magbigay ayon sa ipinasiya ng kanyang puso, hindi mabigat sa kalooban, o dala ng pangangailangan, sapagkat iniibig ng Diyos ang nagbibigay na masaya.",
+          "type": "selection",
+          "marks": [],
+          "citation": "2 Corinthians 9:6–7",
+          "amenExpected": false
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "88cad2bc-08aa-44f3-9643-9760be71a891",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 14,
+      "items": [
+        {
+          "id": "aeb6d7b6-eaa1-4ba5-a162-0485df80fdfb",
+          "type": "song",
+          "songId": "97979b4e-1f3d-4eae-a161-9064abba9ec3"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "8e43b22c-b3b9-485a-be60-ead8e0d87cac",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 16,
+      "items": [
+        {
+          "id": "6d90f708-434f-4162-92c6-f9819ce29c2e",
+          "text": "Matapos ihayag ng Diyos ang Kanyang kaligtasan at Salita, ano ang ating nararapat na tugon?",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "both"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "198e39c3-b175-4b35-aba4-84dbd1bafd36",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 18,
+      "items": [
+        {
+          "id": "10b7202a-7317-4113-84d6-473dd922931b",
+          "type": "song",
+          "songId": "98eb1a7f-91c8-4523-8e55-84df2f18e696"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "b0e434cc-9516-4421-b2a0-038e0562d20b",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 1,
+      "items": [
+        {
+          "id": "00b763b7-b017-430f-aa8d-9b7e5dc86a2d",
+          "text": "Pakinggan Mo, O **Panginoon**, ang aking dalangin,\nIyong dinggin ang aking mga daing!\nSa Iyong katapatan, sa Iyong katuwiran,\nako’y Iyong sagutin!\nAt huwag kang pumasok na kasama\nng Iyong lingkod sa kahatulan;\nsapagkat walang taong nabubuhay\nna matuwid sa Iyong harapan.",
+          "type": "selection",
+          "marks": [
+            {
+              "end": 29,
+              "type": "small_caps",
+              "start": 16
+            },
+            {
+              "end": 270,
+              "type": "congregation",
+              "start": 147
+            }
+          ],
+          "citation": "Psalms 143:1–2",
+          "amenExpected": false
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "36112f83-0fe1-450b-a0b8-77da35ba41a9",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 13,
+      "items": [
+        {
+          "id": "fd92b0a9-fbd4-4edd-8998-5d82d094bb53",
+          "text": "Magbigay ang bawa’t isa ayon sa ipinasiya ng kaniyang puso: huwag mabigat sa loob, o dahil sa kailangan: sapagka’t iniibig ng Dios ang nagbibigay na masaya. At maaaring gawin ng Dios na ang lahat ng biyaya ay magsisagana sa inyo; upang kayo, na mayroong laging buong kaya sa lahat ay magsipanagana sa bawa’t mabuting gawa:",
+          "type": "selection",
+          "marks": [],
+          "citation": "2 Corinthians 9:7–8",
+          "translation": "fil",
+          "amenExpected": false
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "c02384bb-6f6d-46b0-919b-cb503b3221eb",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 2,
+      "items": [
+        {
+          "id": "04c110b5-ceca-44ec-842b-1bd2aeb306a2",
+          "type": "song",
+          "songId": "9aca2fde-f100-457e-9d4b-309ac1ae1acc"
+        },
+        {
+          "id": "1a397958-6d0d-44f4-bd55-d77ada618d1d",
+          "text": "Sa tulong ng buháy na Espiritu ng Diyos, tayo’y magpuri sa ating Diyos na Trinidad. Ating awitin ang [Salmo].",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "22b00ca0-0aa8-4736-9f20-2b3a75d678ff",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 8,
+      "items": [],
+      "column_break_before": false
+    },
+    {
+      "id": "90b5725f-aca9-4418-84a2-b6df730cdcf9",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 7,
+      "items": [
+        {
+          "id": "23630234-886b-461b-9dbb-6b2d0d618c20",
+          "text": "Tapat ang pasabi, at nararapat tanggapin ng lahat, na si Cristo Jesus ay naparito sa sanglibutan upang **iligtas** ang mga makasalanan.",
+          "type": "selection",
+          "marks": [],
+          "citation": "1 Timothy 1:15",
+          "amenExpected": false
+        },
+        {
+          "id": "2d033308-74ef-4a43-84d4-4aba29322dd6",
+          "text": "Na siya rin ang nagdala ng ating mga kasalanan sa kaniyang katawan sa ibabaw ng kahoy, upang pagkamatay natin sa mga kasalanan, ay **mangabuhay** tayo sa katuwiran; na dahil sa kaniyang mga sugat ay **nangagsigaling** kayo.",
+          "type": "selection",
+          "marks": [],
+          "citation": "1 Peter 2:24",
+          "amenExpected": false
+        },
+        {
+          "id": "06056ab9-81c7-4eae-b79a-eccf00a1b2b8",
+          "type": "formula",
+          "marks": [
+            {
+              "end": 44,
+              "type": "minister",
+              "start": 0
+            },
+            {
+              "end": 66,
+              "type": "congregation",
+              "start": 45
+            },
+            {
+              "end": 341,
+              "type": "minister",
+              "start": 67
+            }
+          ],
+          "formulaId": "a94ae276-3518-4dd3-8c7b-6aa8a1c7045c",
+          "visibility": "both",
+          "overrideText": "Sumasampalataya ba kayo sa ebanghelyong ito?\nSumasampalataya kami.\nKung gayon, sa pangalan ni Cristo, at sa awtoridad ng Kaniyang Salita, habang kayo’y nagpapatotoo sa inyong sariling paniniwala sa ebanghelyo, ipinahahayag ng Kasulatan sa inyo na ang inyong mga kasalanan ay pinatawad na, at kayo’y wala na sa ilalim ng kaparusahan ng Diyos.",
+          "trinitarianSeal": "fil"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "f0fdcc14-99a0-418e-94b3-bf07107e40e2",
+      "liturgy_id": "4c77f370-0a8a-4089-ac11-61c8d0a4f4ca",
+      "template_section_index": 0,
+      "items": [
+        {
+          "id": "e5eeebe2-9e27-41fe-8788-292d34285831",
+          "text": "O halikayo, tayo’y umawit sa **Panginoon**;\ntayo’y sumigaw na may kagalakan\nsa malaking bato ng ating kaligtasan!\nLumapit tayo sa Kanyang harapan\nna may pagpapasalamat;\ntayo’y sumigaw na may kagalakan\nsa Kanya ng mga awit ng pagpupuri!\nSapagkat ang Panginoon\nay dakilang Diyos,\nat dakilang Hari sa lahat ng mga diyos.\nNasa Kanyang kamay\nang mga kalaliman ng lupa,\nang mga kataasan ng mga bundok\nay Kanya rin.\nAng dagat ay Kanya,\nsapagkat ito’y Kanyang ginawa,\nang Kanyang mga kamay\nang lumikha ng tuyong lupa.",
+          "type": "selection",
+          "marks": [
+            {
+              "end": 42,
+              "type": "small_caps",
+              "start": 29
+            },
+            {
+              "end": 509,
+              "type": "congregation",
+              "start": 236
+            }
+          ],
+          "citation": "Mga Awit 95:1–5",
+          "amenExpected": false
+        },
+        {
+          "id": "ed4925b7-4706-444b-9779-1f8569f86be0",
+          "text": "Pakinggan natin ang panawagan ng Diyos sa atin na sambahin Siya. Ito ang Salita ng Diyos nating dakila.",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "b58300a8-9d09-44ac-ab07-917c776fc5aa",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 10,
+      "items": [
+        {
+          "id": "d17079b7-e12c-49e2-be29-a44cea51775d",
+          "type": "sermon",
+          "passage": "Jude 1"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "3e0b5f82-4b7f-43ce-a8d8-18bf17c5bdd4",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 5,
+      "items": [
+        {
+          "id": "ffeefe68-9c16-4235-afc0-e9338184c7dd",
+          "type": "prayer",
+          "prayerId": "67a244a0-194c-4e93-9f28-0d994f0ff263"
+        },
+        {
+          "id": "13a0c442-ce2e-4ef7-a85f-b4edb84ab38d",
+          "text": "Mga kapatid at mga minamahal, ating sabay-sabay ihayag ang ating mga kasalanan sa Diyos:",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "7ab04a34-3b6b-4b93-8cfb-88f9678f2c0d",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 9,
+      "items": [
+        {
+          "id": "66ee4b22-2492-4b4c-8f37-0d218db1f6a6",
+          "type": "song",
+          "songId": "bc456d60-d74e-42bc-9057-67156e0a0402"
+        },
+        {
+          "id": "5fa34a8d-9f8d-4305-8cd3-0184884f2cd4",
+          "text": "Bilang paghahanda sa pangangaral ng Salita ng Diyos, ating awiting ang [Salmo].",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "56842cd5-26dc-4a43-9b95-581ee488002a",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 0,
+      "items": [
+        {
+          "id": "385c3c78-e4ab-4f20-adcd-c85ad48f011e",
+          "text": "Halina kayo, tayo’y magsiawit sa PANGINOON: tayo’y magkaingay na may kagalakan sa malaking bato ng ating kaligtasan.\nHalina kayo, tayo’y magsiawit ng mga pasalamat sa kanya, tayo’y magsihiyaw ng may kagalakan sa kanya ng mga pagawitan.",
+          "type": "selection",
+          "marks": [
+            {
+              "end": 42,
+              "type": "small_caps",
+              "start": 33
+            },
+            {
+              "end": 235,
+              "type": "congregation",
+              "start": 117
+            }
+          ],
+          "citation": "Mga Awit 95:1",
+          "amenExpected": false
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "8b9243c0-d93f-4afa-903e-28880f172a90",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 2,
+      "items": [
+        {
+          "id": "9cdb82b0-196d-44b7-8085-ddc39f107588",
+          "type": "song",
+          "songId": "3d9f4022-dbbd-4e8e-800b-fe8c11c59c6d"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "0944a275-be8c-422d-b093-c0ffb55493e8",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 12,
+      "items": [
+        {
+          "id": "7df5e38a-5aa8-4a36-8b54-00754a41be06",
+          "type": "formula",
+          "marks": [],
+          "formulaId": "9b9f25f5-ca54-4c41-ad07-590022f08667",
+          "visibility": "both",
+          "overrideText": "**Sumasampalataya ako sa Diyos,\nang Amang Makapangyarihan-sa-lahat,\nmaylikha ng langit at lupa.\nSumasampalataya ako kay Jesu-Cristo,\nang Kanyang bugtong na Anak,\nna ating Panginoon,\nna ipinagdalantao sa pamamagitan\nng Banal na Espiritu,\nat ipinanganak ni Birheng Maria.\nNagdusa sa ilalim ni Poncio Pilato,\nipinako sa krus, namatay, at inilibing;\nSiya ay bumaba sa mga patay.\nSa ikatlong araw Siya ay nabuhay na muli;\nSiya ay umakyat sa langit,\nSiya ay naluklok sa kanang kamay ng Ama,\nat mula roon Siya ay babalik upang hatulan\nang mga buhay at ang mga patay.\nSumasampalataya ako sa Banal na Espiritu,\nsa banal na pangkalahatang Iglesya,\nsa kapulungan ng mga banal,\nsa kapatawaran ng mga kasalanan,\nsa muling pagkabuhay ng katawan,\nat sa buhay na walang hanggan. Amen.**"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "1843dda0-f6c8-4e0c-92d2-ad3c90b2af88",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 15,
+      "items": [],
+      "column_break_before": false
+    },
+    {
+      "id": "6a573ced-7912-4227-b5e9-55798f4af464",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 5,
+      "items": [
+        {
+          "id": "93fa279e-67a7-47a3-9783-7e073ebbbdd7",
+          "type": "prayer",
+          "prayerId": "e81b7f13-2c5a-4f0e-9b57-b34dfa664a48"
+        },
+        {
+          "id": "c8f277ec-ba6a-4db3-a777-969d42aa13e9",
+          "text": "Manahimik tayo sandali habang isinasaalang-alang natin ang ating mga kasalanan sa harapan ng Diyos.",
+          "type": "verbal_cue",
+          "rubric": false,
+          "visibility": "leader_only"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "978b5fbc-d490-4013-8192-d48091232330",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 8,
+      "items": [],
+      "column_break_before": false
+    },
+    {
+      "id": "9f807de8-6958-4a1d-9ff7-540b9f4f2836",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 6,
+      "items": [
+        {
+          "id": "420165e8-0109-49c3-93d0-8d637adcc2dc",
+          "type": "song",
+          "songId": "3e42db63-6adb-4743-9351-40e33fa094ba"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "3386b381-163d-407a-9ddb-5e7e989b8035",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 9,
+      "items": [
+        {
+          "id": "b3550ab4-685e-4992-badd-5dc29ca8cf81",
+          "type": "song",
+          "songId": "bc456d60-d74e-42bc-9057-67156e0a0402"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "bc49c191-a6ca-4b22-9a43-02c3db2d753a",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 10,
+      "items": [
+        {
+          "id": "4de31b5b-eaaa-48cc-8d2d-d37bcfc354a5",
+          "type": "sermon",
+          "passage": "Ephesians 2:1-10"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "8f37c628-2a80-4748-a04d-edb1c2758eb1",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 11,
+      "items": [
+        {
+          "id": "efd6bed2-d7d6-494e-b85b-0ee940460977",
+          "type": "song",
+          "songId": "bda7965f-c27d-4d49-9ce2-ed549bcd0d3a"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "0dc8d81c-d27c-4e4d-8056-93c0d1b282a3",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 14,
+      "items": [
+        {
+          "id": "a918fdcd-b3fa-4e4d-9d6d-6880a36d2e7d",
+          "type": "song",
+          "songId": "97979b4e-1f3d-4eae-a161-9064abba9ec3"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "c3dd2f4e-f466-4f84-9715-6f872728c4c0",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 18,
+      "items": [
+        {
+          "id": "7b80bf5b-1dce-4fc9-b8be-73b2cb7ed900",
+          "type": "song",
+          "songId": "a0c37c13-4a36-4e2d-b8b5-1179a58bc65e"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "1022f29c-abeb-4025-99e0-f6b52cef0cca",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 16,
+      "items": [
+        {
+          "id": "8879ef48-9128-4674-b2d9-71511d6ff2e7",
+          "text": "Matapos ihayag ng Diyos ang Kanyang Salita, tayo ay tinatawag na tumugon sa pananampalataya at pagsunod.",
+          "type": "verbal_cue",
+          "rubric": false,
+          "visibility": "leader_only"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "aa6bce9b-fbff-4c39-9f7a-dd3a0b25d3fb",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 17,
+      "items": [
+        {
+          "id": "1731e2e4-79e8-4f3f-abcc-a484cb389d5b",
+          "text": "Ngayon sa makapangyarihang gumawa ng lubhang sagana ng higit sa lahat ng ating hinihingi o iniisip, ayon sa kapangyarihang gumagawa sa atin, Ay sumakaniya nawa ang kaluwalhatian sa iglesia at kay Cristo Jesus sa buong panahon magpakailan man. Siya nawa.",
+          "type": "selection",
+          "marks": [],
+          "citation": "Ephesians 3:20–21",
+          "amenExpected": false,
+          "trinitarianSeal": "fil"
+        },
+        {
+          "id": "c20c4776-b08a-4631-b684-97e8d2ccb100",
+          "type": "formula",
+          "formulaId": "8e6d1c8d-e83d-4341-9242-45b3c7389bf9",
+          "visibility": "both",
+          "overrideText": null
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "7bde178d-29f5-4d6c-b084-fd8521c44a31",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 1,
+      "items": [
+        {
+          "id": "6547c879-f3d3-4c65-9650-ea56ec68af92",
+          "text": "Dinggin mo ang dalangin ko Oh Panginoon; pakinggan mo ang aking mga pamanhik: sa iyong pagtatapat ay sagutin mo ako, at sa iyong katuwiran.",
+          "type": "selection",
+          "marks": [],
+          "citation": "Mga Awit 143:1",
+          "amenExpected": false
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "e7e0f903-846f-46a2-86da-5c815411c078",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 7,
+      "items": [
+        {
+          "id": "5fb5db50-396f-4fc5-84a6-a9adaa57a75e",
+          "text": "Na siya rin ang nagdala ng ating mga kasalanan sa kaniyang katawan sa ibabaw ng kahoy, upang pagkamatay natin sa mga kasalanan, ay mangabuhay tayo sa katuwiran; na dahil sa kaniyang mga sugat ay nangagsigaling kayo.",
+          "type": "selection",
+          "marks": [],
+          "citation": "1 Peter 2:24",
+          "amenExpected": false
+        },
+        {
+          "id": "800cd55c-4083-40e0-be11-fbd6dfa65c7c",
+          "type": "formula",
+          "marks": [],
+          "formulaId": "a94ae276-3518-4dd3-8c7b-6aa8a1c7045c",
+          "visibility": "both",
+          "overrideText": "Sumasampalataya ba kayo sa ebanghelyong ito?\nSumasampalataya po kami.\nKung gayon, sa pangalan ni Cristo, at sa awtoridad ng Kaniyang Salita, habang kayo’y nagpapatotoo sa inyong sariling paniniwala sa ebanghelyo, ipinahahayag ng Kasulatan sa inyo na ang inyong mga kasalanan ay pinatawad na, at kayo’y wala na sa ilalim ng kaparusahan ng Diyos.",
+          "trinitarianSeal": "fil"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "798c0990-0cb8-4321-aba2-dc4c7a786546",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 4,
+      "items": [
+        {
+          "id": "190e7562-874c-44cb-bcef-6468975045e3",
+          "text": "If we say we have no sin, we deceive ourselves, and the truth is not in us. If we confess our sins, He is faithful and just to forgive us our sins and to cleanse us from all unrighteousness.",
+          "type": "selection",
+          "marks": [],
+          "citation": "1 John 1:8–9",
+          "translation": "en",
+          "amenExpected": false
+        },
+        {
+          "id": "3b9c045b-4534-4d53-9f36-d29b18cbf659",
+          "text": "Nasaksihan natin ang kabanalan at kadakilan ng Diyos sa Kanyang mga salmo at sa Kanyang kautusan. Ngayo’y tinatawag naman tayo upang magsisi sa ating mga kasalanan. Pakinggan natin ang panawagan sa atin sa [Text]:",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "edd03b21-63d3-4f64-9e53-fd1eed91d1bb",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 4,
+      "items": [
+        {
+          "id": "250f8d94-ba43-4926-93e7-bd8e75bc594e",
+          "text": "If You, O Lord, kept track of iniquities, then who, O Lord, could stand? But with You there is forgiveness, so that You may be feared.",
+          "type": "selection",
+          "marks": [
+            {
+              "end": 14,
+              "type": "small_caps",
+              "start": 10
+            }
+          ],
+          "citation": "Psalms 130:3–4",
+          "translation": "en",
+          "amenExpected": false
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "e9d5f867-acf9-433f-a08e-fa42caceac58",
+      "liturgy_id": "774b3e8e-6aa8-4c91-b7b7-176c5ed30d62",
+      "template_section_index": 3,
+      "items": [
+        {
+          "id": "3457c09f-b287-4c06-a2b9-bc9e34b5ba04",
+          "text": "At sinalita ng Dios ang lahat ng salitang ito, na sinasabi, Ako ang Panginoon mong Dios, na naglabas sa iyo sa lupain ng Egipto, sa bahay ng pagkaalipin:\n**1   Huwag kang magkakaroon ng ibang mga dios sa harap ko.\n2   Huwag kang gagawa para sa iyo ng anomang diyus-diyosan.\n3   Huwag mong babanggitin ang pangalan ng Panginoon mong Dios sa walang kabuluhan;\n4   Alalahanin mo ang araw ng sabbath upang ipangilin. \n5   Igalang mo ang iyong ama at ang iyong ina.\n6   Huwag kang papatay.\n7   Huwag kang mangangalunya.\n8   Huwag kang magnanakaw.\n9   Huwag kang magsinungaling laban sa iyong kapuwa.\n10   Huwag mong iimbutin ang anomang bagay ng iyong kapuwa.**",
+          "type": "selection",
+          "marks": [],
+          "citation": "Exodo 20:1–17",
+          "translation": "fil",
+          "amenExpected": false
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "17736296-cba6-4e52-8d3d-7be98f1f1495",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 15,
+      "items": [],
+      "column_break_before": false
+    },
+    {
+      "id": "053072b2-9c9c-4fe0-8542-02f3bcd0fc92",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 6,
+      "items": [
+        {
+          "id": "35e1ee0b-a793-4462-a112-b49f8e4105df",
+          "text": "Ating awitin ang [Salmo/Himno] bilang isang panalangin at pagpapahayag ng kaligtasan na mayroon kay Cristo na ating Panginoon.",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        },
+        {
+          "id": "21df5bbb-67f0-41fc-971e-44c983bc3b90",
+          "type": "song",
+          "songId": "90ef6c6c-f7d7-4d0c-a0e7-182a613aabfd"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "be235f4e-fc2f-4d8a-85e1-0803d21c63b1",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 1,
+      "items": [
+        {
+          "id": "8a71e62b-7889-4c8c-8f2f-14a2e2611066",
+          "text": "Hear my prayer, O God;\nlisten to the words of my mouth.\nSurely God is my helper;\nthe Lord is the sustainer of my soul.\nFreely I will sacrifice to You;\nI will praise Your name, O LORD,\nfor it is good.",
+          "type": "selection",
+          "marks": [
+            {
+              "end": 199,
+              "type": "congregation",
+              "start": 56
+            }
+          ],
+          "citation": "Psalms 54:2,4,6",
+          "translation": "en",
+          "amenExpected": false
+        },
+        {
+          "id": "a8865cb2-5626-4432-9a71-c4432895b9c5",
+          "text": "Matapos tayong tawagin ng ating Panginoon upang sambahin Siya, tayo’y manawagan sa Kanyang buháy na Espiritu upang tayo’y makapaghandog ng katanggap-tanggap na pagsamba sa lenggwahe ng [Salmo]:",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "bb4e1e40-b8fb-47a7-9fb2-fb3a5d7a560d",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 11,
+      "items": [
+        {
+          "id": "04b8a710-a366-4d59-942d-5dd076e8fd6d",
+          "text": "Matapos nating marinig ang pangangaral ng Salita ng Diyos na mamuhay bilang mga Kristiyano ayon sa Espiritu, ating awitin ang [Salmo/Himno] bilang tugon.",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        },
+        {
+          "id": "baa67d8e-0c34-4a0c-89e1-0d1409ea6a15",
+          "type": "song",
+          "songId": "bda7965f-c27d-4d49-9ce2-ed549bcd0d3a"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "f445f7ab-4048-4bab-a0ea-5c83b8bb8933",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 18,
+      "items": [
+        {
+          "id": "5a13466d-7a51-4db2-aa8e-453b04001084",
+          "type": "song",
+          "songId": "98eb1a7f-91c8-4523-8e55-84df2f18e696"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "f3e6bb9b-1b3a-438b-a96b-0a2e5cde3782",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 16,
+      "items": [],
+      "column_break_before": false
+    },
+    {
+      "id": "8962accd-f21f-4bd1-bc4e-332fb1c081ea",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 14,
+      "items": [
+        {
+          "id": "f0ff9046-463b-4ae1-948b-1d5d952f0131",
+          "type": "song",
+          "songId": "e214aa49-4dcb-40fc-9d9e-156c99584f7e"
+        },
+        {
+          "id": "6fcd0615-b03f-46dc-86de-a7f11265a396",
+          "text": "Habang tayo’y nagkakaloob, ating sariwain ang mga kabutihan ng Diyos sa atin sa pagawit ng [Salmo].",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "84d26b42-d065-4542-9e4b-afed78027d75",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 17,
+      "items": [
+        {
+          "id": "27dbad66-ce26-4c25-a189-79e138713181",
+          "text": "Now to Him who is able to do immeasurably more than all we ask or imagine, according to His power that is at work within us, to Him be the glory in the church and in Christ Jesus throughout all generations, forever and ever. ",
+          "type": "selection",
+          "marks": [],
+          "citation": "Ephesians 3:20–21",
+          "translation": "en",
+          "amenExpected": false,
+          "trinitarianSeal": "en"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "a60e4288-4be8-431e-bf4f-85cb7c2bcd99",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 0,
+      "items": [
+        {
+          "id": "0e1a1ded-6303-40fa-a846-b705b4dc367d",
+          "text": "Come, let us sing for joy to the LORD;\nlet us shout to the Rock of our salvation!\nLet us enter His presence with thanksgiving;\nlet us make a joyful noise to Him in song.\nFor the LORD is a great God,\na great King above all gods.\nIn His hand are the depths of the earth,\nand the mountain peaks belong to Him.\nThe sea is His, for He made it,\nand His hands formed the dry land.\nO come, let us worship and bow down;\nlet us kneel before the LORD our Maker.",
+          "type": "selection",
+          "marks": [
+            {
+              "end": 450,
+              "type": "congregation",
+              "start": 170
+            }
+          ],
+          "citation": "Psalms 95:1–6",
+          "translation": "en",
+          "amenExpected": false
+        },
+        {
+          "id": "88f88744-df6b-4c29-9665-608d0080c709",
+          "text": "Pakinggan natin ang panawagan sa atin ng Diyos upang Siya’y sambahin. Ating basahin ang [Salmo]. Ito ang Salita ng Diyos:",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "e5acd119-5447-4761-b965-f8e90f3f167d",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 3,
+      "items": [
+        {
+          "id": "19e1b192-dda8-4817-aa0f-7d3dcc946587",
+          "text": "And God spoke all these words:\nI am the LORD your God,\nwho brought you out of the land of Egypt,\nout of the house of slavery.\n**1   You shall have no other gods before Me.\n2   You shall not make for yourself an idol.\n3   You shall not take the name of the LORD your God in vain.\n4   Remember the Sabbath day by keeping it holy.\n5   Honor your father and mother.\n6   You shall not murder.\n7   You shall not commit adultery.\n8   You shall not steal.\n9   You shall not bear false witness against your neighbor.\n10   You shall not covet anything that belongs to your neighbor.**",
+          "type": "selection",
+          "marks": [],
+          "citation": "Exodus 20:1–17",
+          "translation": "en",
+          "amenExpected": false
+        },
+        {
+          "id": "34b66958-7c29-45ec-af73-f3e57d05a9ac",
+          "text": "Matapos tayong magbigay ng papuri at pagsamba sa ating Diyos, atin namang iharap ang ating mga sarili sa Kanyang Kautusan. Ito ang sinasabi ng Salita ng Diyos:",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "f30a00c1-720b-4e56-b24d-1cb632a154da",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 13,
+      "items": [
+        {
+          "id": "d07f975b-814e-493b-8eec-75be4cb7204e",
+          "text": "Bilang bahagi ng ating pagsamba sa ating Diyos na buháy, tayo ay magkakaloob. Sa sulat ni [Apostol Pablo] sa [Text], makikita natin ang pangako ng Diyos sa mga nagkakaloob para sa gawain ng Panginoon:",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        },
+        {
+          "id": "389ac1f4-f9ab-4fe7-a4cb-34f386b83830",
+          "text": "Now He who supplies seed to the sower and bread for food will supply and multiply your store of seed and will increase the harvest of your righteousness. You will be enriched in every way to be generous on every occasion, and through us your generosity will produce thanksgiving to God. For this ministry of service is not only supplying the needs of the saints but is also overflowing in many expressions of thanksgiving to God.",
+          "type": "selection",
+          "marks": [],
+          "citation": "2 Corinthians 9:10–12",
+          "translation": "en",
+          "amenExpected": false
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "d7b82206-0108-419b-b828-65fb1c9b41db",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 12,
+      "items": [
+        {
+          "id": "c1a39b66-e5d5-4694-aa7b-3f036bccb3d8",
+          "text": "Ano ang ating paniniwala at dapat paniwalaan? ",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        },
+        {
+          "id": "928cf8f2-38bf-4af0-9190-ded912e2dfec",
+          "type": "formula",
+          "marks": [],
+          "formulaId": "a3c2c95f-93c8-49e2-9cf4-addcbe967906",
+          "visibility": "both",
+          "overrideText": null
+        }
+      ],
+      "column_break_before": false
+    },
+    {
+      "id": "e0bb7cad-1f73-4737-ac27-f0b448222130",
+      "liturgy_id": "97827c77-f579-4cf1-baf5-925de9be8a15",
+      "template_section_index": 7,
+      "items": [
+        {
+          "id": "34fdf6fd-f592-4c11-990d-f11bfa921cb2",
+          "text": "Matapos nating ihayag ang ating mga sala sa isang banal na Diyos, atin namang pakinggan ang Kanyang salita na nagpapakita ng katiyakan ng pagpapatawad ng isang maawain at mapagbiyayang Diyos.",
+          "type": "verbal_cue",
+          "rubric": true,
+          "visibility": "leader_only"
+        },
+        {
+          "id": "e85c97e1-2fdf-44f7-88e6-94e0b679cdc1",
+          "text": "For God so loved the world that He gave His one and only Son, that everyone who believes in Him shall not perish but have eternal life.",
+          "type": "selection",
+          "marks": [],
+          "citation": "John 3:16",
+          "translation": "en",
+          "amenExpected": false
+        },
+        {
+          "id": "77c8cec7-721c-4076-a0fb-e4284c37b06a",
+          "text": "Therefore let it be known to you, brothers, that through Jesus the forgiveness of sins is proclaimed to you. Through Him everyone who believes is justified from everything from which you could not be justified by the law of Moses.",
+          "type": "selection",
+          "marks": [],
+          "citation": "Acts 13:38–39",
+          "translation": "en",
+          "amenExpected": false
+        },
+        {
+          "id": "895c5b23-51e4-4d12-9ea6-ff7154c298b5",
+          "type": "formula",
+          "marks": [
+            {
+              "end": 44,
+              "type": "minister",
+              "start": 0
+            },
+            {
+              "end": 69,
+              "type": "congregation",
+              "start": 45
+            },
+            {
+              "end": 344,
+              "type": "minister",
+              "start": 70
+            }
+          ],
+          "formulaId": "a94ae276-3518-4dd3-8c7b-6aa8a1c7045c",
+          "visibility": "both",
+          "overrideText": "Sumasampalataya ba kayo sa ebanghelyong ito?\nSumasampalataya po kami.\nKung gayon, sa pangalan ni Cristo, at sa awtoridad ng Kaniyang Salita, habang kayo’y nagpapatotoo sa inyong sariling paniniwala sa ebanghelyo, ipinahahayag ng Kasulatan sa inyo na ang inyong mga kasalanan ay pinatawad na, at kayo’y wala na sa ilalim ng kaparusahan ng Diyos.",
+          "trinitarianSeal": "fil"
+        }
+      ],
+      "column_break_before": false
+    }
+  ]
+}

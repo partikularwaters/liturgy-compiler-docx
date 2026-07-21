@@ -54,7 +54,7 @@ export function resolveBase(item: Item, formulas: Formula[], prayers: Prayer[], 
     case "verbal_cue":
       return {
         label: "Verbal Cue",
-        text: item.text,
+        text: item.showAlternate && item.textAlternate ? item.textAlternate : item.text,
         leaderOnly: item.visibility === "leader_only",
         rubric: item.rubric ?? false,
       };
