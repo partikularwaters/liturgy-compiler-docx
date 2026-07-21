@@ -35,8 +35,8 @@ export default async function Home(): Promise<React.ReactElement> {
           alt=""
           className="absolute top-1/2 left-1/2 max-w-none"
           style={{
-            width: "calc(100% + 100px)", // OVERSIZE
-            transform: "translate(-49%, -41.5%) rotate(-9deg)", // HORIZONTAL, VERTICAL, ANGLE
+            width: "calc(100% + 10px)", // OVERSIZE
+            transform: "translate(-49%, -45%) rotate(-7deg)", // HORIZONTAL, VERTICAL, ANGLE
           }}
         />
         <div className="absolute inset-0 bg-cta-yellow mix-blend-multiply" style={{ opacity: 0.18 }} /> {/* TINT_OPACITY */}
