@@ -10,6 +10,12 @@ import { getScriptureSelections } from "@/lib/selections/getScriptureSelections"
 import { groupSectionsByPageColumn } from "@/lib/liturgy/groupSectionsByPageColumn";
 import { isSunday, parseLocalDate } from "@/lib/liturgy/lordsDay";
 
+// Always reads live data -- otherwise a just-saved toggle (End Note, Prayer
+// Guide, column break) or library edit can look reverted after
+// router.refresh() if Next serves a cached fetch response (same bug class
+// fixed on the homepage and Library page).
+export const dynamic = "force-dynamic";
+
 interface CompileViewPageProps {
   params: Promise<{ id: string }>;
 }

@@ -4,6 +4,10 @@ import { getFormulas } from "@/lib/formulas/getFormulas";
 import { getPrayers } from "@/lib/prayers/getPrayers";
 import { getSongs } from "@/lib/songs/getSongs";
 
+// Always reads live data -- same cached-fetch bug class fixed on the
+// homepage, Library, and Compile View pages.
+export const dynamic = "force-dynamic";
+
 interface LiturgyViewPageProps {
   params: Promise<{ id: string }>;
 }

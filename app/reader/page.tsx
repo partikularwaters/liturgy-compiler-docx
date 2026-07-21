@@ -4,6 +4,10 @@ import { canon } from "@/lib/bible/canon";
 import { getTargetSection } from "@/lib/liturgy/getTargetSection";
 import ReaderClient from "@/app/reader/ReaderClient";
 
+// Always reads live data -- same cached-fetch bug class fixed on the
+// homepage, Library, and Compile View pages.
+export const dynamic = "force-dynamic";
+
 interface ReaderPageProps {
   searchParams: Promise<{
     book?: string;

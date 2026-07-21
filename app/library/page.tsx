@@ -9,6 +9,11 @@ import PrayerListRow from "@/components/prayers/PrayerListRow";
 import ScriptureSelectionRow from "@/components/selections/ScriptureSelectionRow";
 import SongListRow from "@/components/songs/SongListRow";
 
+// Always reads the live library data -- otherwise a just-saved edit can look
+// reverted after router.refresh() if Next serves a cached fetch response
+// instead of re-querying Supabase (same bug class fixed on the homepage).
+export const dynamic = "force-dynamic";
+
 export default async function LibraryPage(): Promise<React.ReactElement> {
   const [formulas, allPrayers, scriptureSelections, songs, sectionNames] = await Promise.all([
     getFormulas(),
