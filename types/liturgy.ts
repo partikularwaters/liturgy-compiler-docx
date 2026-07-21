@@ -72,6 +72,13 @@ export interface SelectionItem extends TrinitarianSealable {
   // Selections (redesign-plan-v1.1.md §U) -- absent/empty means "render
   // exactly as before," so every pre-existing Selection is unaffected.
   marks?: TextMark[];
+  // v2 (BSB): which language this Selection's citation/text is actually in
+  // -- "fil" (AB1905) or "en" (BSB). Absent means "fil", the correct default
+  // for every Selection saved before this field existed. Display logic
+  // (resolveItemText.ts, SectionCard.tsx, prepareSectionRender.ts) keys off
+  // this instead of blanket Filipino-izing every citation, since an "en"
+  // Selection's citation must stay in English.
+  translation?: "fil" | "en";
 }
 
 export interface Formula {
@@ -79,6 +86,13 @@ export interface Formula {
   sectionName: string;
   name: string;
   defaultText: string;
+  // v2: library-level marking -- pre-marking a Formula here (e.g. Assurance
+  // of Pardon's Absolution dialogue) carries these marks onto every future
+  // placement as a starting point (see addFormulaAction.ts), instead of
+  // remarking from scratch each time. Offsets into `defaultText`, same
+  // convention as FormulaItem.marks. Absent/empty means "no marks," the
+  // correct default for every Formula saved before this field existed.
+  marks?: TextMark[];
 }
 
 export interface FormulaItem extends TrinitarianSealable {
@@ -161,6 +175,12 @@ export interface ScriptureSelection {
   sectionName: string;
   citation: string;
   text: string;
+  // v2 (BSB): "fil" (AB1905) or "en" (BSB) -- a Filipino and English entry
+  // for the same passage are a linked pair (matched by canonical verse
+  // reference, not a foreign key), not duplicates.
+  translation: "fil" | "en";
+  // v2: library-level marking -- see Formula.marks; offsets into `text`.
+  marks?: TextMark[];
 }
 
 export type Item = SelectionItem | FormulaItem | VerbalCueItem | PrayerItem | SermonItem | SongItem;

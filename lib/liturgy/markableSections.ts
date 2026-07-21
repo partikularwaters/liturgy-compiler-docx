@@ -13,3 +13,21 @@ const DIALOGUE_MARK_SECTIONS = ["Call to Worship", "Prayer of Invocation"];
 export function getSelectionMarks(sectionName: string): TextMark["type"][] {
   return DIALOGUE_MARK_SECTIONS.includes(sectionName) ? ["congregation", "small_caps"] : ["small_caps"];
 }
+
+// Feature 25 (redesign-plan-v1.1.md §U's Minister piece) -- moved here
+// 2026-07-21 (v2, library-level marking toolbar) from a SectionCard.tsx-local
+// constant so the library-edit forms (FormulaForm) can share the exact same
+// lookup instead of Compile-View-edit-time and library-edit-time drifting.
+// Every other Section's Formula gets no marking toolbar at all --
+// `**bold**` markdown remains the live option there, unchanged.
+const FORMULA_MARK_SECTIONS: Record<string, TextMark["type"][]> = {
+  "Assurance of Pardon": ["minister", "congregation"],
+  Charge: ["minister"],
+  "The Great Commission": ["minister"],
+  Benediction: ["minister"],
+  "Affirmation of Faith / Church Covenant": ["congregation", "small_caps"],
+};
+
+export function getFormulaMarks(sectionName: string): TextMark["type"][] {
+  return FORMULA_MARK_SECTIONS[sectionName] ?? [];
+}

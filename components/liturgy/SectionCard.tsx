@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import AddFormulaPanel from "@/components/liturgy/AddFormulaPanel";
 import AddExistingSelectionPanel from "@/components/liturgy/AddExistingSelectionPanel";
+import VesperReadingPanel from "@/components/liturgy/VesperReadingPanel";
 import AddPrayerPanel from "@/components/liturgy/AddPrayerPanel";
 import AddSongPanel from "@/components/liturgy/AddSongPanel";
 import PrayerGuidePanel from "@/components/liturgy/PrayerGuidePanel";
 import MarkedText from "@/components/liturgy/MarkedText";
+import MarkEditor from "@/components/liturgy/MarkEditor";
 import FormulaEditForm from "@/components/liturgy/FormulaEditForm";
 import SelectionEditForm from "@/components/liturgy/SelectionEditForm";
 import VerbalCueForm from "@/components/liturgy/VerbalCueForm";
@@ -21,7 +23,11 @@ import { resolveItemText, resolveBase } from "@/lib/liturgy/resolveItemText";
 import { sectionTitle } from "@/lib/liturgy/sectionTitle";
 import { sortSectionItems } from "@/lib/liturgy/sortSectionItems";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
-import { getSelectionMarks } from "@/lib/liturgy/markableSections";
+import { displayCitation } from "@/lib/bible/bookNamesTagalog";
+import ScriptureCitationLink from "@/components/liturgy/ScriptureCitationLink";
+import { getSelectionMarks, getFormulaMarks } from "@/lib/liturgy/markableSections";
+import { VESPER_TABLE_SECTIONS } from "@/lib/liturgy/vesperTableRotation";
+import { toEnglishCitation } from "@/lib/bible/bookNamesTagalog";
 import { TRINITARIAN_SEAL_SECTIONS } from "@/lib/liturgy/trinitarianSeal";
 import { parseBoldSegments } from "@/lib/text/markdown";
 import { updatePrayer } from "@/lib/prayers/prayerActions";
@@ -48,22 +54,6 @@ const PRAYER_GUIDE_SECTIONS = [
   "Closing of the Table",
   "Pastoral Prayer",
 ];
-
-// Feature 25: which Leader/Congregation/Minister/Small-Caps marks a Formula
-// item can offer, per Section -- Minister role is scoped to these four
-// (redesign-plan-v1.1.md §U); Vesper's Church Covenant portion (the second
-// half of Affirmation of Faith / Church Covenant) gets the full
-// Leader/Congregation/Small-Caps set instead, extending the tool to Formula
-// content for the first time. Every other Section's Formula gets no
-// marking toolbar at all -- `**bold**` markdown remains the live option
-// there, unchanged.
-const FORMULA_MARK_SECTIONS: Record<string, TextMark["type"][]> = {
-  "Assurance of Pardon": ["minister", "congregation"],
-  Charge: ["minister"],
-  "The Great Commission": ["minister"],
-  Benediction: ["minister"],
-  "Affirmation of Faith / Church Covenant": ["congregation", "small_caps"],
-};
 
 // Feature-request (2026-07-18): Sections whose sole content is a recited
 // text (a Creed, Vesper's Church Covenant) get that Formula's own name
@@ -147,14 +137,30 @@ function PrayerEditForm({
   onCancel,
 }: PrayerEditFormProps): React.ReactElement {
   const [text, setText] = useState(initialText);
+  // Bug fix 2026-07-21: a placed Prayer item (e.g. Confession of Sin) had no
+  // Bold button at all -- this form never integrated MarkEditor. Prayers
+  // have no Leader/Congregation/Minister/Small-Caps toolbar or Trinitarian
+  // Seal of their own, so `marks` here is purely a transient local satisfying
+  // MarkEditor's prop contract; it's never read by onSubmit or persisted.
+  const [marks, setMarks] = useState<TextMark[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   return (
     <div className="flex flex-col gap-2">
       <textarea
+        ref={textareaRef}
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={4}
         className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
+      />
+      <MarkEditor
+        text={text}
+        marks={marks}
+        onMarksChange={setMarks}
+        onTextChange={setText}
+        availableMarks={[]}
+        textareaRef={textareaRef}
       />
       <p className="text-[13px] text-text-muted">
         Editing here updates this Prayer in the library for future use.
@@ -201,6 +207,7 @@ export default function SectionCard({
   const sectionPsalms = songs.filter((s) => s.sectionName === section.name && s.kind === "psalm");
   const sectionHymns = songs.filter((s) => s.sectionName === section.name && s.kind === "hymn");
   const [isAddingExistingSelection, setIsAddingExistingSelection] = useState(false);
+  const [isChoosingVesperReading, setIsChoosingVesperReading] = useState(false);
   const [isAddingFormula, setIsAddingFormula] = useState(false);
   const [isAddingVerbalCue, setIsAddingVerbalCue] = useState(false);
   const [isAddingPrayer, setIsAddingPrayer] = useState(false);
@@ -234,22 +241,28 @@ export default function SectionCard({
   const headerSongItem =
     selectionItems.length === 0 && !showCreedTitleInHeader && songItems.length === 1 ? songItems[0] : null;
   const headerSong = headerSongItem ? songs.find((s) => s.id === headerSongItem.songId) : null;
+  const selectionCitations = selectionItems.map((item) =>
+    displayCitation(formatCitation(item.citation), item.translation)
+  );
   const headerReference =
     selectionItems.length > 0
       ? {
-          text: selectionItems.map((item) => formatCitation(item.citation)).join("; "),
+          text: selectionCitations.join("; "),
+          citations: selectionCitations,
           citationColor: true,
           smallCaps: true,
         }
       : showCreedTitleInHeader
         ? {
             text: resolveItemText(creedFormulaItem!, formulas, prayers, songs).label ?? "",
+            citations: undefined,
             citationColor: false,
             smallCaps: false,
           }
         : headerSong
           ? {
               text: formatCitation(headerSong.title),
+              citations: undefined,
               citationColor: headerSong.kind === "psalm",
               smallCaps: false,
               italic: true,
@@ -431,7 +444,14 @@ export default function SectionCard({
               .filter(Boolean)
               .join(" ")}
           >
-            {headerReference.text}
+            {headerReference.citations
+              ? headerReference.citations.map((citation, citationIndex) => (
+                  <span key={citation}>
+                    {citationIndex > 0 && "; "}
+                    <ScriptureCitationLink citation={citation} />
+                  </span>
+                ))
+              : headerReference.text}
           </p>
         )}
       </div>
@@ -451,6 +471,18 @@ export default function SectionCard({
             >
               + From Library
             </button>
+            {VESPER_TABLE_SECTIONS.includes(section.name) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setIsChoosingVesperReading((prev) => !prev);
+                }}
+                className={addButtonClass}
+              >
+                + Reading
+              </button>
+            )}
           </>
         )}
         {allowedTypes.includes("formula") && (
@@ -529,6 +561,20 @@ export default function SectionCard({
             liturgyId={liturgyId}
             sectionIndex={sectionIndex}
             onDone={() => setIsAddingExistingSelection(false)}
+          />
+        </div>
+      )}
+
+      {isChoosingVesperReading && (
+        <div className="mb-4">
+          <VesperReadingPanel
+            sectionName={section.name}
+            liturgyId={liturgyId}
+            sectionIndex={sectionIndex}
+            currentCitation={
+              selectionItems[0] ? toEnglishCitation(formatCitation(selectionItems[0].citation)) : null
+            }
+            onDone={() => setIsChoosingVesperReading(false)}
           />
         </div>
       )}
@@ -629,7 +675,7 @@ export default function SectionCard({
                   <div className="flex items-center gap-3 flex-wrap">
                     {selectionItems.map((s) => (
                       <span key={s.id} className="flex items-center gap-1.5">
-                        <span className="text-[11px] text-text-muted">{s.citation}</span>
+                        <span className="text-[11px] text-text-muted">{displayCitation(s.citation, s.translation)}</span>
                         <button
                           type="button"
                           title={`Edit ${s.citation}`}
@@ -733,7 +779,7 @@ export default function SectionCard({
                     initialVisibility={item.visibility}
                     initialMarks={item.marks ?? []}
                     initialTrinitarianSeal={item.trinitarianSeal ?? null}
-                    availableMarks={FORMULA_MARK_SECTIONS[section.name] ?? []}
+                    availableMarks={getFormulaMarks(section.name)}
                     allowTrinitarianSeal={TRINITARIAN_SEAL_SECTIONS.includes(section.name)}
                     isSaving={isSaving}
                     error={error}
@@ -820,9 +866,9 @@ export default function SectionCard({
                 ) : (
                   resolved.text &&
                   ((item.type === "selection" || item.type === "formula") &&
-                  item.marks &&
-                  item.marks.length > 0 ? (
-                    <MarkedText text={resolved.text} marks={item.marks} />
+                  resolved.marks &&
+                  resolved.marks.length > 0 ? (
+                    <MarkedText text={resolved.text} marks={resolved.marks} />
                   ) : (
                     <BodyText text={resolved.text} rubric={resolved.rubric} />
                   ))

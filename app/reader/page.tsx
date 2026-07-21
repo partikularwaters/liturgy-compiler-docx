@@ -5,16 +5,25 @@ import { getTargetSection } from "@/lib/liturgy/getTargetSection";
 import ReaderClient from "@/app/reader/ReaderClient";
 
 interface ReaderPageProps {
-  searchParams: Promise<{ book?: string; chapter?: string; liturgyId?: string; sectionIndex?: string }>;
+  searchParams: Promise<{
+    book?: string;
+    chapter?: string;
+    liturgyId?: string;
+    sectionIndex?: string;
+    translation?: string;
+  }>;
 }
 
 export default async function ReaderPage({ searchParams }: ReaderPageProps): Promise<React.ReactElement> {
   const params = await searchParams;
   const book = params.book ?? "Psalms";
   const chapter = Number(params.chapter ?? 95);
+  // v2 (BSB): "fil" (AB1905, the long-standing default) or "en" (BSB) --
+  // Feature 02 shipped with no switcher; this is that switcher's data side.
+  const language: "fil" | "en" = params.translation === "en" ? "en" : "fil";
 
   const [chapterData, highlights, targetSection] = await Promise.all([
-    getChapter("AB1905", book, chapter),
+    getChapter(language === "en" ? "BSB" : "AB1905", book, chapter),
     getHighlights(book, chapter),
     params.liturgyId && params.sectionIndex
       ? getTargetSection(params.liturgyId, Number(params.sectionIndex))
@@ -27,6 +36,7 @@ export default async function ReaderPage({ searchParams }: ReaderPageProps): Pro
       chapter={chapterData}
       initialHighlights={highlights}
       targetSection={targetSection}
+      language={language}
     />
   );
 }

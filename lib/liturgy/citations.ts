@@ -1,19 +1,29 @@
 import { bookNameTagalog } from "@/lib/bible/bookNamesTagalog";
 
-export function buildCitation(book: string, chapter: number, verseNumbers: number[]): string {
-  // The Reader is hardcoded to AB1905 (Tagalog) -- no translation switcher
-  // exists -- so a citation built from it should be named in Tagalog by
-  // default, matching this project's Tagalog-first/English-second
-  // convention, not the English keys `lib/bible/canon.ts` uses internally.
-  const displayBook = bookNameTagalog(book);
+// Shared by buildCitation and lib/selections/companionTranslation.ts (which
+// needs the identical verse-range formatting when constructing the other
+// language's citation string).
+export function formatVerseSpec(verseNumbers: number[]): string {
   const sorted = [...verseNumbers].sort((a, b) => a - b);
   const isContiguous = sorted.every((n, i) => i === 0 || n === sorted[i - 1] + 1);
-
-  if (sorted.length === 1) return `${displayBook} ${chapter}:${sorted[0]}`;
+  if (sorted.length === 1) return `${sorted[0]}`;
   // En dash for a verse range, not a hyphen -- matches Madrid's manual
   // typesetting convention (e.g. "Psalm 47:5–9").
-  if (isContiguous) return `${displayBook} ${chapter}:${sorted[0]}–${sorted[sorted.length - 1]}`;
-  return `${displayBook} ${chapter}:${sorted.join(",")}`;
+  if (isContiguous) return `${sorted[0]}–${sorted[sorted.length - 1]}`;
+  return sorted.join(",");
+}
+
+// v2 (BSB): translation defaults to "fil" so every pre-BSB call site (the
+// Reader was hardcoded to AB1905 until now) keeps building Tagalog citations
+// unchanged. "en" builds the plain English/canon.ts book name instead.
+export function buildCitation(
+  book: string,
+  chapter: number,
+  verseNumbers: number[],
+  translation: "fil" | "en" = "fil"
+): string {
+  const displayBook = translation === "fil" ? bookNameTagalog(book) : book;
+  return `${displayBook} ${chapter}:${formatVerseSpec(verseNumbers)}`;
 }
 
 export function buildSelectionText(verses: { number: number; text: string }[], verseNumbers: number[]): string {
@@ -25,8 +35,14 @@ export function buildSelectionText(verses: { number: number; text: string }[], v
     .join(" ");
 }
 
-export function parseCitationVerses(citation: string, book: string, chapter: number): number[] | null {
-  const prefix = `${bookNameTagalog(book)} ${chapter}:`;
+export function parseCitationVerses(
+  citation: string,
+  book: string,
+  chapter: number,
+  translation: "fil" | "en" = "fil"
+): number[] | null {
+  const displayBook = translation === "fil" ? bookNameTagalog(book) : book;
+  const prefix = `${displayBook} ${chapter}:`;
   if (!citation.startsWith(prefix)) return null;
 
   const versesPart = citation.slice(prefix.length);

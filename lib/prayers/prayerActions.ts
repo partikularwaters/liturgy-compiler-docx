@@ -52,3 +52,19 @@ export async function updatePrayer(
 
   return { success: true };
 }
+
+// v2 Phase A follow-up: Prayer had no delete path either, the same gap
+// Formula had before deleteFormula() -- covers both kind='prayer' and
+// kind='guide' rows, since PrayerListRow is shared by both. No usage check
+// against placed PrayerItem instances, matching the same defensive-fallback
+// pattern as deleteFormula/deleteSong.
+export async function deletePrayer(id: string): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabase.from("prayers").delete().eq("id", id);
+
+  if (error) {
+    console.error("[lib/prayers/prayerActions/deletePrayer]", error.message);
+    return { success: false, error: "Unable to delete this Prayer right now." };
+  }
+
+  return { success: true };
+}

@@ -4,11 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import type { TextMark } from "@/types/liturgy";
 import { autosizeTextarea } from "@/lib/text/autosize";
 import { shiftMarksForEdit } from "@/lib/text/marks";
-import { toggleBoldSelection } from "@/lib/text/toggleBold";
-import { TRINITARIAN_SEAL_TEXT } from "@/lib/liturgy/trinitarianSeal";
 import CitationField from "@/components/liturgy/CitationField";
 import MarkEditor from "@/components/liturgy/MarkEditor";
-import MarkedText from "@/components/liturgy/MarkedText";
 
 interface SelectionEditFormProps {
   initialCitation: string;
@@ -62,20 +59,6 @@ export default function SelectionEditForm({
     autosizeTextarea(textareaRef.current);
   }, [text]);
 
-  const toggleBold = (): void => {
-    const el = textareaRef.current;
-    if (!el || el.selectionStart === el.selectionEnd) return;
-    const newText = toggleBoldSelection(text, el.selectionStart, el.selectionEnd);
-    setMarks((prev) => shiftMarksForEdit(text, newText, prev));
-    setText(newText);
-  };
-
-  const previewText = trinitarianSeal
-    ? text
-      ? `${text} **${TRINITARIAN_SEAL_TEXT[trinitarianSeal]}**`
-      : `**${TRINITARIAN_SEAL_TEXT[trinitarianSeal]}**`
-    : text;
-
   return (
     <div className="bg-surface-secondary border border-border rounded-md p-4 flex flex-col gap-3">
       <CitationField value={citation} onChange={setCitation} />
@@ -94,53 +77,19 @@ export default function SelectionEditForm({
           rows={3}
           className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent resize-none min-h-[96px] overflow-hidden"
         />
-        <button
-          type="button"
-          onClick={toggleBold}
-          className="self-start rounded-md border border-border px-2.5 py-1 text-[12px] font-bold text-text-secondary bg-transparent hover:bg-surface-secondary"
-        >
-          Bold
-        </button>
       </div>
 
       <MarkEditor
         text={text}
         marks={marks}
         onMarksChange={setMarks}
+        onTextChange={setText}
         availableMarks={availableMarks}
         textareaRef={textareaRef}
+        allowTrinitarianSeal={allowTrinitarianSeal}
+        trinitarianSeal={trinitarianSeal}
+        onTrinitarianSealChange={setTrinitarianSeal}
       />
-
-      {allowTrinitarianSeal && (
-        <div className="flex flex-col gap-2">
-          <p className="text-[13px] font-medium text-text-secondary">Trinitarian Seal</p>
-          <div className="flex items-center gap-3 flex-wrap">
-            {(
-              [
-                { value: null, label: "None" },
-                { value: "fil", label: "Filipino" },
-                { value: "en", label: "English" },
-              ] as const
-            ).map((option) => (
-              <label
-                key={option.label}
-                className="flex items-center gap-1.5 text-[13px] font-medium text-text-secondary"
-              >
-                <input
-                  type="radio"
-                  name="trinitarian-seal-edit"
-                  checked={trinitarianSeal === option.value}
-                  onChange={() => setTrinitarianSeal(option.value)}
-                />
-                {option.label}
-              </label>
-            ))}
-          </div>
-          <div className="bg-surface border border-border rounded-md p-3">
-            <MarkedText text={previewText} marks={marks} />
-          </div>
-        </div>
-      )}
 
       {isSongSlot && (
         <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">

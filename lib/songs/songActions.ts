@@ -68,3 +68,20 @@ export async function updateSong(
 
   return { success: true };
 }
+
+// v2 Phase A: Songs previously had no delete path at all (only createSong,
+// used both for standalone library entries and while placing one into a
+// Section via AddSongPanel). No usage check against placed SongItem
+// instances -- resolveItemText.ts's song case already falls back to
+// "(Song not found)" for a dangling songId, the same defensive pattern
+// Formula/Prayer's lookups rely on.
+export async function deleteSong(id: string): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabase.from("songs").delete().eq("id", id);
+
+  if (error) {
+    console.error("[lib/songs/songActions/deleteSong]", error.message);
+    return { success: false, error: "Unable to delete this Song right now." };
+  }
+
+  return { success: true };
+}

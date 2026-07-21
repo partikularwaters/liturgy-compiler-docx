@@ -4,7 +4,9 @@ import { supabase } from "@/lib/db/supabase";
 import { isDuplicateCitation } from "@/lib/liturgy/dedup";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
+import { normalizeCitationForTranslation } from "@/lib/bible/bookNamesTagalog";
 import { normalizeTypography } from "@/lib/text/typographic";
+import { saveCompanionTranslation } from "@/lib/selections/companionTranslation";
 import type { SelectionItem, TextMark } from "@/types/liturgy";
 
 // Feature 22: these Sections are long, whole-passage readings meant to be
@@ -22,8 +24,9 @@ export async function addSelection(
   text: string,
   amenExpected: boolean = false,
   marks: TextMark[] = [],
-  trinitarianSeal: "en" | "fil" | null = null
-): Promise<{ success: boolean; error?: string }> {
+  trinitarianSeal: "en" | "fil" | null = null,
+  translation: "fil" | "en" = "fil"
+): Promise<{ success: boolean; error?: string; companionSaved?: boolean }> {
   if (!citation.trim()) {
     return { success: false, error: "Citation is required." };
   }
@@ -37,7 +40,7 @@ export async function addSelection(
     return { success: false, error: "Citation and text are required." };
   }
 
-  const formattedCitation = formatCitation(citation);
+  const formattedCitation = normalizeCitationForTranslation(formatCitation(citation), translation);
 
   if (isDuplicateCitation(section.items, formattedCitation)) {
     return { success: false, error: "This citation is already saved to this Section." };
@@ -50,6 +53,7 @@ export async function addSelection(
     citation: formattedCitation,
     amenExpected,
     marks,
+    translation,
     ...(trinitarianSeal ? { trinitarianSeal } : {}),
   };
 
@@ -71,14 +75,18 @@ export async function addSelection(
   const { error: libraryError } = await supabase
     .from("scripture_selections")
     .upsert(
-      { section_name: section.sectionName, citation: formattedCitation, text: newItem.text },
+      { section_name: section.sectionName, citation: formattedCitation, text: newItem.text, translation },
       { onConflict: "section_name,citation", ignoreDuplicates: true }
     );
   if (libraryError) {
     console.error("[lib/liturgy/addSelectionAction] scripture_selections upsert", libraryError.message);
   }
 
-  return { success: true };
+  // v2 (BSB): silently save the other language's unmodified companion text
+  // too, if it doesn't already exist for this passage/Section.
+  const companionSaved = await saveCompanionTranslation(section.sectionName, formattedCitation, translation);
+
+  return { success: true, companionSaved };
 }
 
 // Feature-request (2026-07-18): edits a Selection item already placed into a
@@ -98,7 +106,7 @@ export async function updateSelectionItem(
   amenExpected: boolean,
   marks: TextMark[],
   trinitarianSeal: "en" | "fil" | null = null
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; companionSaved?: boolean }> {
   if (!citation.trim()) {
     return { success: false, error: "Citation is required." };
   }
@@ -113,7 +121,12 @@ export async function updateSelectionItem(
   }
 
   const normalizedText = normalizeTypography(text);
-  const formattedCitation = formatCitation(citation);
+  // Translation never changes on edit -- carried forward from the existing
+  // item (absent means "fil", same default the type itself documents).
+  const existingItem = section.items.find((item) => item.id === itemId);
+  const translation: "fil" | "en" =
+    existingItem && existingItem.type === "selection" ? (existingItem.translation ?? "fil") : "fil";
+  const formattedCitation = normalizeCitationForTranslation(formatCitation(citation), translation);
 
   const items = section.items.map((item) =>
     item.id === itemId && item.type === "selection"
@@ -138,12 +151,14 @@ export async function updateSelectionItem(
   const { error: libraryError } = await supabase
     .from("scripture_selections")
     .upsert(
-      { section_name: section.sectionName, citation: formattedCitation, text: normalizedText },
+      { section_name: section.sectionName, citation: formattedCitation, text: normalizedText, translation },
       { onConflict: "section_name,citation", ignoreDuplicates: true }
     );
   if (libraryError) {
     console.error("[lib/liturgy/addSelectionAction/updateSelectionItem] scripture_selections upsert", libraryError.message);
   }
 
-  return { success: true };
+  const companionSaved = await saveCompanionTranslation(section.sectionName, formattedCitation, translation);
+
+  return { success: true, companionSaved };
 }

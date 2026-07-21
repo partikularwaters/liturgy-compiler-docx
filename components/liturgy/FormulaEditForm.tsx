@@ -4,9 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { TextMark } from "@/types/liturgy";
 import { autosizeTextarea } from "@/lib/text/autosize";
 import { shiftMarksForEdit } from "@/lib/text/marks";
-import { TRINITARIAN_SEAL_TEXT } from "@/lib/liturgy/trinitarianSeal";
 import MarkEditor from "@/components/liturgy/MarkEditor";
-import MarkedText from "@/components/liturgy/MarkedText";
 
 interface FormulaEditFormProps {
   initialText: string;
@@ -55,12 +53,6 @@ export default function FormulaEditForm({
     autosizeTextarea(textareaRef.current);
   }, [text]);
 
-  const previewText = trinitarianSeal
-    ? text
-      ? `${text} **${TRINITARIAN_SEAL_TEXT[trinitarianSeal]}**`
-      : `**${TRINITARIAN_SEAL_TEXT[trinitarianSeal]}**`
-    : text;
-
   return (
     <div className="bg-surface-secondary border border-border rounded-md p-4 flex flex-col gap-3">
       <textarea
@@ -81,40 +73,13 @@ export default function FormulaEditForm({
         text={text}
         marks={marks}
         onMarksChange={setMarks}
+        onTextChange={setText}
         availableMarks={availableMarks}
         textareaRef={textareaRef}
+        allowTrinitarianSeal={allowTrinitarianSeal}
+        trinitarianSeal={trinitarianSeal}
+        onTrinitarianSealChange={setTrinitarianSeal}
       />
-
-      {allowTrinitarianSeal && (
-        <div className="flex flex-col gap-2">
-          <p className="text-[13px] font-medium text-text-secondary">Trinitarian Seal</p>
-          <div className="flex items-center gap-3 flex-wrap">
-            {(
-              [
-                { value: null, label: "None" },
-                { value: "fil", label: "Filipino" },
-                { value: "en", label: "English" },
-              ] as const
-            ).map((option) => (
-              <label
-                key={option.label}
-                className="flex items-center gap-1.5 text-[13px] font-medium text-text-secondary"
-              >
-                <input
-                  type="radio"
-                  name="formula-trinitarian-seal"
-                  checked={trinitarianSeal === option.value}
-                  onChange={() => setTrinitarianSeal(option.value)}
-                />
-                {option.label}
-              </label>
-            ))}
-          </div>
-          <div className="bg-surface border border-border rounded-md p-3">
-            <MarkedText text={previewText} marks={marks} />
-          </div>
-        </div>
-      )}
 
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="formula-item-visibility">

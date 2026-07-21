@@ -1,24 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { TextMark } from "@/types/liturgy";
+import { autosizeTextarea } from "@/lib/text/autosize";
+import { shiftMarksForEdit } from "@/lib/text/marks";
+import { getFormulaMarks } from "@/lib/liturgy/markableSections";
+import MarkEditor from "@/components/liturgy/MarkEditor";
 
 interface FormulaFormProps {
   sectionNames: string[];
   initialSectionName: string;
   initialName: string;
   initialDefaultText: string;
+  initialMarks?: TextMark[];
   isSaving: boolean;
   error: string | null;
   submitLabel: string;
-  onSubmit: (sectionName: string, name: string, defaultText: string) => void;
+  onSubmit: (sectionName: string, name: string, defaultText: string, marks: TextMark[]) => void;
   onCancel?: () => void;
 }
 
+// v2: library-level marking toolbar -- this form is shared by /formulas/new
+// (create) and FormulaListRow's edit path, so marking a Formula here (e.g.
+// Absolution's Minister/Congregation dialogue) happens once in the library
+// instead of being redone from scratch on every placement (addFormulaAction
+// carries these marks onto a new placed instance as a starting point).
+// availableMarks depends on the Section, which is itself editable here, so
+// it's recomputed live off getFormulaMarks() -- the same lookup Compile-View
+// editing uses, so the two can never drift.
 export default function FormulaForm({
   sectionNames,
   initialSectionName,
   initialName,
   initialDefaultText,
+  initialMarks = [],
   isSaving,
   error,
   submitLabel,
@@ -28,6 +43,12 @@ export default function FormulaForm({
   const [sectionName, setSectionName] = useState(initialSectionName || sectionNames[0] || "");
   const [name, setName] = useState(initialName);
   const [defaultText, setDefaultText] = useState(initialDefaultText);
+  const [marks, setMarks] = useState<TextMark[]>(initialMarks);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    autosizeTextarea(textareaRef.current);
+  }, [defaultText]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -65,17 +86,29 @@ export default function FormulaForm({
         </label>
         <textarea
           id="formula-default-text"
+          ref={textareaRef}
           value={defaultText}
-          onChange={(e) => setDefaultText(e.target.value)}
+          onChange={(e) => {
+            setMarks((prev) => shiftMarksForEdit(defaultText, e.target.value, prev));
+            setDefaultText(e.target.value);
+          }}
           rows={4}
-          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
+          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent resize-none min-h-[96px] overflow-hidden"
         />
       </div>
+      <MarkEditor
+        text={defaultText}
+        marks={marks}
+        onMarksChange={setMarks}
+        onTextChange={setDefaultText}
+        availableMarks={getFormulaMarks(sectionName)}
+        textareaRef={textareaRef}
+      />
       {error && <p className="text-sm text-error">{error}</p>}
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(sectionName, name, defaultText)}
+          onClick={() => onSubmit(sectionName, name, defaultText, marks)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >

@@ -8,7 +8,14 @@ export interface TextSegment {
 // "Congregational/unison lines" typography entry.
 export function parseBoldSegments(text: string): TextSegment[] {
   const segments: TextSegment[] = [];
-  const pattern = /\*\*(.+?)\*\*/g;
+  // [\s\S] instead of `.` -- `.` never matches a newline in JS regex (the
+  // `s`/dotAll flag that would fix that needs ES2018, this project targets
+  // ES2017), so a bolded span crossing a line break (e.g. the Decalogue's
+  // numbered commandments, each on its own line) could never find its
+  // closing `**`, and the whole thing rendered as literal asterisks instead
+  // of bold. Real bug, not a design choice: single-line/single-word bold
+  // happened to work by accident since it never crossed a newline.
+  const pattern = /\*\*([\s\S]+?)\*\*/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 

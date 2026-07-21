@@ -13,7 +13,12 @@ export default function PrayerGuidePanel({ guides }: { guides: Prayer[] }): Reac
     <div className="bg-surface-secondary border border-border rounded-md p-3 flex flex-col gap-2">
       <p className="text-[13px] font-medium text-text-secondary">Prayer Guide</p>
       {guides.map((guide) => (
-        <p key={guide.id} className="text-sm text-text-primary">
+        // 2026-07-21: guide text now carries a numbered structural sequence
+        // (rubrics from the Handbook for Leading Worship) with real line
+        // breaks -- whitespace-pre-line so those breaks actually render
+        // instead of collapsing to a run-on line, without needing markdown
+        // parsing for what's read-only reference text, never placed content.
+        <p key={guide.id} className="text-sm text-text-primary whitespace-pre-line">
           {guide.text}
         </p>
       ))}

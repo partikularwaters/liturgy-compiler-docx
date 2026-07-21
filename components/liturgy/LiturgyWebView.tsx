@@ -3,6 +3,7 @@ import { parseBoldSegments } from "@/lib/text/markdown";
 import { applyMarks } from "@/lib/text/marks";
 import { prepareSectionRender } from "@/lib/liturgy/prepareSectionRender";
 import { isSunday, parseLocalDate } from "@/lib/liturgy/lordsDay";
+import ScriptureCitationLink from "@/components/liturgy/ScriptureCitationLink";
 import type { CompiledLiturgy, Formula, Prayer, Song, TextMark } from "@/types/liturgy";
 
 interface LiturgyWebViewProps {
@@ -106,7 +107,14 @@ export default function LiturgyWebView({
                       .filter(Boolean)
                       .join(" ")}
                   >
-                    {prepared.header.text}
+                    {prepared.header.citations
+                      ? prepared.header.citations.map((citation, citationIndex) => (
+                          <span key={citation}>
+                            {citationIndex > 0 && "; "}
+                            <ScriptureCitationLink citation={citation} />
+                          </span>
+                        ))
+                      : prepared.header.text}
                   </p>
                 )}
               </div>
@@ -130,9 +138,9 @@ export default function LiturgyWebView({
                     ) : (
                       resolved.text &&
                       ((item.type === "selection" || item.type === "formula") &&
-                      item.marks &&
-                      item.marks.length > 0 ? (
-                        <MarkedBody key={itemIndex} text={resolved.text} marks={item.marks} />
+                      resolved.marks &&
+                      resolved.marks.length > 0 ? (
+                        <MarkedBody key={itemIndex} text={resolved.text} marks={resolved.marks} />
                       ) : (
                         <p
                           key={itemIndex}

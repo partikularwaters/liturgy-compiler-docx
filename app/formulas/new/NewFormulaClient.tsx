@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import FormulaForm from "@/components/formulas/FormulaForm";
 import { createFormula } from "@/lib/formulas/formulaActions";
+import type { TextMark } from "@/types/liturgy";
 
 interface NewFormulaClientProps {
   sectionNames: string[];
@@ -16,10 +17,10 @@ export default function NewFormulaClient({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSave = (sectionName: string, name: string, defaultText: string): void => {
+  const handleSave = (sectionName: string, name: string, defaultText: string, marks: TextMark[]): void => {
     setIsSaving(true);
     setError(null);
-    createFormula(sectionName, name, defaultText).then((result) => {
+    createFormula(sectionName, name, defaultText, marks).then((result) => {
       setIsSaving(false);
       if (result.success) {
         router.push("/library");

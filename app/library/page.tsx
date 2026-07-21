@@ -2,18 +2,24 @@ import Link from "next/link";
 import { getFormulas } from "@/lib/formulas/getFormulas";
 import { getPrayers } from "@/lib/prayers/getPrayers";
 import { getScriptureSelections } from "@/lib/selections/getScriptureSelections";
+import { getSongs } from "@/lib/songs/getSongs";
 import { getSectionNames } from "@/lib/liturgy/getSectionNames";
 import FormulaListRow from "@/components/formulas/FormulaListRow";
 import PrayerListRow from "@/components/prayers/PrayerListRow";
 import ScriptureSelectionRow from "@/components/selections/ScriptureSelectionRow";
+import SongListRow from "@/components/songs/SongListRow";
 
 export default async function LibraryPage(): Promise<React.ReactElement> {
-  const [formulas, allPrayers, scriptureSelections, sectionNames] = await Promise.all([
+  const [formulas, allPrayers, scriptureSelections, songs, sectionNames] = await Promise.all([
     getFormulas(),
     getPrayers(),
     getScriptureSelections(),
+    getSongs(),
     getSectionNames(),
   ]);
+
+  const psalms = songs.filter((s) => s.kind === "psalm");
+  const hymns = songs.filter((s) => s.kind === "hymn");
 
   const prayers = allPrayers.filter((p) => p.kind === "prayer");
   const guides = allPrayers.filter((p) => p.kind === "guide");
@@ -82,11 +88,19 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
       </div>
 
       <div className="flex flex-col gap-3">
-        <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">
-          Existing Scripture
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">
+            Existing Scripture
+          </h2>
+          <Link
+            href="/selections/new"
+            className="bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+          >
+            New Scripture
+          </Link>
+        </div>
         <p className="text-[13px] text-text-muted">
-          Auto-saved from every Scripture item added via the Reader — browse only, not directly editable.
+          Auto-saved from every Scripture item added via the Reader, or added directly here.
         </p>
         {scriptureSelections.length === 0 ? (
           <p className="text-sm text-text-muted">No Scripture items added yet.</p>
@@ -100,8 +114,37 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
       </div>
 
       <div className="flex flex-col gap-3">
-        <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Songs</h2>
-        <p className="text-sm text-text-muted">Psalm and Hymn library — coming in Feature 21.</p>
+        <div className="flex items-center justify-between">
+          <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Psalms</h2>
+          <Link
+            href="/songs/new"
+            className="bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+          >
+            New Song
+          </Link>
+        </div>
+        {psalms.length === 0 ? (
+          <p className="text-sm text-text-muted">No Psalms yet.</p>
+        ) : (
+          <div className="bg-surface border border-border rounded-lg px-6">
+            {psalms.map((song) => (
+              <SongListRow key={song.id} song={song} sectionNames={sectionNames} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Hymns</h2>
+        {hymns.length === 0 ? (
+          <p className="text-sm text-text-muted">No Hymns yet.</p>
+        ) : (
+          <div className="bg-surface border border-border rounded-lg px-6">
+            {hymns.map((song) => (
+              <SongListRow key={song.id} song={song} sectionNames={sectionNames} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

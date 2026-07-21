@@ -23,7 +23,7 @@ export async function addFormula(
 
   const { data: formula, error: formulaError } = await supabase
     .from("formulas")
-    .select("section_name")
+    .select("section_name, marks")
     .eq("id", formulaId)
     .single();
 
@@ -42,12 +42,20 @@ export async function addFormula(
     return { success: false, error: "That Formula does not belong to this Section." };
   }
 
+  // v2: library-level marking toolbar -- a Formula pre-marked in the library
+  // (e.g. Absolution's Minister/Congregation dialogue) carries those marks
+  // onto this new placed instance as a starting point, same freeze-on-
+  // placement convention overrideText already follows (editing the placed
+  // instance afterward never reaches back to the library row). Only makes
+  // sense when the instance uses the library's own defaultText -- an
+  // override supplies different text the library's marks weren't offset for.
   const newItem: FormulaItem = {
     id: crypto.randomUUID(),
     type: "formula",
     formulaId,
     overrideText: overrideText ? normalizeTypography(overrideText) : null,
     visibility,
+    ...(overrideText ? {} : { marks: (formula.marks as TextMark[] | null) ?? [] }),
   };
 
   const { error: updateError } = await supabase

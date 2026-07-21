@@ -1,6 +1,7 @@
-import { TRINITARIAN_SEAL_TEXT } from "@/lib/liturgy/trinitarianSeal";
+import { applyTrinitarianSeal } from "@/lib/liturgy/trinitarianSeal";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
-import type { Formula, Item, Prayer, Song } from "@/types/liturgy";
+import { displayCitation } from "@/lib/bible/bookNamesTagalog";
+import type { Formula, Item, Prayer, Song, TextMark } from "@/types/liturgy";
 
 export interface ResolvedItem {
   label: string | null;
@@ -14,6 +15,10 @@ export interface ResolvedItem {
   // title (what every audience sees), `song` carries the rest of the
   // metadata for surfaces that show it (Leader Guide only, per §L).
   song?: Song;
+  // Set for Selection/Formula (the two TrinitarianSealable item types) --
+  // callers must render marks from here, not item.marks directly, once a
+  // seal has been appended (see resolveItemText's own comment below).
+  marks?: TextMark[];
 }
 
 // Single source of truth for "what does this Item actually display" — used by
@@ -28,7 +33,13 @@ export interface ResolvedItem {
 export function resolveBase(item: Item, formulas: Formula[], prayers: Prayer[], songs: Song[] = []): ResolvedItem {
   switch (item.type) {
     case "selection":
-      return { label: formatCitation(item.citation), text: item.text, leaderOnly: false, rubric: false };
+      return {
+        label: displayCitation(formatCitation(item.citation), item.translation),
+        text: item.text,
+        leaderOnly: false,
+        rubric: false,
+        marks: item.marks ?? [],
+      };
     case "formula": {
       const formula = formulas.find((f) => f.id === item.formulaId);
       const text = item.overrideText ?? formula?.defaultText ?? "(Formula not found)";
@@ -37,6 +48,7 @@ export function resolveBase(item: Item, formulas: Formula[], prayers: Prayer[], 
         text,
         leaderOnly: item.visibility === "leader_only",
         rubric: false,
+        marks: item.marks ?? [],
       };
     }
     case "verbal_cue":
@@ -81,14 +93,17 @@ export function resolveItemText(
   // Trinitarian Seal: a fixed, bolded closing line appended immediately
   // after whichever item type carries it (TrinitarianSealable) -- `**bold**`
   // markdown so it renders bold everywhere parseBoldSegments already runs,
-  // without a new rendering path. Appended to (not folded into) the
-  // resolved text, so an item's own `marks` offsets -- which only ever index
-  // into its raw stored text -- stay valid; the seal itself is never
-  // markable. Generic across item types on purpose: Benediction seals a
-  // Selection, Assurance of Pardon seals the Absolution Formula.
+  // without a new rendering path. applyTrinitarianSeal() is the single
+  // source of truth for this (shared with MarkEditor's live edit-time
+  // preview, so they can't drift) -- it also folds the seal into a trailing
+  // Congregation/Minister mark rather than leaving it as a separate
+  // block-breaking segment. Generic across item types on purpose:
+  // Benediction seals a Selection, Assurance of Pardon seals the Absolution
+  // Formula.
   if ("trinitarianSeal" in item && item.trinitarianSeal) {
-    const seal = TRINITARIAN_SEAL_TEXT[item.trinitarianSeal];
-    resolved.text = resolved.text ? `${resolved.text} **${seal}**` : `**${seal}**`;
+    const sealed = applyTrinitarianSeal(resolved.text, resolved.marks ?? [], item.trinitarianSeal);
+    resolved.text = sealed.text;
+    resolved.marks = sealed.marks;
   }
 
   return resolved;

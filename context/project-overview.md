@@ -155,33 +155,32 @@ John Madrid (solo build and initial use), and eventually the RLCC roles who prep
 
 ## Roadmap — v2 and v3
 
-**Drafted 2026-07-18, not yet scoped/approved the way v1.1 was.** v1.1 went through many rounds of Madrid's direct decisions before `build-plan.md` turned it into build-ready phases (see `redesign-plan-v1.1.md`) — this roadmap hasn't had that pass yet. Treat it as a starting shape for that conversation, not a committed spec. See `build-plan.md`'s "v2 (Draft)" / "v3 (Draft)" sections for the same breakdown with more implementation-level notes.
+**Scoped through direct rounds of decisions with Madrid on 2026-07-20** (the same discipline `redesign-plan-v1.1.md` got before v1.1 became build-ready phases) — approved, not draft. See `build-plan.md`'s "v2"/"v3" sections for the full implementation-level breakdown; this is the narrative version.
 
-### v2 — Editing Maturity & Library Completeness
+### v2 — Translation Breadth, Output, & Library Completeness
 
-The throughline: v1/v1.1 built a fixed, single-liturgist tool where Sections and Templates are hardcoded and libraries are add-only. v2 makes the structure itself editable and the libraries actually manageable, without yet touching multi-user concerns (that's v3).
+The throughline shifted from the original draft: Section/Template editing turned out to need its own scoping pass regardless of phase, so it moved to v3 alongside the item-table migration it would have gated. v2 instead became about giving the app a second Scripture translation (BSB/English, alongside AB1905/Filipino), replacing the PDF export pipeline with docx, and finally closing out library completeness.
 
-1. **Section reordering, renaming, and creation.** Templates stop being two hardcoded rows — a real editing UI for `templates.sections`. This is the biggest structural item in v2 and almost certainly gates the item below.
-2. **Items migrate off the `sections.items` jsonb array into their own child table** (one row per item, tagged by Section) — already decided in `architecture.md`'s Database Schema section as the natural point to revisit storage shape, specifically because it lands alongside Section editability rather than v3's search/coherence features, which don't need it.
-3. **Full Library management**, closing the specific gaps Madrid flagged directly:
-   - Delete a Formula from the library (no delete path exists today for Formula, unlike every item type as of Phase 8)
-   - Edit an existing Scripture Library (`scripture_selections`) entry in place — today it's a browse-only cache
-   - Add a Scripture entry to the library directly from `/library`, not only via the Reader's add-to-Section flow
-   - Bring the Congregation/Minister/Small-Caps marking toolbar into library editing, not just Compile View editing
-4. **A real Songs Library management page** — today Psalm/Hymn entries can only be created inline while placing one into a Section; `/library`'s Songs row is still a placeholder.
-5. **Vesper's Compile View 3-column layout** — deferred twice already (Feature 17 and 18 both left it open); needs the same Section→page/column assignment decision Morning already has, or a genuinely different approach (see the open architecture question below).
-6. **Ongoing, not phase-gated:** default Verbal Cue seeding (blocked on Madrid supplying real bilingual sample-script content) and cleaning up legacy Formula text that has old manually-typed "Minister:"/"Congregation:" prefixes now redundant with the automatic mark labels (Absolution is the confirmed instance; there may be others, worth a full audit once Formula editing is a first-class library operation per item 3 above).
+1. **Docx export**, replacing `@react-pdf/renderer`, built in a separate cloned repo (a full `git clone` into a new folder with its own remote — not a fork or a branch). PDF export is frozen, not deleted, in this repo; only deleted in the clone once docx is stable there.
+2. **Continuous-flow authoring with manual column-break overrides**, also built in the clone, depends on #1. Resolves the old fixed-vs-continuous layout question in favor of continuous flow — Word's native multi-column layout already behaves this way, and a manual override is just a real column-break, no custom pagination engine needed. Resolves Vesper's 3-column layout as a side effect too: no per-Section page/column assignment table needed for either template anymore.
+3. **BSB (English) as a real second Selection source.** Includes Reader translation-switcher UI (never built — Feature 02 shipped without one), a dual-translation Scripture Library (Filipino/English tagged, auto-paired by canonical verse reference — saving a Selection in one language silently fetches and saves the other language's unmodified companion if it doesn't exist yet, with a small note in the save confirmation), a backfill migration for every existing (all-Filipino) library entry, and a Filipino/English toggle plus alternate-translation hover-preview in the Compile View's existing-Scripture picker. Runs from both the Reader and the Library's direct-add flow.
+4. **Automated rotation-cycle assignment** for Vesper's recurring readings, replacing the current manual handbook-referenced lookup.
+5. **Library-level marking toolbar** — `formulas`/`scripture_selections` gain a `marks` column and the same Congregation/Minister/Small-Caps toolbar the placed-item edit forms already have; placement copies marks onto the new instance as a starting point, same freeze-on-placement convention `overrideText` already follows.
+6. **Ongoing, parallel:** default Verbal Cue seeding and legacy Formula-text cleanup (Absolution's manually-typed "Minister:"/"Congregation:" prefixes), both gated on Madrid supplying real content — sequenced into v2 rather than left indefinite so input-gathering runs alongside the rest of the build.
 
-**Open architecture question, surfaced during the Phase 8 refinement pass but not resolved:** whether the Compile View's page/column layout should stay a fixed per-Section assignment (today's model, `templates.sections[].page`/`.column`) or move to a continuous flow with a manual per-Section "push to next column" override — closer to how Madrid actually works in Word (nudging content when it doesn't fit, not fighting a rigid table). Recommended direction: continuous flow with overrides, but this needs its own design pass before committing, likely as part of item 5 above since Vesper's 3-column layout is the natural place to make this call once, for both templates.
+**Shelved cold until v2/v3 above is built and stable:** the MBB hover-preview toggle, alongside PDF export itself.
 
-### v3 — Multi-User & Discovery
+### v3 — Structure, Multi-User, & Discovery
 
-The throughline: v1/v2 assume one liturgist. v3 opens the tool to the other RLCC roles (presider, deacon, preacher) and adds the discovery/coherence features that only make sense once there's enough historical data to search across.
+The throughline: v1/v2 assume a fixed Template structure and a single liturgist. v3 makes Sections themselves editable, migrates Items to a real queryable shape, and opens the tool to the other RLCC roles plus the discovery features that need enough historical data to search across.
 
-1. **Supabase Auth + role-based access control** — the `formulas.access_level` column has sat unused since Feature 08, reserved exactly for this. Formula edits gated by role; Verbal Cues/Prayers likely remain open per founding-days-liturgy-compiler.md's original access philosophy.
-2. **Universal search, cross-day duplicate flagging, coherence score** — all need the v2 item-table migration first; not schedulable against the current jsonb-array storage.
-3. **Vesper's PDF export** (Leader Guide + Congregation Bulletin) — deferred twice already; no physical Vesper bulletin has ever existed, so this needs its own "what should this even look like" pass, not just a mechanical port of Morning's PDF.
-4. **Automated rotation-cycle assignment** for Vesper's recurring readings — v1.1 kept this a manual, handbook-referenced lookup deliberately.
-5. **Reformed Life PowerPoint Builder integration** — external system, needs its own scoping conversation with whoever owns that tool.
-6. **An MBB hover-preview toggle alongside AB2001** — blocked on real design work, not content: BGLinks only supports one active translation globally, so a live per-citation toggle needs either a DOM-teardown-and-relink approach or a page reload, neither scoped yet.
-7. **Gated on an external response, not on this project's own timeline:** extraction/storage of AB2001 or MBB text into the app's own database, pending Philippine Bible Society's reply to the adaptation-rights request drafted back in the CTP planning stage.
+1. **Item storage migration** — `sections.items` jsonb array → a proper child table, one row per item. Moved here from the original v2 draft since both of its real justifications (pairing with Section editing, enabling search/tagging) now live in v3.
+2. **Template/Section editing** — reorder, rename, create Sections within a Template. Moved from v2; still needs its own scoping pass before any code, given how every past structural Template change needed a hand-written re-indexing migration.
+3. **Items tagging**, depending on #1 — useful for #4 below.
+4. **Universal search + cross-day duplicate flagging**, depending on #1 and #3.
+5. **Coherence score**, depending on #3-4's query layer.
+6. **Supabase Auth + role-based access control** — the `formulas.access_level` column has sat unused since Feature 08, reserved exactly for this. Independent of the rest of v3.
+7. **Reformed Life PowerPoint Builder integration** — external system, needs its own scoping conversation with whoever owns that tool. Confirmed for after v2 completes.
+8. **AB2001/MBB text extraction into this app's own database** — still gated on Philippine Bible Society's reply to the adaptation-rights request. A separate tool for personal-use extraction is known to exist, but personal use and this app storing/serving that text to a congregation are different situations — the former doesn't resolve the latter's actual gate.
+
+**Removed from the roadmap entirely:** Vesper's PDF export — moot once PDF export itself is being phased out in favor of docx.

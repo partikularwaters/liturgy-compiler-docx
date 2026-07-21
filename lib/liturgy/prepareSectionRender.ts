@@ -1,6 +1,7 @@
 import { resolveItemText, type ResolvedItem } from "@/lib/liturgy/resolveItemText";
 import { sortSectionItems } from "@/lib/liturgy/sortSectionItems";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
+import { displayCitation } from "@/lib/bible/bookNamesTagalog";
 import type { CompiledSection, Formula, Item, Prayer, SelectionItem, Song, TextMark } from "@/types/liturgy";
 
 // Sections whose sole content is a recited text (a Creed, Vesper's Church
@@ -26,6 +27,14 @@ export interface HeaderInfo {
   // Song titles moved into the header (a Section whose sole content is one
   // Song) render italic, matching SongTitle's own convention.
   italic?: boolean;
+  // Set only for the Selection-citation case -- each individual citation
+  // (Filipino-displayed, en-dash-formatted), so a renderer that can build a
+  // BGLinks-aware link (ScriptureCitationLink) can render one link per
+  // citation instead of one link covering the whole "; "-joined `text`
+  // string, which would point at the wrong reference for every citation but
+  // the first. `text` above stays the plain joined fallback for surfaces
+  // that don't link (the PDF).
+  citations?: string[];
 }
 
 export interface PreparedItem {
@@ -62,8 +71,10 @@ export function prepareSectionRender(
 
   let header: HeaderInfo | null = null;
   if (selectionItems.length > 0) {
+    const citations = selectionItems.map((item) => displayCitation(formatCitation(item.citation), item.translation));
     header = {
-      text: selectionItems.map((item) => formatCitation(item.citation)).join("; "),
+      text: citations.join("; "),
+      citations,
       citationColor: true,
       smallCaps: true,
     };

@@ -415,9 +415,9 @@ function RenderedSection({
                 )}
                 {resolved.text &&
                   ((item.type === "selection" || item.type === "formula") &&
-                  item.marks &&
-                  item.marks.length > 0
-                    ? renderMarkedBody(resolved.text, item.marks)
+                  resolved.marks &&
+                  resolved.marks.length > 0
+                    ? renderMarkedBody(resolved.text, resolved.marks)
                     : (
                         <Text
                           style={[

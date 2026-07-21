@@ -24,6 +24,19 @@ export function PencilIcon({ size = 16, className }: IconProps): React.ReactElem
   );
 }
 
+// v2 (BSB): solid glyph, not stroke-based like the rest of this set -- the
+// source artwork (docs/Translate.svg, supplied by Madrid) is a filled icon,
+// so this one uses fill="currentColor" instead of stroke, keeping the
+// source's own viewBox rather than forcing it into the 0-20 grid the
+// stroke icons share.
+export function TranslateIcon({ size = 16, className }: IconProps): React.ReactElement {
+  return (
+    <svg width={size} height={size} viewBox="0 0 888.65365 888.66667" fill="currentColor" className={className}>
+      <path d="M429.20606,300.42442h-3.36858L367.55637,474.16225H487.57822Zm0,0h-3.36858L367.55637,474.16225H487.57822Zm451.07057,19.99064H824.6098V655.53467c0,93.229-75.8526,169.08156-169.08156,169.08156H320.42165v55.66691A104.04649,104.04649,0,0,0,424.47184,984.33333H880.27663A104.05478,104.05478,0,0,0,984.32682,880.28314V424.46525A104.04644,104.04644,0,0,0,880.27663,320.41506ZM655.52824,95.66667H199.72337A104.05483,104.05483,0,0,0,95.67318,199.71686V655.53467A104.05478,104.05478,0,0,0,199.72337,759.58486H655.52824A104.05478,104.05478,0,0,0,759.57843,655.53467V199.71686A104.05483,104.05483,0,0,0,655.52824,95.66667ZM544.41566,643.2958l-35.7282-106.35232H346.49921L310.836,643.2958h-83.3963L379.275,211.95572h96.48053L627.81188,643.2958ZM425.83748,300.42442,367.55637,474.16225H487.57822L429.20606,300.42442Z" transform="translate(-95.67318 -95.66667)" />
+    </svg>
+  );
+}
+
 export function TrashIcon({ size = 16, className }: IconProps): React.ReactElement {
   return (
     <svg

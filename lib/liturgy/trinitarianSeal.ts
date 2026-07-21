@@ -1,3 +1,5 @@
+import type { TextMark } from "@/types/liturgy";
+
 // Exact wording supplied by Madrid (2026-07-18) -- not authored here, since
 // this is liturgically significant text this project never fabricates.
 export const TRINITARIAN_SEAL_TEXT: Record<"en" | "fil", string> = {
@@ -10,3 +12,35 @@ export const TRINITARIAN_SEAL_TEXT: Record<"en" | "fil", string> = {
 // Benediction seals its Scripture Selection; Assurance of Pardon seals the
 // Absolution Formula (2026-07-20, extended from Benediction-only).
 export const TRINITARIAN_SEAL_SECTIONS = ["Benediction", "Assurance of Pardon"];
+
+// Single source of truth for "what does text+marks look like once a seal is
+// appended" -- used both for the live edit-time preview (MarkEditor) and the
+// final saved render (resolveItemText), so they can never drift. Appends the
+// seal as `**bold**` markdown past the end of the raw text (never folded
+// into it, so existing mark offsets stay valid), and folds the seal into the
+// last Congregation/Minister mark when it immediately follows one, since
+// that mark renders as its own block-level element -- a plain trailing
+// segment after a block element always starts on a new line, which is what
+// made the seal look detached from "...Amen." before this existed.
+export function applyTrinitarianSeal(
+  text: string,
+  marks: TextMark[],
+  seal: "en" | "fil" | null
+): { text: string; marks: TextMark[] } {
+  if (!seal) return { text, marks };
+
+  const sealText = TRINITARIAN_SEAL_TEXT[seal];
+  const preSealLength = text.length;
+  const addition = text ? ` **${sealText}**` : `**${sealText}**`;
+  const newText = text + addition;
+
+  let newMarks = marks;
+  if (marks.length > 0) {
+    const lastMark = marks[marks.length - 1];
+    if (lastMark.end === preSealLength && (lastMark.type === "congregation" || lastMark.type === "minister")) {
+      newMarks = [...marks.slice(0, -1), { ...lastMark, end: lastMark.end + addition.length }];
+    }
+  }
+
+  return { text: newText, marks: newMarks };
+}

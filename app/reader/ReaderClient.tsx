@@ -27,6 +27,10 @@ interface ReaderClientProps {
   chapter: BibleChapter;
   initialHighlights: VerseHighlights;
   targetSection: TargetSection | null;
+  // v2 (BSB): "fil" (AB1905) or "en" (BSB) -- which translation the Reader
+  // is currently browsing. Drives citation language (buildCitation/
+  // parseCitationVerses) and what gets saved onto a new Selection.
+  language: "fil" | "en";
 }
 
 export default function ReaderClient({
@@ -34,6 +38,7 @@ export default function ReaderClient({
   chapter,
   initialHighlights,
   targetSection,
+  language,
 }: ReaderClientProps): React.ReactElement {
   const router = useRouter();
   const [activeColor, setActiveColor] = useState<HighlightColor | null>("accent");
@@ -53,8 +58,9 @@ export default function ReaderClient({
     setSuccessMessage(null);
   }, [chapter.book, chapter.chapter]);
 
-  const navigateTo = (book: string, chapterNumber: number): void => {
+  const navigateTo = (book: string, chapterNumber: number, nextLanguage: "fil" | "en" = language): void => {
     const params = new URLSearchParams({ book, chapter: String(chapterNumber) });
+    if (nextLanguage === "en") params.set("translation", "en");
     if (targetSection) {
       params.set("liturgyId", targetSection.liturgyId);
       params.set("sectionIndex", String(targetSection.sectionIndex));
@@ -68,6 +74,10 @@ export default function ReaderClient({
 
   const handleChapterChange = (chapterNumber: number): void => {
     navigateTo(chapter.book, chapterNumber);
+  };
+
+  const handleLanguageChange = (nextLanguage: "fil" | "en"): void => {
+    navigateTo(chapter.book, chapter.chapter, nextLanguage);
   };
 
   const handleVerseClick = (verseNumber: number): void => {
@@ -105,7 +115,7 @@ export default function ReaderClient({
   const alreadySavedVerses = new Set<number>();
   if (targetSection) {
     for (const citation of targetSection.citations) {
-      const verses = parseCitationVerses(citation, chapter.book, chapter.chapter);
+      const verses = parseCitationVerses(citation, chapter.book, chapter.chapter, language);
       verses?.forEach((v) => alreadySavedVerses.add(v));
     }
   }
@@ -127,7 +137,7 @@ export default function ReaderClient({
   const selectedVerseNumbers = Array.from(selectedVerses);
   const candidateCitation =
     targetSection && selectedVerseNumbers.length > 0
-      ? buildCitation(chapter.book, chapter.chapter, selectedVerseNumbers)
+      ? buildCitation(chapter.book, chapter.chapter, selectedVerseNumbers, language)
       : null;
   const candidateText = candidateCitation
     ? buildSelectionText(chapter.verses, selectedVerseNumbers)
@@ -154,12 +164,20 @@ export default function ReaderClient({
       text,
       amenExpected,
       marks,
-      trinitarianSeal
+      trinitarianSeal,
+      language
     ).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setSelectedVerses(new Set());
-        setSuccessMessage(`Successfully added to ${targetSection.sectionName}`);
+        setSuccessMessage(
+          `Successfully added to ${targetSection.sectionName}` +
+            (result.companionSaved
+              ? language === "fil"
+                ? " (BSB translation also saved)"
+                : " (AB translation also saved)"
+              : "")
+        );
         router.refresh();
       } else {
         setSaveError(result.error ?? "Unable to save this Scripture item right now.");
@@ -172,13 +190,39 @@ export default function ReaderClient({
       <h1 className="text-[28px] font-bold leading-9 text-text-primary">Bible Reader</h1>
 
       <div className="flex items-center justify-between">
-        <BookChapterPicker
-          books={books}
-          selectedBook={chapter.book}
-          selectedChapter={chapter.chapter}
-          onBookChange={handleBookChange}
-          onChapterChange={handleChapterChange}
-        />
+        <div className="flex items-center gap-4">
+          <BookChapterPicker
+            books={books}
+            selectedBook={chapter.book}
+            selectedChapter={chapter.chapter}
+            onBookChange={handleBookChange}
+            onChapterChange={handleChapterChange}
+          />
+          <div className="flex items-center rounded-md border border-border overflow-hidden text-sm font-medium">
+            <button
+              type="button"
+              onClick={() => handleLanguageChange("fil")}
+              className={
+                language === "fil"
+                  ? "px-3 py-1.5 bg-accent text-accent-foreground"
+                  : "px-3 py-1.5 bg-surface text-text-secondary hover:bg-surface-secondary"
+              }
+            >
+              AB
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLanguageChange("en")}
+              className={
+                language === "en"
+                  ? "px-3 py-1.5 bg-accent text-accent-foreground"
+                  : "px-3 py-1.5 bg-surface text-text-secondary hover:bg-surface-secondary"
+              }
+            >
+              BSB
+            </button>
+          </div>
+        </div>
         <HighlightColorPicker activeColor={activeColor} onSelect={setActiveColor} />
       </div>
 
