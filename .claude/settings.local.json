@@ -249,7 +249,8 @@
       "Bash(/c/Users/Madpers/AppData/Local/Programs/Python/Python312/python -c 'import pypdfium2; print\\('\\\\''pypdfium2 ok'\\\\''\\)')",
       "Bash(/c/Users/Madpers/AppData/Local/Programs/Python/Python312/python -c 'import fitz; print\\('\\\\''fitz ok'\\\\''\\)')",
       "Bash(/c/Users/Madpers/AppData/Local/Programs/Python/Python312/python -c 'import pdf2image; print\\('\\\\''pdf2image ok'\\\\''\\)')",
-      "Bash(powershell -Command \"Stop-Process -Id 24864 -Force\")"
+      "Bash(powershell -Command \"Stop-Process -Id 24864 -Force\")",
+      "Bash(git check-ignore *)"
     ],
     "defaultMode": "default"
   }
