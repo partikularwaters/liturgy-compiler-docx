@@ -92,8 +92,8 @@ export default function FormulaForm({
             setMarks((prev) => shiftMarksForEdit(defaultText, e.target.value, prev));
             setDefaultText(e.target.value);
           }}
-          rows={4}
-          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent resize-none min-h-[96px] overflow-hidden"
+          rows={8}
+          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent resize-none min-h-[180px] overflow-hidden"
         />
       </div>
       <MarkEditor

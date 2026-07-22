@@ -72,7 +72,7 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
         <LibraryTextPreview
           title={prayer.kind === "guide" ? "Prayer Guide" : "Prayer"}
           text={prayer.text}
-          className="text-sm text-text-primary mt-1"
+          className="mt-1"
         />
         {error && <p className="text-sm text-error mt-1">{error}</p>}
       </div>

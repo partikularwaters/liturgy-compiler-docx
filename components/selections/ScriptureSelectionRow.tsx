@@ -9,6 +9,7 @@ import { getSelectionMarks } from "@/lib/liturgy/markableSections";
 import MarkEditor from "@/components/liturgy/MarkEditor";
 import { TrashIcon } from "@/components/liturgy/icons";
 import LibraryTextPreview from "@/components/library/LibraryTextPreview";
+import ScriptureCitationLink from "@/components/liturgy/ScriptureCitationLink";
 import type { ScriptureSelection, TextMark } from "@/types/liturgy";
 
 interface ScriptureSelectionRowProps {
@@ -86,8 +87,8 @@ export default function ScriptureSelectionRow({
             setMarks((prev) => shiftMarksForEdit(text, e.target.value, prev));
             setText(e.target.value);
           }}
-          rows={3}
-          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent resize-none min-h-[72px] overflow-hidden"
+          rows={8}
+          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent resize-none min-h-[180px] overflow-hidden"
         />
         <MarkEditor
           text={text}
@@ -131,8 +132,8 @@ export default function ScriptureSelectionRow({
         <p className="text-[13px] text-text-secondary">
           {selection.sectionName} · {selection.translation === "en" ? "BSB" : "AB"}
         </p>
-        <p className="text-sm font-medium text-text-primary">{selection.citation}</p>
-        <LibraryTextPreview title={selection.citation} text={selection.text} className="text-sm text-text-secondary mt-1" />
+        <ScriptureCitationLink citation={selection.citation} className="text-sm font-medium text-text-primary" />
+        <LibraryTextPreview title={selection.citation} text={selection.text} marks={selection.marks} className="mt-1" />
       </div>
       <div className="flex items-center gap-3 shrink-0">
         <button

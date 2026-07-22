@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { autosizeTextarea } from "@/lib/text/autosize";
 
 interface PrayerFormProps {
   sectionNames: string[];
@@ -28,6 +29,11 @@ export default function PrayerForm({
   const [sectionName, setSectionName] = useState(initialSectionName || sectionNames[0] || "");
   const [text, setText] = useState(initialText);
   const [kind, setKind] = useState<"prayer" | "guide">(initialKind);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    autosizeTextarea(textareaRef.current);
+  }, [text]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -68,10 +74,11 @@ export default function PrayerForm({
         </label>
         <textarea
           id="prayer-text"
+          ref={textareaRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          rows={4}
-          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
+          rows={8}
+          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent resize-none min-h-[180px] overflow-hidden"
         />
       </div>
       {error && <p className="text-sm text-error">{error}</p>}

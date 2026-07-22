@@ -2,22 +2,14 @@
 
 import { useState } from "react";
 import Modal from "@/components/ui/Modal";
-import { parseBoldSegments } from "@/lib/text/markdown";
+import MarkedText from "@/components/liturgy/MarkedText";
+import type { TextMark } from "@/types/liturgy";
 
 interface LibraryTextPreviewProps {
   title: string;
   text: string;
+  marks?: TextMark[];
   className?: string;
-}
-
-function RenderedText({ text, className }: { text: string; className?: string }): React.ReactElement {
-  return (
-    <p className={`whitespace-pre-wrap ${className ?? ""}`}>
-      {parseBoldSegments(text).map((segment, i) =>
-        segment.bold ? <strong key={i}>{segment.text}</strong> : <span key={i}>{segment.text}</span>
-      )}
-    </p>
-  );
 }
 
 // Direct feedback (2026-07-22): every Library list row (Formula/Prayer/
@@ -29,14 +21,32 @@ function RenderedText({ text, className }: { text: string; className?: string })
 // heuristic (character/newline count, not a DOM measurement) since it only
 // needs to catch entries that are obviously longer than 3 lines, not be
 // pixel-exact.
-export default function LibraryTextPreview({ title, text, className }: LibraryTextPreviewProps): React.ReactElement {
+//
+// Direct feedback (2026-07-22, follow-up): this used to render its own
+// bold-only, sans-font text instead of the shared MarkedText component --
+// Minister/Congregation marks were invisible here even though the library
+// row itself has them (v2's library-level marking toolbar), and the font
+// didn't match the app's liturgical serif body text used everywhere else.
+// Switched to MarkedText (the same renderer SectionCard/LiturgyWebView use)
+// so marks, bold, and typography can never drift between the library
+// preview and everywhere else a placed item's text is shown.
+export default function LibraryTextPreview({
+  title,
+  text,
+  marks,
+  className,
+}: LibraryTextPreviewProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
   const newlineCount = (text.match(/\n/g) ?? []).length;
   const isLikelyOverflowing = text.length > 220 || newlineCount >= 3;
 
   return (
     <>
-      <RenderedText text={text} className={`${className ?? ""} ${isLikelyOverflowing ? "line-clamp-3" : ""}`} />
+      <MarkedText
+        text={text}
+        marks={marks}
+        className={`${className ?? ""} ${isLikelyOverflowing ? "line-clamp-3" : ""}`}
+      />
       {isLikelyOverflowing && (
         <button
           type="button"
@@ -48,7 +58,7 @@ export default function LibraryTextPreview({ title, text, className }: LibraryTe
       )}
       {isOpen && (
         <Modal title={title} onClose={() => setIsOpen(false)}>
-          <RenderedText text={text} className="text-sm text-text-primary leading-relaxed" />
+          <MarkedText text={text} marks={marks} />
         </Modal>
       )}
     </>

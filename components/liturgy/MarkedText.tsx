@@ -5,6 +5,7 @@ import { parseBoldSegments } from "@/lib/text/markdown";
 interface MarkedTextProps {
   text: string;
   marks: TextMark[] | undefined;
+  className?: string;
 }
 
 // Feature 25: Leader/Congregation/Minister/Small-Caps rendering
@@ -15,11 +16,13 @@ interface MarkedTextProps {
 // label. Each marked stretch still runs through parseBoldSegments so
 // existing **bold** congregational-response markup keeps working inside a
 // tagged span.
-export default function MarkedText({ text, marks }: MarkedTextProps): React.ReactElement {
+export default function MarkedText({ text, marks, className }: MarkedTextProps): React.ReactElement {
   const segments = applyMarks(text, marks);
 
   return (
-    <p className="font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap text-justify">
+    <p
+      className={`font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap text-justify ${className ?? ""}`}
+    >
       {segments.map((segment, i) => {
         const rendered = parseBoldSegments(segment.text).map((run, j) =>
           run.bold ? <strong key={j}>{run.text}</strong> : <span key={j}>{run.text}</span>
