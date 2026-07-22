@@ -116,7 +116,7 @@ export function prepareSectionRender(
 
   const items: PreparedItem[] = sorted
     .filter((item) => !excludedIds.has(item.id))
-    .map((item) => ({ item, resolved: resolveItemText(item, formulas, prayers, songs) }));
+    .map((item) => ({ item, resolved: resolveItemText(item, formulas, prayers, songs, sorted) }));
 
   return { header, mergedSelection, items };
 }

@@ -722,7 +722,7 @@ export default function SectionCard({
               );
             }
 
-            const resolved = resolveItemText(item, formulas, prayers, songs);
+            const resolved = resolveItemText(item, formulas, prayers, songs, section.items);
 
             if (item.type === "selection" && editingItemId === item.id) {
               return (

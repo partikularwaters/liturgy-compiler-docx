@@ -5,6 +5,8 @@ import { LITURGY_TEMPLATES } from "@/lib/liturgy/templates";
 import { getLordsDayNumber, parseLocalDate } from "@/lib/liturgy/lordsDay";
 import { getVesperTableReadings } from "@/lib/liturgy/vesperTableRotation";
 import { addSelection } from "@/lib/liturgy/addSelectionAction";
+import { addVerbalCue } from "@/lib/liturgy/verbalCueActions";
+import { MORNING_VERBAL_CUE_TEMPLATES } from "@/lib/liturgy/verbalCueTemplates";
 import type { CreatedLiturgy, LiturgyTemplateId, TemplateSection } from "@/types/liturgy";
 
 export async function createLiturgy(
@@ -50,10 +52,34 @@ export async function createLiturgy(
     await autoAssignVesperTableReadings(liturgyId, serviceDate, templateRow.sections as TemplateSection[]);
   }
 
+  // Feature 26: default Verbal Cue seeding (content supplied by Madrid
+  // 2026-07-22) -- gives a new Morning liturgy a starting cue in every
+  // Section that has one, instead of every Section starting silent.
+  // Best-effort, same discipline as the Vesper auto-assign above: a failure
+  // here shouldn't fail liturgy creation, and every cue stays freely
+  // editable afterward exactly like a hand-typed one.
+  if (templateId === "morning") {
+    await seedMorningVerbalCues(liturgyId, templateRow.sections as TemplateSection[]);
+  }
+
   return {
     success: true,
     data: { id: liturgyId, serviceDate, lordsDayNumber },
   };
+}
+
+async function seedMorningVerbalCues(liturgyId: string, sections: TemplateSection[]): Promise<void> {
+  for (const [sectionName, text] of Object.entries(MORNING_VERBAL_CUE_TEMPLATES)) {
+    const sectionIndex = sections.findIndex((s) => s.name === sectionName);
+    if (sectionIndex === -1) {
+      console.error("[lib/liturgy/createLiturgyAction] verbal cue seed: Section not found in template:", sectionName);
+      continue;
+    }
+    const result = await addVerbalCue(liturgyId, sectionIndex, text, "leader_only");
+    if (!result.success) {
+      console.error("[lib/liturgy/createLiturgyAction] verbal cue seed failed:", sectionName, result.error);
+    }
+  }
 }
 
 async function autoAssignVesperTableReadings(

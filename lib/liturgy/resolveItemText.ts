@@ -1,6 +1,7 @@
 import { applyTrinitarianSeal } from "@/lib/liturgy/trinitarianSeal";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
 import { displayCitation } from "@/lib/bible/bookNamesTagalog";
+import { resolveVerbalCueTemplate } from "@/lib/liturgy/resolveVerbalCueTemplate";
 import type { Formula, Item, Prayer, Song, TextMark } from "@/types/liturgy";
 
 export interface ResolvedItem {
@@ -30,7 +31,13 @@ export interface ResolvedItem {
 // *without* a Trinitarian Seal appended (e.g. FormulaEditForm's textarea,
 // which must edit the underlying override text, not a seal baked on top of
 // it) can get it without duplicating the per-type resolution logic above.
-export function resolveBase(item: Item, formulas: Formula[], prayers: Prayer[], songs: Song[] = []): ResolvedItem {
+export function resolveBase(
+  item: Item,
+  formulas: Formula[],
+  prayers: Prayer[],
+  songs: Song[] = [],
+  siblingItems: Item[] = []
+): ResolvedItem {
   switch (item.type) {
     case "selection":
       return {
@@ -51,13 +58,15 @@ export function resolveBase(item: Item, formulas: Formula[], prayers: Prayer[], 
         marks: item.marks ?? [],
       };
     }
-    case "verbal_cue":
+    case "verbal_cue": {
+      const rawText = item.showAlternate && item.textAlternate ? item.textAlternate : item.text;
       return {
         label: "Verbal Cue",
-        text: item.showAlternate && item.textAlternate ? item.textAlternate : item.text,
+        text: resolveVerbalCueTemplate(rawText, siblingItems, formulas, songs),
         leaderOnly: item.visibility === "leader_only",
         rubric: item.rubric ?? false,
       };
+    }
     case "prayer": {
       const prayer = prayers.find((p) => p.id === item.prayerId);
       return { label: "Prayer", text: prayer?.text ?? "(Prayer not found)", leaderOnly: false, rubric: false };
@@ -86,9 +95,10 @@ export function resolveItemText(
   item: Item,
   formulas: Formula[],
   prayers: Prayer[],
-  songs: Song[] = []
+  songs: Song[] = [],
+  siblingItems: Item[] = []
 ): ResolvedItem {
-  const resolved = resolveBase(item, formulas, prayers, songs);
+  const resolved = resolveBase(item, formulas, prayers, songs, siblingItems);
 
   // Trinitarian Seal: a fixed, bolded closing line appended immediately
   // after whichever item type carries it (TrinitarianSealable) -- `**bold**`
