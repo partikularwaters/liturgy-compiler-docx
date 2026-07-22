@@ -40,7 +40,7 @@ The original repo's PDF pipeline stays in this codebase (`lib/pdf/`), frozen and
 | Language | TypeScript (strict) |
 | Word export | [`docx`](https://www.npmjs.com/package/docx) |
 | PDF export (legacy, frozen) | `@react-pdf/renderer` |
-| Bible text | Self-hosted AB1905 + BSB; BibleGateway RefTag/BGLinks widget for AB2001/MBB (licensed hover preview, text never stored) |
+| Bible text | Self-hosted AB1905 + BSB; BibleGateway RefTag/BGLinks widget for AB2001/MBB (licensed hover preview) |
 | Hosting | Vercel |
 
 ---
