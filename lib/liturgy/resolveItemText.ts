@@ -69,7 +69,13 @@ export function resolveBase(
     }
     case "prayer": {
       const prayer = prayers.find((p) => p.id === item.prayerId);
-      return { label: "Prayer", text: prayer?.text ?? "(Prayer not found)", leaderOnly: false, rubric: false };
+      return {
+        label: "Prayer",
+        text: prayer?.text ?? "(Prayer not found)",
+        leaderOnly: false,
+        rubric: false,
+        marks: prayer?.marks ?? [],
+      };
     }
     case "sermon":
       return { label: "Sermon", text: item.passage, leaderOnly: false, rubric: false };
@@ -101,8 +107,8 @@ export function resolveItemText(
   const resolved = resolveBase(item, formulas, prayers, songs, siblingItems);
 
   // Trinitarian Seal: a fixed, bolded closing line appended immediately
-  // after whichever item type carries it (TrinitarianSealable) -- `**bold**`
-  // markdown so it renders bold everywhere parseBoldSegments already runs,
+  // after whichever item type carries it (TrinitarianSealable) -- a real
+  // `bold` mark so it renders bold everywhere applyMarks() already runs,
   // without a new rendering path. applyTrinitarianSeal() is the single
   // source of truth for this (shared with MarkEditor's live edit-time
   // preview, so they can't drift) -- it also folds the seal into a trailing

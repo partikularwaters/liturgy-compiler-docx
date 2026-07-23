@@ -1,5 +1,4 @@
 import { sectionTitle } from "@/lib/liturgy/sectionTitle";
-import { parseBoldSegments } from "@/lib/text/markdown";
 import { applyMarks } from "@/lib/text/marks";
 import { prepareSectionRender } from "@/lib/liturgy/prepareSectionRender";
 import { isSunday, parseLocalDate } from "@/lib/liturgy/lordsDay";
@@ -20,9 +19,14 @@ function MarkedBody({ text, marks }: { text: string; marks: TextMark[] | undefin
   return (
     <p className="font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap text-justify">
       {applyMarks(text, marks).map((seg, segIndex) => {
-        const rendered = parseBoldSegments(seg.text).map((run, runIndex) =>
-          run.bold ? <strong key={runIndex}>{run.text}</strong> : <span key={runIndex}>{run.text}</span>
-        );
+        const rendered = seg.runs.map((run, runIndex) => {
+          const node = run.smallCaps ? (
+            <span className="[font-variant:small-caps]">{run.text}</span>
+          ) : (
+            run.text
+          );
+          return run.bold ? <strong key={runIndex}>{node}</strong> : <span key={runIndex}>{node}</span>;
+        });
         if (seg.mark === "congregation") {
           return (
             <span key={segIndex} className="block pl-6 mb-2 font-bold">
@@ -39,13 +43,6 @@ function MarkedBody({ text, marks }: { text: string; marks: TextMark[] | undefin
               <span className="text-[13px] font-medium text-accent-dark mr-1 [font-variant:small-caps]">
                 Min:
               </span>
-              {rendered}
-            </span>
-          );
-        }
-        if (seg.mark === "small_caps") {
-          return (
-            <span key={segIndex} className="[font-variant:small-caps]">
               {rendered}
             </span>
           );
@@ -137,7 +134,7 @@ export default function LiturgyWebView({
                       </p>
                     ) : (
                       resolved.text &&
-                      ((item.type === "selection" || item.type === "formula") &&
+                      ((item.type === "selection" || item.type === "formula" || item.type === "prayer") &&
                       resolved.marks &&
                       resolved.marks.length > 0 ? (
                         <MarkedBody key={itemIndex} text={resolved.text} marks={resolved.marks} />
@@ -150,11 +147,13 @@ export default function LiturgyWebView({
                               : "font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap text-justify"
                           }
                         >
-                          {parseBoldSegments(resolved.text).map((segment, segIndex) =>
-                            segment.bold ? (
-                              <strong key={segIndex}>{segment.text}</strong>
-                            ) : (
-                              <span key={segIndex}>{segment.text}</span>
+                          {applyMarks(resolved.text, resolved.marks).flatMap((seg, segIndex) =>
+                            seg.runs.map((run, runIndex) =>
+                              run.bold ? (
+                                <strong key={`${segIndex}-${runIndex}`}>{run.text}</strong>
+                              ) : (
+                                <span key={`${segIndex}-${runIndex}`}>{run.text}</span>
+                              )
                             )
                           )}
                         </p>

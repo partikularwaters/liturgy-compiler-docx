@@ -2,24 +2,35 @@
 
 import { useEffect, useRef, useState } from "react";
 import { autosizeTextarea } from "@/lib/text/autosize";
+import { shiftMarksForEdit } from "@/lib/text/marks";
+import MarkEditor from "@/components/liturgy/MarkEditor";
+import type { TextMark } from "@/types/liturgy";
 
 interface PrayerFormProps {
   sectionNames: string[];
   initialSectionName: string;
   initialText: string;
   initialKind?: "prayer" | "guide";
+  initialMarks?: TextMark[];
   isSaving: boolean;
   error: string | null;
   submitLabel: string;
-  onSubmit: (sectionName: string, text: string, kind: "prayer" | "guide") => void;
+  onSubmit: (sectionName: string, text: string, kind: "prayer" | "guide", marks: TextMark[]) => void;
   onCancel?: () => void;
 }
 
+// 2026-07-23: Prayer never had a marking toolbar at all -- Bold could only
+// be typed by hand as raw asterisks, with no button and (before Bold became
+// a real mark) nowhere to persist it anyway. Bold-only here (no availableMarks
+// -- Congregation/Minister/Small-Caps stay scoped to the Sections that
+// actually need them, per markableSections.ts), same as every other library
+// form's toolbar.
 export default function PrayerForm({
   sectionNames,
   initialSectionName,
   initialText,
   initialKind = "prayer",
+  initialMarks = [],
   isSaving,
   error,
   submitLabel,
@@ -29,6 +40,7 @@ export default function PrayerForm({
   const [sectionName, setSectionName] = useState(initialSectionName || sectionNames[0] || "");
   const [text, setText] = useState(initialText);
   const [kind, setKind] = useState<"prayer" | "guide">(initialKind);
+  const [marks, setMarks] = useState<TextMark[]>(initialMarks);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -76,16 +88,20 @@ export default function PrayerForm({
           id="prayer-text"
           ref={textareaRef}
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setMarks((prev) => shiftMarksForEdit(text, e.target.value, prev));
+            setText(e.target.value);
+          }}
           rows={8}
           className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent resize-none min-h-[180px] overflow-hidden"
         />
       </div>
+      <MarkEditor text={text} marks={marks} onMarksChange={setMarks} availableMarks={[]} textareaRef={textareaRef} />
       {error && <p className="text-sm text-error">{error}</p>}
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(sectionName, text, kind)}
+          onClick={() => onSubmit(sectionName, text, kind, marks)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >

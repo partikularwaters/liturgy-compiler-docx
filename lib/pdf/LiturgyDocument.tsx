@@ -2,7 +2,6 @@ import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import { registerPdfFonts } from "@/lib/pdf/fonts";
 import { pdfColors } from "@/lib/pdf/tokens";
 import { sectionTitle } from "@/lib/liturgy/sectionTitle";
-import { parseBoldSegments } from "@/lib/text/markdown";
 import { applyMarks, type MarkedSegment } from "@/lib/text/marks";
 import { groupSectionsByPageColumn } from "@/lib/liturgy/groupSectionsByPageColumn";
 import { prepareSectionRender } from "@/lib/liturgy/prepareSectionRender";
@@ -12,7 +11,7 @@ import type { CompiledLiturgy, CompiledSection, Formula, Prayer, Song, TextMark 
 // Congregation/Minister render as their own block (a forced line break
 // before and after); Leader (unmarked) and Small Caps don't. Grouping
 // consecutive non-block segments into one shared <Text> (react-pdf nests
-// <Text> inline, the same way parseBoldSegments' bold runs already do) is
+// <Text> inline, the same way a segment's own bold runs already do) is
 // what keeps them flowing on the same line -- wrapping every segment in its
 // own <View>, the previous approach, forced a line break around every mark
 // including Small Caps, which read as "marking a word turns it into its own
@@ -322,8 +321,11 @@ function RenderedSection({
                 seg.mark === "congregation" ? styles.markCongregationText : {},
               ]}
             >
-              {parseBoldSegments(seg.text).map((run, runIndex) => (
-                <Text key={runIndex} style={run.bold ? { fontWeight: "bold" } : undefined}>
+              {seg.runs.map((run, runIndex) => (
+                <Text
+                  key={runIndex}
+                  style={[run.bold ? { fontWeight: "bold" } : {}, run.smallCaps ? styles.smallCapsSubstitute : {}]}
+                >
                   {run.text}
                 </Text>
               ))}
@@ -334,12 +336,12 @@ function RenderedSection({
       return (
         <Text key={groupIndex} style={[styles.body, compact ? styles.bodyCompact : {}, styles.markLine]}>
           {group.segments.map((seg, segIndex) =>
-            parseBoldSegments(seg.text).map((run, runIndex) => (
+            seg.runs.map((run, runIndex) => (
               <Text
                 key={`${segIndex}-${runIndex}`}
                 style={[
                   run.bold ? { fontWeight: "bold" } : {},
-                  seg.mark === "small_caps" ? styles.smallCapsSubstitute : {},
+                  run.smallCaps ? styles.smallCapsSubstitute : {},
                 ]}
               >
                 {run.text}
@@ -426,11 +428,16 @@ function RenderedSection({
                             resolved.rubric ? styles.bodyRubric : {},
                           ]}
                         >
-                          {parseBoldSegments(resolved.text).map((segment, segIndex) => (
-                            <Text key={segIndex} style={segment.bold ? { fontWeight: "bold" } : undefined}>
-                              {segment.text}
-                            </Text>
-                          ))}
+                          {applyMarks(resolved.text, resolved.marks).flatMap((seg, segIndex) =>
+                            seg.runs.map((run, runIndex) => (
+                              <Text
+                                key={`${segIndex}-${runIndex}`}
+                                style={run.bold ? { fontWeight: "bold" } : undefined}
+                              >
+                                {run.text}
+                              </Text>
+                            ))
+                          )}
                         </Text>
                       ))}
               </View>

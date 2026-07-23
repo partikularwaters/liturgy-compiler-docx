@@ -1,0 +1,11 @@
+-- 2026-07-23: Prayer never got the library-level `marks` column
+-- 20260721020000_library_marks.sql gave formulas/scripture_selections --
+-- surfaced while converting the old **bold** markdown convention to real
+-- TextMark[] marks (Bold is now a mark type, not raw-text asterisks). The
+-- two Confession of Sin prayers currently rely on **wrapping their entire
+-- text** for intentional full-prayer bold (confirmed with Madrid: the
+-- congregational response, prayed by all, not a bug) -- with nowhere to
+-- store an equivalent bold mark, that formatting would simply be lost.
+-- Default '[]' so every pre-existing row means "no marks," same convention
+-- as every other marks column in this schema.
+alter table prayers add column marks jsonb not null default '[]'::jsonb;

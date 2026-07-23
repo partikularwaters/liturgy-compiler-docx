@@ -113,7 +113,6 @@ export default function ScriptureSelectionForm({
         text={text}
         marks={marks}
         onMarksChange={setMarks}
-        onTextChange={setText}
         availableMarks={getSelectionMarks(sectionName)}
         textareaRef={textareaRef}
       />

@@ -35,9 +35,15 @@ export default function ScriptureSelectionRow({
   const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // This component toggles its own edit view in place (isEditing flips the
+  // same component's JSX, unlike Formula/Prayer which mount a separate child
+  // form) -- the textarea doesn't exist until isEditing becomes true, so an
+  // effect keyed only on `text` never re-fires against it (text hasn't
+  // changed at that moment). Keying on isEditing too makes it fire the
+  // instant the textarea actually appears.
   useEffect(() => {
-    autosizeTextarea(textareaRef.current);
-  }, [text]);
+    if (isEditing) autosizeTextarea(textareaRef.current);
+  }, [text, isEditing]);
 
   const handleDelete = (): void => {
     if (!window.confirm(`Delete "${selection.citation}"? This cannot be undone.`)) return;
@@ -94,7 +100,6 @@ export default function ScriptureSelectionRow({
           text={text}
           marks={marks}
           onMarksChange={setMarks}
-          onTextChange={setText}
           availableMarks={getSelectionMarks(selection.sectionName)}
           textareaRef={textareaRef}
         />

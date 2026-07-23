@@ -1,0 +1,639 @@
+{
+  "takenAt": "2026-07-22T19:45:32.509Z",
+  "reason": "Pre-Bold-to-mark-migration backup",
+  "formulas": [
+    {
+      "id": "9b9f25f5-ca54-4c41-ad07-590022f08667",
+      "name": "Kredong Apostolico",
+      "default_text": "**Sumasampalataya ako sa Diyos,\n        ang Amang Makapangyarihan-sa-lahat,\n        maylikha ng langit at lupa.\nSumasampalataya ako kay Jesu-Cristo,\n        ang Kanyang bugtong na Anak, na ating Panginoon.\n        Siya ay ipinagdalantao sa pamamagitan ng Banal na Espiritu,\n        at ipinanganak ni Birheng Maria.\n        Nagdusa sa ilalim ni Poncio Pilato,\n        ipinako sa krus, namatay, at inilibing.\n        Siya ay bumaba sa mga patay.\n        Sa ikatlong araw Siya ay nabuhay na muli;\n        Siya ay umakyat sa langit,\n        Siya ay naluklok sa kanang kamay ng Ama,\n        at mula roon Siya ay babalik upang hatulan\n        ang mga buhay at ang mga patay.\nSumasampalataya ako sa Banal na Espiritu,\n        sa banal na pangkalahatang Iglesya,\n        sa kapulungan ng mga banal,\n        sa kapatawaran ng mga kasalanan,\n        sa muling pagkabuhay ng katawan,\n        at sa buhay na walang hanggan. Amen.**",
+      "access_level": null,
+      "section_name": "Affirmation of Faith",
+      "marks": []
+    },
+    {
+      "id": "a3c2c95f-93c8-49e2-9cf4-addcbe967906",
+      "name": "Apostles’ Creed",
+      "default_text": "**I believe in God, the Father almighty,\n        maker of heaven and earth.\nI believe in Jesus Christ, his only Son, our Lord.\n        He was conceived by the Holy Spirit\n        and born of the Virgin Mary.\n        He suffered under Pontius Pilate,\n        was crucified, died, and was buried;\n        He descended to the dead.\n        On the third day he rose again;\n        He ascended into heaven,\n        He is seated at the right hand of the Father.\n        and He will come again\n        to judge the living and the dead.\n        to judge the living and the dead.\nI believe in the Holy Spirit,\n        the holy catholic Church,\n        the communion of saints,\n        the forgiveness of sins,\n        the resurrection of the body,\n        and the life everlasting. Amen.**",
+      "access_level": null,
+      "section_name": "Affirmation of Faith",
+      "marks": []
+    },
+    {
+      "id": "8e6d1c8d-e83d-4341-9242-45b3c7389bf9",
+      "name": "Trinitarian Seal (FIL)",
+      "default_text": "Sa pangalan ng Ama, ng Anak, at ng Banal na Espiritu. Amen.",
+      "access_level": null,
+      "section_name": "Benediction",
+      "marks": []
+    },
+    {
+      "id": "a94ae276-3518-4dd3-8c7b-6aa8a1c7045c",
+      "name": "Absolution",
+      "default_text": "Sumasampalataya ba kayo sa ebanghelyong ito?\nSumasampalataya kami.\nKung gayon, sa pangalan ni Cristo, at sa awtoridad ng Kaniyang Salita, habang kayo’y nagpapatotoo sa inyong sariling paniniwala sa ebanghelyo, ipinahahayag ng Kasulatan sa inyo na ang inyong mga kasalanan ay pinatawad na, at kayo’y wala na sa ilalim ng kaparusahan ng Diyos. Sa pangalan ng Ama, ng Anak, at ng Banal na Espiritu.\nAmen.",
+      "access_level": null,
+      "section_name": "Assurance of Pardon",
+      "marks": [
+        {
+          "end": 44,
+          "type": "minister",
+          "start": 0
+        },
+        {
+          "end": 66,
+          "type": "congregation",
+          "start": 45
+        },
+        {
+          "end": 409,
+          "type": "minister",
+          "start": 67
+        },
+        {
+          "end": 414,
+          "type": "congregation",
+          "start": 409
+        }
+      ]
+    },
+    {
+      "id": "78f01e97-ff14-4fc7-a440-370f7d4d3fa5",
+      "name": "Trinitarian Seal (ENG)",
+      "default_text": "In the name of the Father, of the Son, and of the Holy Spirit. Amen.",
+      "access_level": null,
+      "section_name": "Affirmation of Faith",
+      "marks": []
+    }
+  ],
+  "prayers": [
+    {
+      "id": "e81b7f13-2c5a-4f0e-9b57-b34dfa664a48",
+      "section_name": "Confession of Sin",
+      "text": "**Makapangyarihang Diyos,\nna ang kaluwalhatian ay pumupuno sa mga langit, at ang Iyong trono ay nakatayo sa itaas\nng mga Kerubin,\nipinahahayag namin na kami ay nagkasala\nlaban sa Iyo sa aming mga iniisip,\nmga salita, at mga gawa.\nDinungisan namin ang Iyong Banal na Pangalan at tinalikuran ang Iyong kautusan.\nHindi namin hinanap  ang Iyong mukha\nnang buong puso,\nat marami kaming mabubuting gawa\nna hindi nagawa.\nSindihan Mo sa amin ang banal na dalamhati para sa aming paghihimagsik\nat para sa katuwirang aming pinabayaan.\nO Panginoon, Ikaw ay matuwid sa paghatol, ngunit mayaman sa awa at tapat sa pag-ibig. Sa Iyo ay may masaganang kapatawaran.\nPagalingin Mo ang aming pagkawasak, liwanagan Mo ang aming madilim na isipan, patatagin Mo ang aming mahihinang kalooban, at pagkalooban Mo ng kapayapaan ang aming mga balisang kaluluwa. Amen.**",
+      "kind": "prayer"
+    },
+    {
+      "id": "fcac6099-61a4-42ff-98ab-85f8157d14f2",
+      "section_name": "Confession of Sin",
+      "text": "**Almighty God, whose glory fills the heavens,\nand whose throne stands above the Cherubim,\nwe confess that we have sinned against You\nin our thoughts, words, and deeds.\nWe have defiled Your Holy Name\nand forsaken Your law.\nWe have not sought Your face with all of our hearts,\nand we have left many good works undone.\nKindle in us a godly sorrow for our rebellion\nand the righteousness we have neglected.\nO Lord, You are righteous in judgment,\nyet rich in mercy and steadfast love.\nWith You is abundant forgiveness.\nHeal our brokenness,\nenlighten our darkened minds,\nfortify our weak wills,\nand grant peace to our restless souls. Amen.**",
+      "kind": "prayer"
+    },
+    {
+      "id": "956da1dc-b353-40a0-a6d9-9743d2f2ec07",
+      "section_name": "Prayer of Invocation",
+      "text": "1. ADORATION — Explicit acknowledgement of God’s supreme greatness and goodness.\n2. HUMBLE APPROACH — Recognition of God’s mercy and a humble acknowledgment of our own unrighteousness as we approach His throne.\n3. ACCEPTANCE — A petition for the Holy Spirit’s strength to worship the Father, Son, and Spirit rightly, and that our Father would graciously accept our weak and lowly worship.\n4. THANKSGIVING — Thanks to God for summoning us, allowing us to witness and experience His salvation once again through corporate worship.\n5. TRINITARIAN CONCLUSION — May close with a fitting doxology, e.g. “...ito ang aming panalangin sa pangalan ng Panginoong Jesus, na nabubuhay at naghahari kasama Mo at ng Banal na Espiritu, iisa na Diyos, magpakailanman. Amen.” or “...sa pamamagitan ni Jesu-Cristo; sa Kanya nawa ang kaluwalhatian at kapangyarihan, kasama Mo at ng Banal na Espiritu, magpakailanman. Amen.”\nPrepare in advance — write it out verbatim or meditate on these elements so the prayer is marked by reverence, clarity, and theological precision.",
+      "kind": "guide"
+    },
+    {
+      "id": "4d80b349-3b1f-45f1-9bdd-05356a715118",
+      "section_name": "Prayer for Illumination",
+      "text": "1. PETITION FOR UNDERSTANDING — A plea that the Holy Spirit would lift the veil of darkness from our hearts, illuminate our minds, and grant true spiritual understanding of the text.\n2. HUMBLE SUBMISSION — An expression of submission to the authority, binding nature, and sufficiency of Holy Scripture.\n3. FOCUS ON CHRIST — A prayer that Christ would be clearly revealed through the preaching, and that our eyes would be fixed on His work.\nTrinitarian conclusion is optional, at the Minister’s discretion.",
+      "kind": "guide"
+    },
+    {
+      "id": "9c6d5137-1635-411d-872b-7847662942ce",
+      "section_name": "Prayer for Pardon",
+      "text": "1. LAMENT — A holy complaint (Psalm 64:1) over the reality of mankind’s fallenness, the pain and misery it causes, and the divine judgement it ensures.\n2. CONFESSION — Recognition of the corruption of our own hearts and the deeds of our flesh that rob us of joy in our salvation and zeal for God’s kingdom.\n3. SUPPLICATION — A cry to God for His gracious pardon, for the mortification of our sins, for love for the appointed means of grace, and for the Holy Spirit’s work in our sanctification.\n4. ASSURANCE — A Godward reminder of the precious promises of the gospel, claiming God’s own words to forgive His people and grant their prayers in the name of His Son.\n5. TRINITARIAN CONCLUSION — May close with a fitting doxology, e.g. “...ito ang aming panalangin sa pangalan ng Panginoong Jesus, na nabubuhay at naghahari kasama Mo at ng Banal na Espiritu, iisa na Diyos, magpakailanman. Amen.” or “...sa pamamagitan ni Jesu-Cristo; sa Kanya nawa ang kaluwalhatian at kapangyarihan, kasama Mo at ng Banal na Espiritu, magpakailanman. Amen.”\nPrepare in advance — write it out verbatim or meditate on these elements so the prayer is marked by reverence, clarity, and theological precision.",
+      "kind": "guide"
+    },
+    {
+      "id": "0c151842-34e6-4fae-8e06-146d5f3a776a",
+      "section_name": "Prayer before Communion",
+      "text": "1. RENUNCIATION — An explicit stripping away of personal merit as we approach the table; contrast the immense holiness of the divine presence with our baseline unworthiness as fallen creatures.\n2. APPEAL — Ground our bold approach to the Sacrament entirely in God’s unshakeable nature — His permanent character, which is always to extend grace to the brokenhearted.\n3. PETITION — Emphasize that feeding upon Christ is an inward work executed strictly by faith, avoiding any carnal or physical misunderstanding; request the dual cleansing of our physical existence and our inner souls via the broken body and shed blood of Christ.\n4. MYSTICAL UNION — A prayer for the visible seal and internal confirmation of the mystical union between Christ and the believer — an intimate reinforcement of our mutual indwelling, us in Christ and Christ in us.\n5. CONFIRMATION — A petition that the Holy Spirit would use the physical elements to confirm, seal, and deepen gospel promises in the hearts of the Communicants.\nTrinitarian conclusion is optional, at the Minister’s discretion.",
+      "kind": "guide"
+    },
+    {
+      "id": "e6aa8da1-2cc1-413a-8782-d7a2f09ed07d",
+      "section_name": "Closing of the Table",
+      "text": "1. THANKSGIVING — Deep gratitude for the rich mercy of God bestowed upon the congregation through the sacrament, and for the spiritual nourishment received through this means of grace.\n2. CONFESSION — A humble plea for forgiveness regarding the structural flaws, straying thoughts, and spiritual defects present in the execution of the day’s worship.\n3. GUIDANCE OF THE SPIRIT — A request for the gracious assistance and power of the Holy Spirit to attend the lives of the Communicants, that they would walk in the strength of the grace just received.\n4. HOPEFUL EXPECTATION — An anchoring petition for strength to persevere in faith, hoping for the return of our Lord Jesus Christ from heaven, when we shall feast with Him at the final Marriage Supper of the Lamb.",
+      "kind": "guide"
+    },
+    {
+      "id": "7168b3d8-fd41-4c73-aff4-52a0d1487521",
+      "section_name": "Pastoral Prayer",
+      "text": "1. THANKSGIVING FOR WORSHIP — Expressing gratitude for the morning service and the privilege of gathering.\n2. CONSECRATION OF TITHES — Giving thanks for the offerings received and praying for their wise stewardship.\n3. PRAYER OF APPLICATION — Thanking God for the sermon and praying for the long-term fruit of the Word in the lives of the people.\n4. INTERCESSIONS & PETITIONS — General pastoral intercessions for the spiritual and physical needs of the congregation, the sister churches, and the global body of Christ; protection and provision for gospel ministers around the country; intercessions for the city and country, and for those in authority over them.",
+      "kind": "guide"
+    },
+    {
+      "id": "a620ddba-d430-4ab3-a4f5-93a6a399394f",
+      "section_name": "Prayer before Communion",
+      "text": "Hindi kami nangangahas na lumapit sa banal Mong hapag,\nO mahabaging Panginoon,\nna nagtitiwala sa sarili naming katuwiran,\nkundi sa Iyong sagana at dakilang mga awa.\nHindi kami karapat-dapat kahit man lamang pumulot\nng mga mumo sa ilalim ng Iyong hapag.\nGayunman, Ikaw ay Siya ring Panginoon,\nna ang likás na katangian ay laging magpakita ng awa.\n\nIpagkaloob Mo nga sa amin, mapagpalang Panginoon,\nna sa pamamagitan ng pananampalataya\naming makain ang laman\nng Iyong minamahal na Anak na si Jesu-Cristo,\nat mainom ang Kaniyang dugo,\nupang ang aming mga katawang makasalanan ay luminis\nsa pamamagitan ng Kaniyang katawan,\nat ang aming mga kaluluwa ay mahugasan\nsa pamamagitan ng Kaniyang pinakamahalagang dugo,\nat upang kami’y manahan sa Kaniya magpakailanman,\nat Siya’y manahan sa amin.\n\nPalaguin mo sa amin ang tunay\nat buháy na pananampalataya\nna sa pamamagitan nito kami’y yumayakap kay Cristo.\nBigyan mo kami ng kakayahang maniwala sa lahat\nng mga pangako ng Ebanghelyo,\nat tanggapin sa Banal na Hapunang ito\nang kumpirmasyon ng mga iyon ding pangako.\n\nGisingin Mo, sa pamamagitan ng Iyong Banal na Espiritu,\nang aming mga kaluluwa mula sa pagkakahimbing,\nupang matanggap namin ang Iyong kaligtasan,\nnang may pananabik at pasasalamat.\nTuruan Mo kaming hintayin\nang aming Panginoong Jesu-Cristo mula sa langit,\nna Siyang magdadala sa amin sa Kaniyang sarili\nsa walang hanggang kaluwalhatian.\n\nIto’y aming hinihiling nang may kababaang-loob sa Iyo,\nsa pamamagitan ng Iyong Anak na si Jesu-Cristo,\nna nabubuhay at naghahari kasama Mo\nat ng Banal na Espiritu,\niisa na Diyos, magpakailanman.\nAmen.",
+      "kind": "prayer"
+    },
+    {
+      "id": "7ea03973-adf3-4ef4-ac1d-c2b24048e4d4",
+      "section_name": "Prayer before Communion",
+      "text": "We do not presume to come to this Your table,\nO merciful Lord,\ntrusting in our own righteousness,\nbut in Your manifold and great mercies.\nWe are not worthy so much as to gather up\nthe crumbs under Your table.\nYet You are the same Lord,\nwhose very nature is always to show mercy.\n\nGrant us therefore, gracious Lord,\nso by faith\nto eat the flesh\nof Your dear Son, Jesus Christ,\nand to drink His blood,\nthat our sinful bodies\nmay be made clean by His body,\nand our souls washed\nthrough His most precious blood,\nand that we may evermore dwell in Him,\nand He in us.\n\nIncrease in us that true\nand living faith\nby which we lay hold of Christ.\nEnable us to believe all\nthe promises of the Gospel,\nand to receive in this Holy Supper\nthe confirmation of those very same promises.\n \nBy Your Holy Spirit,\nawaken our souls from slumber,\nthat we may receive Your salvation,\nwith eagerness and thanksgiving.\nTeach us to await\nour Lord Jesus Christ from heaven,\nwho will bring us to Himself\nin everlasting glory.\n\nWe humbly ask You this,\nthrough Your Son, Jesus Christ,\nwho lives and reigns with You and the Holy Spirit,\none God, forever and ever.\nAmen.",
+      "kind": "prayer"
+    }
+  ],
+  "scripture_selections": [
+    {
+      "id": "b9198422-ab92-475f-9b74-da5bd77523b3",
+      "section_name": "Call to Worship",
+      "citation": "Mga Awit 47:5–9",
+      "text": "Ang Diyos ay pumailanglang na may sigaw,\nang Panginoon na may tunog ng trumpeta.\nKayo’y magsiawit ng mga papuri sa Diyos, kayo’y magsiawit ng mga papuri!\nKayo’y magsiawit ng mga papuri sa ating Hari, kayo’y magsiawit ng mga papuri!\nSapagkat ang Diyos ang hari ng buong lupa;\nmagsiawit kayo ng mga papuri na may awit!\nAng Diyos ay naghahari sa mga bansa;\nang Diyos ay nakaupo sa Kanyang banal na trono.\nAng mga pinuno ng mga bayan ay nagtipun-tipon\nbilang bayan ng Diyos ni Abraham;\nsapagkat ang mga kalasag ng lupa ay sa Diyos;\nSiya’y napakadakila.",
+      "created_at": "2026-07-17T21:43:53.683573+00:00",
+      "translation": "fil",
+      "marks": [
+        {
+          "end": 548,
+          "type": "congregation",
+          "start": 232
+        }
+      ]
+    },
+    {
+      "id": "50630593-c73c-4265-bca0-1eb399b9a181",
+      "section_name": "Call to Worship",
+      "citation": "Mga Awit 95:1–3",
+      "text": "Oh magsiparito kayo, tayo’y magsiawit sa Panginoon: tayo’y magkaingay na may kagalakan sa malaking bato na ating kaligtasan. Tayo’y magsiharap sa kaniyang harapan na may pagpapasalamat, tayo’y magkaingay na may kagalakan sa kaniya na may mga pagaawitan. Sapagka’t ang Panginoon ay dakilang Dios, at dakilang Hari sa lahat ng mga dios,",
+      "created_at": "2026-07-19T03:28:22.33103+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "72d713ec-b5a1-4c50-bea5-468721bd77e4",
+      "section_name": "Call to Worship",
+      "citation": "Mga Awit 95:1–5",
+      "text": "O halikayo, tayo’y umawit sa Panginoon;\ntayo’y sumigaw na may kagalakan\nsa malaking bato ng ating kaligtasan!\nLumapit tayo sa Kanyang harapan\nna may pagpapasalamat;\ntayo’y sumigaw na may kagalakan\nsa Kanya ng mga awit ng pagpupuri!\nSapagkat ang Panginoon\nay dakilang Diyos,\nat dakilang Hari sa lahat ng mga diyos.\nNasa Kanyang kamay\nang mga kalaliman ng lupa,\nang mga kataasan ng mga bundok\nay Kanya rin.\nAng dagat ay Kanya,\nsapagkat ito’y Kanyang ginawa,\nang Kanyang mga kamay\nang lumikha ng tuyong lupa.",
+      "created_at": "2026-07-20T01:49:54.284307+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "8ca9548e-ac43-4ed8-9751-a70b3d42c501",
+      "section_name": "Assurance of Pardon",
+      "citation": "1 Timoteo 1:15",
+      "text": "Tapat ang pasabi, at nararapat tanggapin ng lahat, na si Cristo Jesus ay naparito sa sanglibutan upang iligtas ang mga makasalanan.",
+      "created_at": "2026-07-17T17:19:11.572379+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "a1ec2c8d-e6f9-4734-9ed3-e47c3acaa363",
+      "section_name": "Assurance of Pardon",
+      "citation": "1 Pedro 2:24",
+      "text": "Na siya rin ang nagdala ng ating mga kasalanan sa kaniyang katawan sa ibabaw ng kahoy, upang pagkamatay natin sa mga kasalanan, ay mangabuhay tayo sa katuwiran; na dahil sa kaniyang mga sugat ay nangagsigaling kayo.",
+      "created_at": "2026-07-17T17:21:48.013959+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "921c66d3-c9fb-4f76-9cca-904acea1342c",
+      "section_name": "Prayer of Invocation",
+      "citation": "Mga Awit 86:1,16",
+      "text": "Ikiling mo ang iyong pakinig, Oh Panginoon, at sagutin mo ako; sapagka’t ako’y dukha at mapagkailangan. Oh bumalik ka sa akin, at maawa ka sa akin; ibigay mo ang lakas mo sa iyong lingkod.",
+      "created_at": "2026-07-17T20:31:23.752138+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "8ad44563-9e6f-4b5a-9189-94097bf743cc",
+      "section_name": "Offertory Call",
+      "citation": "2 Corinto 9:6–7",
+      "text": "At ito ang ibig kong sabihin: Ang naghahasik nang bahagya ay mag-aani rin nang bahagya, at ang naghahasik nang sagana ay mag-aani rin nang sagana. Ang bawat isa ay magbigay ayon sa ipinasiya ng kanyang puso, hindi mabigat sa kalooban, o dala ng pangangailangan, sapagkat iniibig ng Diyos ang nagbibigay na masaya.",
+      "created_at": "2026-07-17T21:36:15.948096+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "ed32e0cb-b1fb-4da6-82ca-20926c0a661a",
+      "section_name": "Righteousness of God",
+      "citation": "Exodo 20:1–17",
+      "text": "At sinalita ng Dios ang lahat ng salitang ito, na sinasabi, Ako ang Panginoon mong Dios, na naglabas sa iyo sa lupain ng Egipto, sa bahay ng pagkaalipin:\n**1   Huwag kang magkakaroon ng ibang mga dios sa harap ko.\n2   Huwag kang gagawa para sa iyo ng anomang diyus-diyosan.\n3   Huwag mong babanggitin ang pangalan ng Panginoon mong Dios sa walang kabuluhan;\n4   Alalahanin mo ang araw ng sabbath upang ipangilin. \n5   Igalang mo ang iyong ama at ang iyong ina.\n6   Huwag kang papatay.\n7   Huwag kang mangangalunya.\n8   Huwag kang magnanakaw.\n9   Huwag kang magsinungaling laban sa iyong kapuwa.\n10   Huwag mong iimbutin ang anomang bagay ng iyong kapuwa.**",
+      "created_at": "2026-07-17T21:44:37.735664+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "b433df56-c5e0-4fa8-85ff-515a43a0beea",
+      "section_name": "Call to Confession",
+      "citation": "Mga Awit 130:3–4",
+      "text": "Kung ikaw, Panginoon, magtatanda ng mga kasamaan, Oh Panginoon, sinong tatayo? Nguni’t may kapatawarang taglay ka, upang ikaw ay katakutan.",
+      "created_at": "2026-07-17T22:23:57.845623+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "e47bf0cb-8636-40aa-9ef5-2164f34744ed",
+      "section_name": "Prayer of Invocation",
+      "citation": "Mga Awit 143:1–2",
+      "text": "Pakinggan Mo, O Panginoon, ang aking dalangin,\nIyong dinggin ang aking mga daing!\nSa Iyong katapatan, sa Iyong katuwiran,\nako’y Iyong sagutin!\nAt huwag Kang pumasok na kasama\nng Iyong lingkod sa kahatulan;\nsapagkat walang taong nabubuhay\nna matuwid sa Iyong harapan.",
+      "created_at": "2026-07-17T21:39:11.085721+00:00",
+      "translation": "fil",
+      "marks": [
+        {
+          "end": 266,
+          "type": "congregation",
+          "start": 82
+        },
+        {
+          "end": 25,
+          "type": "small_caps",
+          "start": 16
+        }
+      ]
+    },
+    {
+      "id": "b1ede494-fc27-46ad-8754-1cf68d6b69b5",
+      "section_name": "Benediction",
+      "citation": "Judas 1:24–25",
+      "text": "Ngayon sa Kanya na may kakayahang mag-ingat sa inyo mula sa pagkatisod, at sa inyo’y makapaghaharap na walang kapintasan sa harapan ng Kanyang kaluwalhatian na may malaking kagalakan, sa iisang Diyos na ating Tagapagligtas, sa pamamagitan ni Jesu-Cristo na ating Panginoon, Sumakanya nawa ang kaluwalhatian, ang karangalan, ang kapangyarihan at ang kapamahalaan, bago pa ang lahat ng panahon, at ngayon at magpakailanman. Amen.",
+      "created_at": "2026-07-17T23:11:45.282865+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "525aec17-eb38-4cd5-9b7a-09a5e90de412",
+      "section_name": "Benediction",
+      "citation": "Efeso 3:20–21",
+      "text": "Ngayon, sa Kanya na makakagawa ng higit na sagana kaysa lahat ng ating hinihingi o iniisip, ayon sa kapangyarihang gumagawa sa atin, Sumakanya nawa ang kaluwalhatian sa iglesya at kay Cristo Jesus sa lahat ng mga salinlahi, magpakailanpaman. Amen.",
+      "created_at": "2026-07-17T22:55:06.074955+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "6658dca7-3e7d-4fcc-99b0-dc1d08b3cabb",
+      "section_name": "Call to Worship",
+      "citation": "Mga Awit 95:1",
+      "text": "Halina kayo, tayo’y magsiawit sa PANGINOON: tayo’y magkaingay na may kagalakan sa malaking bato ng ating kaligtasan.\nHalina kayo, tayo’y magsiawit ng mga pasalamat sa kanya, tayo’y magsihiyaw ng may kagalakan sa kanya ng mga pagawitan.",
+      "created_at": "2026-07-20T05:07:14.732948+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "b6269a93-8ce4-41ab-bb8f-1de98ab0b29b",
+      "section_name": "Charge",
+      "citation": "Mikas 6:1",
+      "text": "Dinggin ninyo ngayon kung ano ang sinasabi ng Panginoon: Bumangon ka, makipagkaalit ka sa harap ng mga bundok, at dinggin ng mga burol ang iyong tinig.",
+      "created_at": "2026-07-20T05:15:10.432185+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "b3459f16-23bb-4f38-ba3f-47ce85dcf188",
+      "section_name": "Offertory Call",
+      "citation": "2 Corinthians 9:7–8",
+      "text": "Each one should give what he has decided in his heart to give, not out of regret or compulsion. For God loves a cheerful giver. And God is able to make all grace abound to you, so that in all things, at all times, having all that you need, you will abound in every good work.",
+      "created_at": "2026-07-20T16:45:04.963946+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "12db9344-0912-409f-9e29-92ca76251904",
+      "section_name": "Charge",
+      "citation": "Colossians 3:12–14",
+      "text": "Therefore, as the elect of God, holy and beloved, clothe yourselves with hearts of compassion, kindness, humility, gentleness, and patience. Bear with one another and forgive any complaint you may have against someone else. Forgive as the Lord forgave you. And over all these virtues put on love, which is the bond of perfect unity.",
+      "created_at": "2026-07-20T17:29:36.558518+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "21ce10f5-589e-4d30-93b5-71f3dfa2484e",
+      "section_name": "Offertory Call",
+      "citation": "2 Corinthians 9:6–7",
+      "text": "Remember this: Whoever sows sparingly will also reap sparingly, and whoever sows generously will also reap generously. Each one should give what he has decided in his heart to give, not out of regret or compulsion. For God loves a cheerful giver.",
+      "created_at": "2026-07-20T19:16:53.969602+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "26ed612f-a740-4c4b-b1b9-8d7140041883",
+      "section_name": "Call to Confession",
+      "citation": "Psalms 130:3–4",
+      "text": "If You, O LORD, kept track of iniquities, then who, O Lord, could stand? But with You there is forgiveness, so that You may be feared.",
+      "created_at": "2026-07-20T19:16:55.586624+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "3d6bd3b3-f6a7-412c-9af3-001b4d6263ea",
+      "section_name": "Benediction",
+      "citation": "Jude 1:24–25",
+      "text": "Now to Him who is able to keep you from stumbling and to present you unblemished in His glorious presence, with great joy— to the only God our Savior be glory, majesty, dominion, and authority through Jesus Christ our Lord before all time, and now, and for all eternity. Amen.",
+      "created_at": "2026-07-20T19:16:56.398534+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "bc3ed854-fabc-414b-a886-ba89db0b83c5",
+      "section_name": "Assurance of Pardon",
+      "citation": "Juan 3:16",
+      "text": "Sapagka't gayon na lamang ang pagsinta ng Dios sa sanglibutan, na ibinigay niya ang kaniyang bugtong na Anak, upang ang sinomang sa kaniya'y sumampalataya ay huwag mapahamak, kundi magkaroon ng buhay na walang hanggan.",
+      "created_at": "2026-07-21T15:44:02.677878+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "742876a9-a54f-4da0-bad9-65d9475dc974",
+      "section_name": "Assurance of Pardon",
+      "citation": "Acts 13:38–39",
+      "text": "Therefore let it be known to you, brothers, that through Jesus the forgiveness of sins is proclaimed to you. Through Him everyone who believes is justified from everything from which you could not be justified by the law of Moses.",
+      "created_at": "2026-07-21T15:44:39.487373+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "920ef5a5-5eb0-4d5c-bbe0-f75d2bd4da20",
+      "section_name": "Assurance of Pardon",
+      "citation": "Mga Gawa 13:38–39",
+      "text": "Kaya maging hayag nawa sa inyo, mga kapatid, na sa pamamagitan ng taong ito'y ibinabalita sa inyo ang kapatawaran ng mga kasalanan: At sa pamamagitan niya ang bawa't nananampalataya ay inaaring ganap sa lahat ng mga bagay, na sa mga ito'y hindi kayo aariing ganap sa pamamagitan ng kautusan ni Moises.",
+      "created_at": "2026-07-21T15:44:39.913867+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "fc10709e-db44-4ce3-8bcc-8e6122286feb",
+      "section_name": "Offertory Call",
+      "citation": "2 Corinthians 9:10–12",
+      "text": "Now He who supplies seed to the sower and bread for food will supply and multiply your store of seed and will increase the harvest of your righteousness. You will be enriched in every way to be generous on every occasion, and through us your generosity will produce thanksgiving to God. For this ministry of service is not only supplying the needs of the saints but is also overflowing in many expressions of thanksgiving to God.",
+      "created_at": "2026-07-21T15:52:57.069748+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "23a3a61a-b936-42bf-9301-0269372349d3",
+      "section_name": "Call to Worship",
+      "citation": "Psalms 47:5–9",
+      "text": "God has ascended amid shouts of joy, the LORD with the sound of the horn. Sing praises to God, sing praises; sing praises to our King, sing praises! For God is King of all the earth; sing to Him a psalm of praise. God reigns over the nations; God is seated on His holy throne. The nobles of the nations have assembled as the people of the God of Abraham; for the shields of the earth belong to God; He is highly exalted.",
+      "created_at": "2026-07-20T19:16:54.778701+00:00",
+      "translation": "en",
+      "marks": [
+        {
+          "end": 420,
+          "type": "congregation",
+          "start": 149
+        }
+      ]
+    },
+    {
+      "id": "340b1bd1-1c59-45e5-baa3-a705bf6e0aee",
+      "section_name": "Prayer of Invocation",
+      "citation": "Psalms 143:1–2",
+      "text": "O Lord, hear my prayer.\nIn Your faithfulness, give ear to my plea;\nin Your righteousness, answer me.\nDo not bring Your servant into judgment,\nfor no one alive is righteous before You.",
+      "created_at": "2026-07-20T19:16:54.374446+00:00",
+      "translation": "en",
+      "marks": [
+        {
+          "end": 6,
+          "type": "small_caps",
+          "start": 2
+        },
+        {
+          "end": 183,
+          "type": "congregation",
+          "start": 67
+        }
+      ]
+    },
+    {
+      "id": "667431fa-d778-4608-9cb6-685cbb14742f",
+      "section_name": "Benediction",
+      "citation": "Ephesians 3:20–21",
+      "text": "Now to Him who is able to do immeasurably more than all we ask or imagine, according to His power that is at work within us, to Him be the glory in the church and in Christ Jesus throughout all generations, forever and ever. Amen.",
+      "created_at": "2026-07-20T19:16:55.993087+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "13134f7c-9c30-4ba6-b466-5ed0f5f3c834",
+      "section_name": "Offertory Call",
+      "citation": "2 Corinto 9:10–12",
+      "text": "Siyang nagbibigay ng binhi sa manghahasik at ng tinapay bilang pagkain ay Siyang magbibigay at magpaparami ng inyong binhi upang ihasik, at magpaparami ng mga bunga ng inyong pagiging matuwid; na kayo ay pinayayaman sa bawat bagay dahil sa inyong kagandahang-loob, na sa pamamagitan namin ay nagbubunga ng pasasalamat sa Diyos. Sapagkat ang pangangasiwa sa paglilingkod na ito ay hindi lamang pumupuno sa pangangailangan ng mga banal, kundi umaapaw rin sa pamamagitan ng maraming pasasalamat sa Diyos.",
+      "created_at": "2026-07-21T15:52:57.538964+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "cb112ed2-124c-4e6e-89d6-584eb5880683",
+      "section_name": "Call to Worship",
+      "citation": "Psalms 95:1–3",
+      "text": "Come, let us sing for joy to the LORD; let us shout to the Rock of our salvation! Let us enter His presence with thanksgiving; let us make a joyful noise to Him in song. For the LORD is a great God, a great King above all gods.",
+      "created_at": "2026-07-20T16:45:12.498634+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "6b6333ee-92c4-4dc3-84c2-6c6979055301",
+      "section_name": "Call to Worship",
+      "citation": "Psalms 95:1–5",
+      "text": "Come, let us sing for joy to the LORD; let us shout to the Rock of our salvation! Let us enter His presence with thanksgiving; let us make a joyful noise to Him in song. For the LORD is a great God, a great King above all gods. In His hand are the depths of the earth, and the mountain peaks belong to Him. The sea is His, for He made it, and His hands formed the dry land.",
+      "created_at": "2026-07-20T16:45:13.060879+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "cc5a75a9-1877-45f1-a96c-ded522ece704",
+      "section_name": "Call to Worship",
+      "citation": "Psalms 95:1",
+      "text": "Come, let us sing for joy to the LORD; let us shout to the Rock of our salvation!",
+      "created_at": "2026-07-20T16:45:13.972162+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "8184f28f-80a1-4210-8378-c9507ee72247",
+      "section_name": "Charge",
+      "citation": "Micah 6:1",
+      "text": "Hear now what the LORD says: “Arise, plead your case before the mountains, and let the hills hear your voice.",
+      "created_at": "2026-07-20T16:45:14.91983+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "77efba75-84fe-4710-880d-94834f3b7714",
+      "section_name": "Righteousness of God",
+      "citation": "Exodus 20:1–17",
+      "text": "And God spoke all these words: I am the LORD your God, who brought you out of the land of Egypt, out of the house of slavery.\n**1    You shall have no other gods before Me.\n2    You shall not make for yourself an idol.\n3    You shall not take the name of the LORD your God in vain.\n4    Remember the Sabbath day by keeping it holy.\n5    Honor your father and mother.\n6    You shall not murder.\n7    You shall not commit adultery.\n8    You shall not steal.\n9    You shall not bear false witness against your neighbor.\n10   You shall not covet anything that belongs to your neighbor.**",
+      "created_at": "2026-07-20T19:16:51.515026+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "97237348-d7e5-4e77-bd3e-4c5618bb76d3",
+      "section_name": "Charge",
+      "citation": "Colosas 3:12–14",
+      "text": "Mangagbihis nga kayo gaya ng mga hinirang ng Dios, na mga banal at minamahal, ng isang pusong mahabagin, ng kagandahangloob, ng kababaan, ng kaamuan, ng pagpapahinuhod: Mangagtiisan kayo sa isa’t isa, at mangagpatawaran kayo sa isa’t isa, kung ang sinoman ay may sumbong laban sa kanino man; na kung paanong pinatawad kayo ng Panginoon, ay gayon din naman ang inyong gawin: At sa ibabaw ng lahat ng mga bagay na ito ay mangagbihis kayo ng pagibig na siyang tali ng kasakdalan.",
+      "created_at": "2026-07-20T17:29:36.133785+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "581feb72-961b-4769-90cb-2a5d94f2ef6d",
+      "section_name": "Offertory Call",
+      "citation": "2 Corinto 9:7-8",
+      "text": "Magbigay ang bawa’t isa ayon sa ipinasiya ng kaniyang puso: huwag mabigat sa loob, o dahil sa kailangan: sapagka’t iniibig ng Dios ang nagbibigay na masaya. At maaaring gawin ng Dios na ang lahat ng biyaya ay magsisagana sa inyo; upang kayo, na mayroong laging buong kaya sa lahat ay magsipanagana sa bawa’t mabuting gawa:",
+      "created_at": "2026-07-16T00:28:40.508838+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "09d131b9-b0c6-4311-81e0-b31857702e51",
+      "section_name": "Assurance of Pardon",
+      "citation": "1 Timothy 1:15",
+      "text": "This is a trustworthy saying, worthy of full acceptance: Christ Jesus came into the world to save sinners, of whom I am the worst.",
+      "created_at": "2026-07-20T19:16:52.335818+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "176c630d-5fcf-4f7a-986f-f188af0b241d",
+      "section_name": "Assurance of Pardon",
+      "citation": "1 Peter 2:24",
+      "text": "He Himself bore our sins in His body on the tree, so that we might die to sin and live to righteousness. “By His stripes you are healed.”",
+      "created_at": "2026-07-20T19:16:52.740376+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "16f6f6c5-a86b-409d-b1a1-2df1ab49cda1",
+      "section_name": "Prayer of Invocation",
+      "citation": "Psalms 86:1,16",
+      "text": "A prayer of David. Incline Your ear, O LORD, and answer me, for I am poor and needy. Turn to me and have mercy; grant Your strength to Your servant; save the son of Your maidservant.",
+      "created_at": "2026-07-20T19:16:53.148162+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "fa68d76d-c52c-440b-bbc8-66b4abb3e38b",
+      "section_name": "Offertory Call",
+      "citation": "2 Corinthians 9:7-8",
+      "text": "Each one should give what he has decided in his heart to give, not out of regret or compulsion. For God loves a cheerful giver. And God is able to make all grace abound to you, so that in all things, at all times, having all that you need, you will abound in every good work.",
+      "created_at": "2026-07-20T19:16:57.213235+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "aafa4eca-a74d-4244-969a-175207bf039d",
+      "section_name": "The Lord's Discourses",
+      "citation": "Mateo 5–7",
+      "text": "",
+      "created_at": "2026-07-21T05:11:17.318816+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "42debbbc-b0d9-45e0-906f-e1b2d5c095fa",
+      "section_name": "Words of Institution",
+      "citation": "Lucas 22:7–21",
+      "text": "",
+      "created_at": "2026-07-21T05:11:18.030199+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "dd835028-8ca5-483f-84e2-3324fd4b9de7",
+      "section_name": "Words of Institution",
+      "citation": "Luke 22:7–21",
+      "text": "Then came the day of Unleavened Bread on which the Passover lamb was to be sacrificed. Jesus sent Peter and John, saying, “Go and make preparations for us to eat the Passover.” “Where do You want us to prepare it?” they asked. He answered, “When you enter the city, a man carrying a jug of water will meet you. Follow him to the house he enters, and say to the owner of that house, ‘The Teacher asks: Where is the guest room, where I may eat the Passover with My disciples?’ And he will show you a large upper room, already furnished. Make preparations there.” So they went and found it just as Jesus had told them. And they prepared the Passover. When the hour had come, Jesus reclined at the table with His apostles. And He said to them, “I have eagerly desired to eat this Passover with you before My suffering. For I tell you that I will not eat it again until it is fulfilled in the kingdom of God.” After taking the cup, He gave thanks and said, “Take this and divide it among yourselves. For I tell you that I will not drink of the fruit of the vine from now on until the kingdom of God comes.” And He took the bread, gave thanks and broke it, and gave it to them, saying, “This is My body, given for you; do this in remembrance of Me.” In the same way, after supper He took the cup, saying, “This cup is the new covenant in My blood, which is poured out for you. Look! The hand of My betrayer is with Mine on the table.",
+      "created_at": "2026-07-21T05:11:18.762396+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "ce0a3731-28f5-46e1-9df9-bb95f04c3920",
+      "section_name": "Closing of the Table",
+      "citation": "Mateo 5:9–15",
+      "text": "",
+      "created_at": "2026-07-21T05:11:19.302377+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "416283a3-e33a-4f20-8e94-3571e92efbd8",
+      "section_name": "Closing of the Table",
+      "citation": "Matthew 5:9–15",
+      "text": "Blessed are the peacemakers, for they will be called sons of God. Blessed are those who are persecuted because of righteousness, for theirs is the kingdom of heaven. Blessed are you when people insult you, persecute you, and falsely say all kinds of evil against you because of Me. Rejoice and be glad, because great is your reward in heaven, for in the same way they persecuted the prophets before you. You are the salt of the earth. But if the salt loses its savor, how can it be made salty again? It is no longer good for anything, except to be thrown out and trampled by men. You are the light of the world. A city on a hill cannot be hidden. Neither do people light a lamp and put it under a basket. Instead, they set it on a stand, and it gives light to everyone in the house.",
+      "created_at": "2026-07-21T05:11:19.862352+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "ee76cef0-0474-4f04-9b49-10281193b68b",
+      "section_name": "The Lord's Discourses",
+      "citation": "Juan 4:1–42",
+      "text": "",
+      "created_at": "2026-07-21T05:40:51.798111+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "83c0c076-c158-48bf-bdde-41bbeb04b72e",
+      "section_name": "Call to Worship",
+      "citation": "Psalms 95:1–6",
+      "text": "Come, let us sing for joy to the LORD; let us shout to the Rock of our salvation! Let us enter His presence with thanksgiving; let us make a joyful noise to Him in song. For the LORD is a great God, a great King above all gods. In His hand are the depths of the earth, and the mountain peaks belong to Him. The sea is His, for He made it, and His hands formed the dry land. O come, let us worship and bow down; let us kneel before the LORD our Maker.",
+      "created_at": "2026-07-21T15:15:12.028458+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "f3b73771-b52a-4e3b-8734-3e72e92a8c03",
+      "section_name": "Call to Worship",
+      "citation": "Mga Awit 95:1–6",
+      "text": "Oh magsiparito kayo, tayo'y magsiawit sa Panginoon: tayo'y magkaingay na may kagalakan sa malaking bato na ating kaligtasan. Tayo'y magsiharap sa kaniyang harapan na may pagpapasalamat, tayo'y magkaingay na may kagalakan sa kaniya na may mga pagaawitan. Sapagka't ang Panginoon ay dakilang Dios, at dakilang Hari sa lahat ng mga dios, Na sa kaniyang kamay ang mga malalim na dako ng lupa, ang mga kataasan ng mga bundok ay kaniya rin. Ang dagat ay kaniya, at kaniyang ginawa: at ang kaniyang mga kamay ay lumikha ng tuyong lupa. Oh magsiparito kayo, tayo'y magsisamba at magsiyukod; tayo'y magsiluhod sa harap ng Panginoon na May-lalang sa atin.",
+      "created_at": "2026-07-21T15:15:12.636059+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "1d01d537-8efa-4759-90d3-566178ba30d6",
+      "section_name": "Prayer of Invocation",
+      "citation": "Psalms 54:2,4,6",
+      "text": "Hear my prayer, O God;\nlisten to the words of my mouth.\nSurely God is my helper;\nthe Lord is the sustainer of my soul.\nFreely I will sacrifice to You;\nI will praise Your name, O LORD,\nfor it is good.",
+      "created_at": "2026-07-21T15:17:37.017236+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "ce2f0837-1672-45f1-9d3d-6e89b17eb857",
+      "section_name": "Call to Confession",
+      "citation": "1 John 1:8–9",
+      "text": "If we say we have no sin, we deceive ourselves, and the truth is not in us. If we confess our sins, He is faithful and just to forgive us our sins and to cleanse us from all unrighteousness.",
+      "created_at": "2026-07-21T15:34:28.61945+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "a27ab813-d1ca-4f73-b32d-3837e8ce5b1b",
+      "section_name": "Call to Confession",
+      "citation": "1 Juan 1:8–9",
+      "text": "Kung sinasabi nating tayo'y walang kasalanan, ay ating dinadaya ang ating sarili, at ang katotohanan ay wala sa atin. Kung ipinahahayag natin ang ating mga kasalanan, ay tapat at banal siya na tayo'y patatawarin sa ating mga kasalanan, at tayo'y lilinisin sa lahat ng kalikuan.",
+      "created_at": "2026-07-21T15:34:29.061665+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "a16ef85b-0947-403b-b086-605e70eb1e89",
+      "section_name": "Assurance of Pardon",
+      "citation": "John 3:16",
+      "text": "For God so loved the world that He gave His one and only Son, that everyone who believes in Him shall not perish but have eternal life.",
+      "created_at": "2026-07-21T15:44:02.240659+00:00",
+      "translation": "en",
+      "marks": []
+    },
+    {
+      "id": "9b15602b-8cb9-4c92-a5bf-713ec6c0e526",
+      "section_name": "Closing of the Table",
+      "citation": "Juan 17",
+      "text": "",
+      "created_at": "2026-07-21T21:45:39.108913+00:00",
+      "translation": "fil",
+      "marks": []
+    },
+    {
+      "id": "45ef3040-7e51-4b52-9092-4286deba954b",
+      "section_name": "Prayer of Invocation",
+      "citation": "Mga Awit 54:2,4,6",
+      "text": "O Diyos, dalangin ko’y pakinggan Mo,\npakinggan Mo ang mga salita ng bibig ko.\nAng Diyos ang sa aki’y tumutulong;\nang PANGINOON ang umaalalay sa aking kaluluwa.\nAko’y mag-aalay sa Iyo ng kusang-loob na handog;\nako’y magpapasalamat sa Iyong pangalan,\nO PANGINOON, sapagkat ito’y mabuti.",
+      "created_at": "2026-07-21T15:17:37.609004+00:00",
+      "translation": "fil",
+      "marks": [
+        {
+          "end": 284,
+          "type": "congregation",
+          "start": 78
+        }
+      ]
+    }
+  ]
+}

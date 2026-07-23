@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { addPrayer } from "@/lib/liturgy/addPrayerAction";
 import { createPrayer, updatePrayer } from "@/lib/prayers/prayerActions";
+import { shiftMarksForEdit } from "@/lib/text/marks";
 import type { Prayer } from "@/types/liturgy";
 
 interface AddPrayerPanelProps {
@@ -77,7 +78,13 @@ export default function AddPrayerPanel({
         }
       });
     } else {
-      updatePrayer(prayerId, sectionName, text).then((result) => {
+      // This panel has no marking toolbar (Bold/Congregation/etc. are edited
+      // from the Library instead) -- shift whatever marks the library entry
+      // already has to match this text edit, rather than defaulting to `[]`
+      // and silently wiping them.
+      const original = prayers.find((p) => p.id === prayerId);
+      const shiftedMarks = shiftMarksForEdit(original?.text ?? "", text, original?.marks ?? []);
+      updatePrayer(prayerId, sectionName, text, undefined, shiftedMarks).then((result) => {
         if (result.success) {
           finish(prayerId);
         } else {

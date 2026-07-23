@@ -15,7 +15,7 @@ interface FormulaEditFormProps {
   // (Assurance of Pardon, Charge, Great Commission, Benediction) get just
   // "minister"; Vesper's Church Covenant portion gets the full
   // Leader/Congregation/Small-Caps set, matching redesign-plan-v1.1.md §U.
-  availableMarks: TextMark["type"][];
+  availableMarks: Exclude<TextMark["type"], "bold">[];
   // Trinitarian Seal, extended from Benediction-only (2026-07-20) -- true for
   // Sections whose Formula instance may close with the fixed seal line, e.g.
   // Assurance of Pardon's Absolution.
@@ -73,7 +73,6 @@ export default function FormulaEditForm({
         text={text}
         marks={marks}
         onMarksChange={setMarks}
-        onTextChange={setText}
         availableMarks={availableMarks}
         textareaRef={textareaRef}
         allowTrinitarianSeal={allowTrinitarianSeal}

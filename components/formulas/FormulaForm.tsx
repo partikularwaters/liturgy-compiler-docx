@@ -100,7 +100,6 @@ export default function FormulaForm({
         text={defaultText}
         marks={marks}
         onMarksChange={setMarks}
-        onTextChange={setDefaultText}
         availableMarks={getFormulaMarks(sectionName)}
         textareaRef={textareaRef}
       />

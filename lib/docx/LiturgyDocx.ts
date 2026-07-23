@@ -24,7 +24,6 @@ import { docxColors } from "@/lib/docx/tokens";
 import { getColumnCount } from "@/lib/docx/columnLayout";
 import { getLogoBuffer, LOGO_HEIGHT_PX, LOGO_WIDTH_PX } from "@/lib/docx/logo";
 import { sectionTitle } from "@/lib/liturgy/sectionTitle";
-import { parseBoldSegments } from "@/lib/text/markdown";
 import { applyMarks } from "@/lib/text/marks";
 import { prepareSectionRender } from "@/lib/liturgy/prepareSectionRender";
 import { isSunday, parseLocalDate } from "@/lib/liturgy/lordsDay";
@@ -151,23 +150,25 @@ function textToParagraphSpecs(text: string, marks: TextMark[] | undefined, leade
       );
     }
 
-    // Congregation forces the whole line bold regardless of per-run
-    // **bold** markdown (matches lib/pdf's markCongregationText treatment);
-    // Minister and Leader/Small-Caps keep whatever parseBoldSegments found
-    // per run -- forcing `bold: false` here would silently strip a genuine
-    // **bold** span inside Minister's own dialogue.
+    // Congregation forces the whole line bold regardless of its own per-run
+    // Bold marks (matches lib/pdf's markCongregationText treatment); Minister
+    // and Leader keep whatever applyMarks() resolved per run -- forcing
+    // `bold: false` here would silently strip a genuine Bold mark inside
+    // Minister's own dialogue. Small Caps is a per-run overlay now (2026-07-23
+    // -- it used to be a per-segment "exclusive" mark, wrongly competing with
+    // Congregation/Minister for the same range), so it's read off each run
+    // below instead of this shared style.
     const style: RunStyle =
       seg.mark === "congregation"
         ? { size: leaderStyle.size, font: DOCX_FONT_FAMILY, bold: true }
         : {
             size: leaderStyle.size,
             font: DOCX_FONT_FAMILY,
-            smallCaps: seg.mark === "small_caps",
             color: leaderStyle.color,
             italics: leaderStyle.italics,
           };
 
-    for (const boldSeg of parseBoldSegments(seg.text)) {
+    for (const boldSeg of seg.runs) {
       const lines = boldSeg.text.split("\n");
       lines.forEach((line, lineIndex) => {
         if (lineIndex > 0) {
@@ -177,7 +178,14 @@ function textToParagraphSpecs(text: string, marks: TextMark[] | undefined, leade
           if (isBlock) currentIndent = seg.mark === "congregation" ? convertInchesToTwip(0.25) : undefined;
         }
         if (line.length > 0) {
-          currentRuns.push(new TextRun({ text: line, ...style, bold: style.bold ?? boldSeg.bold }));
+          currentRuns.push(
+            new TextRun({
+              text: line,
+              ...style,
+              bold: style.bold ?? boldSeg.bold,
+              smallCaps: boldSeg.smallCaps,
+            })
+          );
         }
       });
     }
@@ -356,7 +364,11 @@ function renderSection({ section, formulas, prayers, songs, audience }: RenderSe
 
       if (!resolved.text) continue;
 
-      if ((item.type === "selection" || item.type === "formula") && resolved.marks && resolved.marks.length > 0) {
+      if (
+        (item.type === "selection" || item.type === "formula" || item.type === "prayer") &&
+        resolved.marks &&
+        resolved.marks.length > 0
+      ) {
         paragraphs.push(
           ...finalizeParagraphs(textToParagraphSpecs(resolved.text, resolved.marks, { size: BODY_SIZE }))
         );

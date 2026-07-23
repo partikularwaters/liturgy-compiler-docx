@@ -36,12 +36,22 @@ export interface TemplateSection {
 // (redesign-plan-v1.1.md §U) -- structured spans over an item's own `text`,
 // never baked into the raw saved string, so un-marking is lossless. `start`/
 // `end` are character offsets into that item's `text` (0-indexed,
-// end-exclusive, same convention as String.slice). Assumed non-overlapping
-// and sorted by `start` -- lib/text/marks.ts's applyMarks() depends on this.
+// end-exclusive, same convention as String.slice).
+//
+// 2026-07-23: `bold` joins this same system, replacing the old `**markdown**`
+// convention -- previously Bold was the one exception that mutated the raw
+// text instead of pointing at it, which broke whenever a Congregation/
+// Minister/Small-Caps mark's boundary fell inside a `**...**` span (the
+// opening and closing asterisks ended up in different rendered segments and
+// neither half found its pair). `leader`/`congregation`/`minister`/
+// `small_caps` remain mutually exclusive with each other (sorted by `start`,
+// non-overlapping among themselves -- lib/text/marks.ts's applyMarks()
+// depends on this), but `bold` is independent and may overlap any one of
+// them, or stand alone.
 export interface TextMark {
   start: number;
   end: number;
-  type: "leader" | "congregation" | "minister" | "small_caps";
+  type: "leader" | "congregation" | "minister" | "small_caps" | "bold";
 }
 
 // Trinitarian Seal -- appends a fixed, bolded closing line ("In the name of
@@ -141,6 +151,13 @@ export interface Prayer {
   // (migration 20260716010000_prayer_guides.sql), so every pre-existing row
   // keeps its current meaning.
   kind: "prayer" | "guide";
+  // 2026-07-23: library-level marking, same convention as Formula.marks --
+  // added specifically so Bold (now a real mark, not `**markdown**`) has
+  // somewhere to live on a Prayer; a placed PrayerItem has no per-instance
+  // override of its own (unlike Formula), so it always reflects this
+  // library entry's current marks directly, the same way it already always
+  // reflects the library entry's current text.
+  marks?: TextMark[];
 }
 
 export interface PrayerItem {

@@ -4,22 +4,16 @@ import { useState, type RefObject } from "react";
 import type { TextMark } from "@/types/liturgy";
 import MarkedText from "@/components/liturgy/MarkedText";
 import { applyTrinitarianSeal } from "@/lib/liturgy/trinitarianSeal";
-import { toggleBoldSelection } from "@/lib/text/toggleBold";
-import { shiftMarksForEdit } from "@/lib/text/marks";
 import { ClearIcon, NoteIcon } from "@/components/liturgy/icons";
+
+type ExclusiveMark = "leader" | "congregation" | "minister";
+type OverlayMark = "bold" | "small_caps";
 
 interface MarkEditorProps {
   text: string;
   marks: TextMark[];
   onMarksChange: (marks: TextMark[]) => void;
-  // 2026-07-21: Bold moved in here too, alongside Congregation/Minister/
-  // Small-Caps/Seal, so every one of these sits on the same toolbar row
-  // instead of Bold living as a separate button above/below in each of
-  // AddSelectionPanel/SelectionEditForm/FormulaEditForm/PrayerEditForm. Needs
-  // a way to update the text itself (the other buttons only ever touch
-  // marks), hence this new callback.
-  onTextChange: (text: string) => void;
-  availableMarks: TextMark["type"][];
+  availableMarks: Exclude<TextMark["type"], "bold">[];
   textareaRef: RefObject<HTMLTextAreaElement | null>;
   // 2026-07-20: folded the Trinitarian Seal toggle into this same toolbar +
   // preview instead of AddSelectionPanel/SelectionEditForm/FormulaEditForm
@@ -32,10 +26,14 @@ interface MarkEditorProps {
   onTrinitarianSealChange?: (value: "en" | "fil" | null) => void;
 }
 
-const MARK_BUTTON_LABELS: Record<TextMark["type"], string> = {
+const EXCLUSIVE_MARK_LABELS: Record<ExclusiveMark, string> = {
   leader: "Leader",
   congregation: "Congregation",
   minister: "Minister",
+};
+
+const OVERLAY_MARK_LABELS: Record<OverlayMark, string> = {
+  bold: "B",
   small_caps: "Small Caps",
 };
 
@@ -46,20 +44,19 @@ const SEAL_BUTTON_LABELS: Record<"en" | "fil" | "off", string> = {
   en: "Seal: English",
 };
 
-// Shared Leader/Congregation/Minister/Small-Caps toolbar + always-visible
-// live preview, used by every place that marks item text (Add Scripture,
-// editing a placed Scripture item, editing a placed Formula item). The
-// preview renders regardless of whether this Section has any marking
-// toolbar at all (`availableMarks` empty) -- it's the only way to see
-// **bold** congregational-response formatting take effect before saving,
-// since a plain <textarea> can't render markdown itself; hiding the whole
-// component when there was no toolbar (the original behavior) made Bold
-// look like it silently didn't work anywhere outside a markable Section.
+// Shared Leader/Congregation/Minister/Small-Caps/Bold toolbar + always-
+// visible live preview, used by every place that marks item text (Add
+// Scripture, editing a placed Scripture item, editing a placed Formula
+// item). The preview renders regardless of whether this Section has any
+// exclusive-mark toolbar at all (`availableMarks` empty) -- it's the only
+// way to see Bold take effect before saving, since a plain <textarea> can't
+// render it itself; hiding the whole component when there was no toolbar
+// (the original behavior) made Bold look like it silently didn't work
+// anywhere outside a markable Section.
 export default function MarkEditor({
   text,
   marks,
   onMarksChange,
-  onTextChange,
   availableMarks,
   textareaRef,
   allowTrinitarianSeal = false,
@@ -68,26 +65,66 @@ export default function MarkEditor({
 }: MarkEditorProps): React.ReactElement {
   const [showHelp, setShowHelp] = useState(false);
 
-  const applyMark = (type: TextMark["type"]): void => {
+  // Only Congregation/Minister are mutually exclusive with each other (a
+  // line can't be spoken by both at once) -- carving trims whatever
+  // overlapping Congregation/Minister mark is there down to the parts
+  // outside the new selection, instead of deleting it outright. Bold and
+  // Small Caps are both independent overlays now (see toggleOverlayMark
+  // below) and are never touched here.
+  const applyMark = (type: ExclusiveMark): void => {
     const el = textareaRef.current;
     if (!el || el.selectionStart === el.selectionEnd) return;
     const { selectionStart: start, selectionEnd: end } = el;
-    onMarksChange([...marks.filter((m) => end <= m.start || start >= m.end), { start, end, type }]);
+
+    const carved: TextMark[] = [];
+    for (const m of marks) {
+      if (m.type === "bold" || m.type === "small_caps" || end <= m.start || start >= m.end) {
+        carved.push(m);
+        continue;
+      }
+      if (m.start < start) carved.push({ ...m, end: start });
+      if (m.end > end) carved.push({ ...m, start: end });
+    }
+    onMarksChange([...carved, { start, end, type }]);
   };
 
-  const toggleBold = (): void => {
+  // 2026-07-23: Bold and Small Caps are both independent overlay marks --
+  // Bold was promoted from `**markdown**` first; Small Caps was still
+  // wrongly grouped in with Congregation/Minister as a competing "exclusive"
+  // option, which meant marking a word inside an existing Congregation span
+  // split that span into two separate blocks with the word sandwiched (and
+  // visually isolated onto its own line) between them. Both now use this
+  // same overlay toggle: an exact-range match removes the mark (the common
+  // case -- reselecting exactly what you just marked); any other selection
+  // adds a clean new mark instead of trying to carve up an existing larger
+  // one of the same overlay type.
+  const toggleOverlayMark = (type: OverlayMark): void => {
     const el = textareaRef.current;
     if (!el || el.selectionStart === el.selectionEnd) return;
-    const newText = toggleBoldSelection(text, el.selectionStart, el.selectionEnd);
-    onMarksChange(shiftMarksForEdit(text, newText, marks));
-    onTextChange(newText);
+    const { selectionStart: start, selectionEnd: end } = el;
+    const exactMatch = marks.some((m) => m.type === type && m.start === start && m.end === end);
+    const withoutOverlapping = marks.filter((m) => m.type !== type || end <= m.start || start >= m.end);
+    onMarksChange(exactMatch ? withoutOverlapping : [...withoutOverlapping, { start, end, type }]);
   };
 
+  // Same carving as applyMark above -- clearing a small selection inside a
+  // larger mark (of any type) should only clear that overlapping portion,
+  // not the whole mark.
   const clearMarksInSelection = (): void => {
     const el = textareaRef.current;
     if (!el || el.selectionStart === el.selectionEnd) return;
     const { selectionStart: start, selectionEnd: end } = el;
-    onMarksChange(marks.filter((m) => end <= m.start || start >= m.end));
+
+    const carved: TextMark[] = [];
+    for (const m of marks) {
+      if (end <= m.start || start >= m.end) {
+        carved.push(m);
+        continue;
+      }
+      if (m.start < start) carved.push({ ...m, end: start });
+      if (m.end > end) carved.push({ ...m, start: end });
+    }
+    onMarksChange(carved);
   };
 
   const cycleSeal = (): void => {
@@ -97,70 +134,74 @@ export default function MarkEditor({
   };
 
   const preview = applyTrinitarianSeal(text, marks, trinitarianSeal);
+  const exclusiveMarks = availableMarks.filter((type): type is ExclusiveMark => type !== "small_caps");
+  const hasSmallCaps = availableMarks.includes("small_caps");
 
   return (
     <div className="flex flex-col gap-2">
-      {
-        // 2026-07-21: Bold is universal (every Section renders **bold**
-        // regardless of whether it has a Leader/Congregation/Minister/Small-
-        // Caps toolbar), so this row can no longer be hidden just because
-        // availableMarks is empty and allowTrinitarianSeal is off -- Bold
-        // alone is reason enough for the row to always render.
-      }
       <div className="flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={() => toggleOverlayMark("bold")}
+          aria-label="Bold"
+          title="Bold"
+          className="rounded-md border border-border w-7 h-7 flex items-center justify-center text-[13px] font-bold text-text-secondary bg-transparent hover:bg-surface-secondary"
+        >
+          {OVERLAY_MARK_LABELS.bold}
+        </button>
+        {hasSmallCaps && (
           <button
             type="button"
-            onClick={toggleBold}
-            aria-label="Bold"
-            title="Bold"
-            className="rounded-md border border-border w-7 h-7 flex items-center justify-center text-[13px] font-bold text-text-secondary bg-transparent hover:bg-surface-secondary"
+            onClick={() => toggleOverlayMark("small_caps")}
+            className="rounded-md border border-border px-2.5 py-1 text-[12px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground"
           >
-            B
+            {OVERLAY_MARK_LABELS.small_caps}
           </button>
-          {availableMarks.map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => applyMark(type)}
-              className="rounded-md border border-border px-2.5 py-1 text-[12px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground"
-            >
-              {MARK_BUTTON_LABELS[type]}
-            </button>
-          ))}
-          {allowTrinitarianSeal && (
-            <button
-              type="button"
-              onClick={cycleSeal}
-              className={
-                trinitarianSeal
-                  ? "rounded-md border border-accent-dark px-2.5 py-1 text-[12px] font-medium text-accent-foreground bg-accent-dark"
-                  : "rounded-md border border-border px-2.5 py-1 text-[12px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground"
-              }
-            >
-              {SEAL_BUTTON_LABELS[trinitarianSeal ?? "off"]}
-            </button>
-          )}
-          {availableMarks.length > 0 && (
-            <button
-              type="button"
-              onClick={clearMarksInSelection}
-              aria-label="Clear marks in selection"
-              title="Clear marks in selection"
-              className="text-text-muted hover:text-accent-dark"
-            >
-              <ClearIcon />
-            </button>
-          )}
+        )}
+        {exclusiveMarks.map((type) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() => applyMark(type)}
+            className="rounded-md border border-border px-2.5 py-1 text-[12px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground"
+          >
+            {EXCLUSIVE_MARK_LABELS[type]}
+          </button>
+        ))}
+        {allowTrinitarianSeal && (
           <button
             type="button"
-            onClick={() => setShowHelp((prev) => !prev)}
-            aria-label="How marking works"
-            title="How marking works"
+            onClick={cycleSeal}
+            className={
+              trinitarianSeal
+                ? "rounded-md border border-accent-dark px-2.5 py-1 text-[12px] font-medium text-accent-foreground bg-accent-dark"
+                : "rounded-md border border-border px-2.5 py-1 text-[12px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground"
+            }
+          >
+            {SEAL_BUTTON_LABELS[trinitarianSeal ?? "off"]}
+          </button>
+        )}
+        {availableMarks.length > 0 && (
+          <button
+            type="button"
+            onClick={clearMarksInSelection}
+            aria-label="Clear marks in selection"
+            title="Clear marks in selection"
             className="text-text-muted hover:text-accent-dark"
           >
-            <NoteIcon />
+            <ClearIcon />
           </button>
-        </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setShowHelp((prev) => !prev)}
+          aria-label="How marking works"
+          title="How marking works"
+          className="text-text-muted hover:text-accent-dark"
+        >
+          <NoteIcon />
+        </button>
+      </div>
       {showHelp && (
         <p className="text-[13px] text-text-muted">
           Select a range of text above, then click a label — unmarked text stays Leader (flush

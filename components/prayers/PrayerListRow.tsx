@@ -6,7 +6,7 @@ import PrayerForm from "@/components/prayers/PrayerForm";
 import { updatePrayer, deletePrayer } from "@/lib/prayers/prayerActions";
 import { TrashIcon } from "@/components/liturgy/icons";
 import LibraryTextPreview from "@/components/library/LibraryTextPreview";
-import type { Prayer } from "@/types/liturgy";
+import type { Prayer, TextMark } from "@/types/liturgy";
 
 interface PrayerListRowProps {
   prayer: Prayer;
@@ -19,10 +19,10 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSave = (sectionName: string, text: string, kind: "prayer" | "guide"): void => {
+  const handleSave = (sectionName: string, text: string, kind: "prayer" | "guide", marks: TextMark[]): void => {
     setIsSaving(true);
     setError(null);
-    updatePrayer(prayer.id, sectionName, text, kind).then((result) => {
+    updatePrayer(prayer.id, sectionName, text, kind, marks).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setIsEditing(false);
@@ -55,6 +55,7 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
           initialSectionName={prayer.sectionName}
           initialText={prayer.text}
           initialKind={prayer.kind}
+          initialMarks={prayer.marks ?? []}
           isSaving={isSaving}
           error={error}
           submitLabel="Save"
@@ -72,6 +73,7 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
         <LibraryTextPreview
           title={prayer.kind === "guide" ? "Prayer Guide" : "Prayer"}
           text={prayer.text}
+          marks={prayer.marks}
           className="mt-1"
         />
         {error && <p className="text-sm text-error mt-1">{error}</p>}

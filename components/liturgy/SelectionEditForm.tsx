@@ -15,7 +15,7 @@ interface SelectionEditFormProps {
   initialTrinitarianSeal: "en" | "fil" | null;
   textOptional: boolean;
   isSongSlot: boolean;
-  availableMarks: TextMark["type"][];
+  availableMarks: Exclude<TextMark["type"], "bold">[];
   allowTrinitarianSeal: boolean;
   isSaving: boolean;
   error: string | null;
@@ -83,7 +83,6 @@ export default function SelectionEditForm({
         text={text}
         marks={marks}
         onMarksChange={setMarks}
-        onTextChange={setText}
         availableMarks={availableMarks}
         textareaRef={textareaRef}
         allowTrinitarianSeal={allowTrinitarianSeal}

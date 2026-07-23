@@ -1,18 +1,29 @@
 import { supabase } from "@/lib/db/supabase";
 import { getSectionOrderIndex } from "@/lib/liturgy/canonicalOrder";
-import type { Prayer } from "@/types/liturgy";
+import type { Prayer, TextMark } from "@/types/liturgy";
 
 export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
-  let query = supabase.from("prayers").select("id, section_name, text, kind");
+  let query = supabase.from("prayers").select("id, section_name, text, kind, marks");
 
   if (sectionName) {
     query = query.eq("section_name", sectionName);
   }
 
-  const { data, error } = await query;
+  let { data, error } = await query;
 
-  if (error) {
-    console.error("[lib/prayers/getPrayers]", error.message);
+  // 2026-07-23: `marks` (20260723010000_prayer_marks.sql) may not be run yet
+  // -- same graceful missing-column fallback as getLiturgy.ts, so the whole
+  // Library's Prayer list doesn't go down while Madrid gets to the migration.
+  if (error?.message.includes("marks")) {
+    let fallbackQuery = supabase.from("prayers").select("id, section_name, text, kind");
+    if (sectionName) fallbackQuery = fallbackQuery.eq("section_name", sectionName);
+    const fallback = await fallbackQuery;
+    data = fallback.data?.map((row) => ({ ...row, marks: [] })) ?? null;
+    error = fallback.error;
+  }
+
+  if (error || !data) {
+    console.error("[lib/prayers/getPrayers]", error?.message);
     return [];
   }
 
@@ -21,6 +32,7 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
     sectionName: row.section_name,
     text: row.text,
     kind: row.kind as "prayer" | "guide",
+    marks: (row.marks as TextMark[] | undefined) ?? [],
   }));
 
   // Direct feedback (2026-07-22): Order of Worship sequence for actual

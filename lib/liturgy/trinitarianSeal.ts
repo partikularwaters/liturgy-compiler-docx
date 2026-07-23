@@ -24,12 +24,14 @@ export const TRINITARIAN_SEAL_SECTIONS = ["Benediction"];
 // Single source of truth for "what does text+marks look like once a seal is
 // appended" -- used both for the live edit-time preview (MarkEditor) and the
 // final saved render (resolveItemText), so they can never drift. Appends the
-// seal as `**bold**` markdown past the end of the raw text (never folded
-// into it, so existing mark offsets stay valid), and folds the seal into the
-// last Congregation/Minister mark when it immediately follows one, since
-// that mark renders as its own block-level element -- a plain trailing
-// segment after a block element always starts on a new line, which is what
-// made the seal look detached from "...Amen." before this existed.
+// seal as plain text past the end of the raw text (never folded into it, so
+// existing mark offsets stay valid) plus a real `bold` mark covering it
+// (2026-07-23: was `**markdown**` before Bold became a real mark type), and
+// folds the seal into the last Congregation/Minister mark when it
+// immediately follows one, since that mark renders as its own block-level
+// element -- a plain trailing segment after a block element always starts
+// on a new line, which is what made the seal look detached from "...Amen."
+// before this existed.
 export function applyTrinitarianSeal(
   text: string,
   marks: TextMark[],
@@ -39,16 +41,17 @@ export function applyTrinitarianSeal(
 
   const sealText = TRINITARIAN_SEAL_TEXT[seal];
   const preSealLength = text.length;
-  const addition = text ? ` **${sealText}**` : `**${sealText}**`;
+  const addition = text ? ` ${sealText}` : sealText;
   const newText = text + addition;
+  const sealStart = text ? preSealLength + 1 : preSealLength;
 
   let newMarks = marks;
-  if (marks.length > 0) {
-    const lastMark = marks[marks.length - 1];
-    if (lastMark.end === preSealLength && (lastMark.type === "congregation" || lastMark.type === "minister")) {
-      newMarks = [...marks.slice(0, -1), { ...lastMark, end: lastMark.end + addition.length }];
-    }
+  const lastMark = marks[marks.length - 1];
+  if (lastMark && lastMark.end === preSealLength && (lastMark.type === "congregation" || lastMark.type === "minister")) {
+    newMarks = [...marks.slice(0, -1), { ...lastMark, end: lastMark.end + addition.length }];
   }
+
+  newMarks = [...newMarks, { start: sealStart, end: newText.length, type: "bold" }];
 
   return { text: newText, marks: newMarks };
 }

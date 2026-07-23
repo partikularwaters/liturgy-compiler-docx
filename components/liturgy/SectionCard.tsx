@@ -29,7 +29,7 @@ import { getSelectionMarks, getFormulaMarks } from "@/lib/liturgy/markableSectio
 import { VESPER_TABLE_SECTIONS } from "@/lib/liturgy/vesperTableRotation";
 import { toEnglishCitation } from "@/lib/bible/bookNamesTagalog";
 import { TRINITARIAN_SEAL_SECTIONS } from "@/lib/liturgy/trinitarianSeal";
-import { parseBoldSegments } from "@/lib/text/markdown";
+import { applyMarks, shiftMarksForEdit } from "@/lib/text/marks";
 import { updatePrayer } from "@/lib/prayers/prayerActions";
 import { removeItem } from "@/lib/liturgy/removeItemAction";
 import { PencilIcon, TrashIcon } from "@/components/liturgy/icons";
@@ -111,8 +111,14 @@ function BodyText({ text, rubric = false }: { text: string; rubric?: boolean }):
           : "font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap text-justify"
       }
     >
-      {parseBoldSegments(text).map((segment, i) =>
-        segment.bold ? <strong key={i}>{segment.text}</strong> : <span key={i}>{segment.text}</span>
+      {applyMarks(text, undefined).flatMap((seg, segIndex) =>
+        seg.runs.map((run, runIndex) =>
+          run.bold ? (
+            <strong key={`${segIndex}-${runIndex}`}>{run.text}</strong>
+          ) : (
+            <span key={`${segIndex}-${runIndex}`}>{run.text}</span>
+          )
+        )
       )}
     </p>
   );
@@ -128,26 +134,28 @@ function LeaderOnlyBadge(): React.ReactElement {
 
 interface PrayerEditFormProps {
   initialText: string;
+  initialMarks: TextMark[];
   isSaving: boolean;
   error: string | null;
-  onSubmit: (text: string) => void;
+  onSubmit: (text: string, marks: TextMark[]) => void;
   onCancel: () => void;
 }
 
 function PrayerEditForm({
   initialText,
+  initialMarks,
   isSaving,
   error,
   onSubmit,
   onCancel,
 }: PrayerEditFormProps): React.ReactElement {
   const [text, setText] = useState(initialText);
-  // Bug fix 2026-07-21: a placed Prayer item (e.g. Confession of Sin) had no
-  // Bold button at all -- this form never integrated MarkEditor. Prayers
-  // have no Leader/Congregation/Minister/Small-Caps toolbar or Trinitarian
-  // Seal of their own, so `marks` here is purely a transient local satisfying
-  // MarkEditor's prop contract; it's never read by onSubmit or persisted.
-  const [marks, setMarks] = useState<TextMark[]>([]);
+  // 2026-07-23: Prayer gained real marks storage (marks are now the mark
+  // system, not `**markdown**`) -- this form used to keep a transient local
+  // `marks` state that was never read by onSubmit or persisted, since there
+  // was nowhere to persist it. Now initialized from the placed item's actual
+  // current marks and threaded through onSubmit for real.
+  const [marks, setMarks] = useState<TextMark[]>(initialMarks);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   return (
@@ -155,7 +163,10 @@ function PrayerEditForm({
       <textarea
         ref={textareaRef}
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => {
+          setMarks((prev) => shiftMarksForEdit(text, e.target.value, prev));
+          setText(e.target.value);
+        }}
         rows={4}
         className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
       />
@@ -163,7 +174,6 @@ function PrayerEditForm({
         text={text}
         marks={marks}
         onMarksChange={setMarks}
-        onTextChange={setText}
         availableMarks={[]}
         textareaRef={textareaRef}
       />
@@ -174,7 +184,7 @@ function PrayerEditForm({
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(text)}
+          onClick={() => onSubmit(text, marks)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
@@ -395,10 +405,10 @@ export default function SectionCard({
     });
   };
 
-  const handleSavePrayerEdit = (itemId: string, prayerId: string, text: string): void => {
+  const handleSavePrayerEdit = (itemId: string, prayerId: string, text: string, marks: TextMark[]): void => {
     setIsSaving(true);
     setError(null);
-    updatePrayer(prayerId, section.name, text).then((result) => {
+    updatePrayer(prayerId, section.name, text, undefined, marks).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setEditingItemId(null);
@@ -781,9 +791,10 @@ export default function SectionCard({
                 <li key={item.id}>
                   <PrayerEditForm
                     initialText={resolved.text}
+                    initialMarks={resolved.marks ?? []}
                     isSaving={isSaving}
                     error={error}
-                    onSubmit={(text) => handleSavePrayerEdit(item.id, item.prayerId, text)}
+                    onSubmit={(text, marks) => handleSavePrayerEdit(item.id, item.prayerId, text, marks)}
                     onCancel={() => {
                       setError(null);
                       setEditingItemId(null);
@@ -887,7 +898,7 @@ export default function SectionCard({
                   <SongTitle song={resolved.song} />
                 ) : (
                   resolved.text &&
-                  ((item.type === "selection" || item.type === "formula") &&
+                  ((item.type === "selection" || item.type === "formula" || item.type === "prayer") &&
                   resolved.marks &&
                   resolved.marks.length > 0 ? (
                     <MarkedText text={resolved.text} marks={resolved.marks} />

@@ -33,7 +33,7 @@ interface AddSelectionPanelProps {
   isSongSlot?: boolean;
   // Feature 25: which marks this Section's Scripture text can carry --
   // empty/omitted means no marking toolbar at all.
-  availableMarks?: TextMark["type"][];
+  availableMarks?: Exclude<TextMark["type"], "bold">[];
   // Trinitarian Seal (Benediction only) -- appends a fixed, bolded closing
   // line instead of requiring it to be typed by hand.
   allowTrinitarianSeal?: boolean;
@@ -99,7 +99,6 @@ export default function AddSelectionPanel({
             text={text}
             marks={marks}
             onMarksChange={setMarks}
-            onTextChange={setText}
             availableMarks={availableMarks}
             textareaRef={textareaRef}
             allowTrinitarianSeal={allowTrinitarianSeal}

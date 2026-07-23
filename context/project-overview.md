@@ -4,7 +4,7 @@
 
 ## About the Project
 
-A web application for Reformed Life Community Church that lets a liturgist compile Scripture, fixed liturgical formulas, and original prayer into a complete, coherent order of worship — with a built-in Bible reader, and dual PDF export for both the presiding leader and the congregation.
+A web application for Reformed Life Community Church that lets a liturgist compile Scripture, fixed liturgical formulas, and original prayer into a complete, coherent order of worship — with a built-in Bible reader, and dual Word (`.docx`) export for both the presiding leader and the congregation. (This repo is the production successor to an earlier version that exported PDF instead — see Tech Stack below.)
 
 ---
 
@@ -22,7 +22,7 @@ Liturgy is currently compiled in Docs/Sheets with no unified view of the whole s
 /reader                  → Bible reader: browse book/chapter, highlight, save Selections
 /liturgy/new             → Start a liturgy: pick Morning/Vesper template + date (Lord's Day auto-computed)
 /liturgy/[id]            → Compile view: all Sections of the chosen template, 2-page/3-column layout, items per Section
-/liturgy/[id]/export     → Generate Leader Guide / Congregation Bulletin PDFs — Morning only (13in×8in landscape, 3-column); Vesper has no PDF, see below
+/liturgy/[id]/export     → Generate Leader Guide / Congregation Bulletin as .docx files, continuous-flow multi-column layout with manual column-break overrides (both templates). The route also still serves the legacy PDF (?format=pdf, Morning only, 13in×8in landscape) — frozen, no longer linked from the UI.
 /liturgy/[id]/view       → Public, mobile-first responsive Liturgy Web View, no app nav chrome — shareable by URL, works for both templates (Vesper as primary output in place of PDF; Morning alongside its PDF buttons)
 /library                 → Browse Library: Formulas, Prayers (+ Prayer Guides), Songs (Psalm/Hymn), Existing Selections — one merged page, superseding the old separate /formulas and /prayers
 ```
@@ -49,7 +49,7 @@ User browses the Bible reader (AB1905 or BSB, full text) or hovers a reference e
 
 ### Flow 3 — Exporting
 
-Once a Morning Worship liturgy is compiled, `/liturgy/[id]/export` generates two PDFs from the same data: the Leader Guide (every item, including leader-only Verbal Cues) and the Congregation Bulletin (everything except leader-only Verbal Cues), both in the same 2-page/3-column layout as the Compile View. **Vesper liturgies use `/liturgy/[id]/view` instead** — a shareable, mobile-first responsive web page — since no physical Vesper bulletin has ever existed; Vesper's PDF export is deferred to v3/v4.
+`/liturgy/[id]/export` generates two `.docx` files from the same data: the Leader Guide (every item, including leader-only Verbal Cues) and the Congregation Bulletin (everything except leader-only Verbal Cues). Word's own continuous-flow multi-column layout replaces the old fixed 2-page/3-column PDF shape, with a manual "start new column" override per Section where needed — works for both Morning and Vesper now, since neither template needs a fixed per-Section page/column assignment anymore. `/liturgy/[id]/view` remains available for either template as a shareable, mobile-first responsive web page.
 
 ---
 
@@ -117,7 +117,6 @@ Once a Morning Worship liturgy is compiled, `/liturgy/[id]/export` generates two
 - Vesper's PDF export (Guide/Bulletin) — deferred to v3/v4; Vesper uses the web view instead
 - An MBB hover-preview toggle alongside AB2001 — the widget only supports one active translation at a time; a real toggle needs its own design work, not scoped yet
 - Extraction/storage of AB2001 or MBB text into the app's own database — pending Philippine Bible Society response; hover-widget display only until then
-- Default per-Section Verbal Cue seeding — blocked on Madrid supplying real bilingual sample-script content, not a code gap
 - Full Library management (deleting a Formula, editing/adding a Scripture entry, bringing the marking toolbar into `/library`) and a real Songs Library management UI — see `Roadmap` below, planned for v2
 
 ---
@@ -128,7 +127,8 @@ Once a Morning Worship liturgy is compiled, `/liturgy/[id]/export` generates two
 - **Backend:** Next.js (API routes / server actions)
 - **Database:** Supabase (Postgres), hybrid schema — relational tables for Liturgies/Templates/Formulas, structured JSON for Items within a Section
 - **Auth:** None in v1 (single user); Supabase Auth available when v3's access control is built
-- **PDF export:** @react-pdf/renderer — Morning only, 13in×8in landscape 3-column layout; Vesper uses the web view instead
+- **Word (.docx) export:** the `docx` npm library — continuous-flow, multi-column layout with manual column-break overrides, both templates. Replaces the original PDF export as the active mechanism.
+- **PDF export (legacy, frozen):** @react-pdf/renderer — still present and working, Morning only, 13in×8in landscape 3-column layout, no longer linked from the UI
 - **Styling:** Tailwind CSS v4
 - **Bible text:** AB1905 + BSB self-hosted/API for the reader; BibleGateway RefTag/BGLinks widget for AB2001/MBB hover preview
 
@@ -161,12 +161,12 @@ John Madrid (solo build and initial use), and eventually the RLCC roles who prep
 
 The throughline shifted from the original draft: Section/Template editing turned out to need its own scoping pass regardless of phase, so it moved to v3 alongside the item-table migration it would have gated. v2 instead became about giving the app a second Scripture translation (BSB/English, alongside AB1905/Filipino), replacing the PDF export pipeline with docx, and finally closing out library completeness.
 
-1. **Docx export**, replacing `@react-pdf/renderer`, built in a separate cloned repo (a full `git clone` into a new folder with its own remote — not a fork or a branch). PDF export is frozen, not deleted, in this repo; only deleted in the clone once docx is stable there.
-2. **Continuous-flow authoring with manual column-break overrides**, also built in the clone, depends on #1. Resolves the old fixed-vs-continuous layout question in favor of continuous flow — Word's native multi-column layout already behaves this way, and a manual override is just a real column-break, no custom pagination engine needed. Resolves Vesper's 3-column layout as a side effect too: no per-Section page/column assignment table needed for either template anymore.
+1. **Docx export — ✅ done, shipped 2026-07-22.** Replaced `@react-pdf/renderer` as the active export mechanism, built in this repo (the clone that item was scoped for). PDF export is frozen, not deleted — still present, no longer linked from the UI.
+2. **Continuous-flow authoring with manual column-break overrides — ✅ done, shipped alongside #1.** Resolved the old fixed-vs-continuous layout question in favor of continuous flow — Word's native multi-column layout already behaves this way, and a manual override is just a real column-break, no custom pagination engine needed. Resolved Vesper's 3-column layout as a side effect too: no per-Section page/column assignment table needed for either template anymore.
 3. **BSB (English) as a real second Selection source.** Includes Reader translation-switcher UI (never built — Feature 02 shipped without one), a dual-translation Scripture Library (Filipino/English tagged, auto-paired by canonical verse reference — saving a Selection in one language silently fetches and saves the other language's unmodified companion if it doesn't exist yet, with a small note in the save confirmation), a backfill migration for every existing (all-Filipino) library entry, and a Filipino/English toggle plus alternate-translation hover-preview in the Compile View's existing-Scripture picker. Runs from both the Reader and the Library's direct-add flow.
 4. **Automated rotation-cycle assignment** for Vesper's recurring readings, replacing the current manual handbook-referenced lookup.
 5. **Library-level marking toolbar** — `formulas`/`scripture_selections` gain a `marks` column and the same Congregation/Minister/Small-Caps toolbar the placed-item edit forms already have; placement copies marks onto the new instance as a starting point, same freeze-on-placement convention `overrideText` already follows.
-6. **Ongoing, parallel:** default Verbal Cue seeding and legacy Formula-text cleanup (Absolution's manually-typed "Minister:"/"Congregation:" prefixes), both gated on Madrid supplying real content — sequenced into v2 rather than left indefinite so input-gathering runs alongside the rest of the build.
+6. **Default Verbal Cue seeding — ✅ done, shipped 2026-07-22** with real content Madrid supplied. Legacy Formula-text cleanup (Absolution's manually-typed "Minister:"/"Congregation:" prefixes) remains open, still gated on Madrid's own cleanup pass, no longer blocking anything.
 
 **Shelved cold until v2/v3 above is built and stable:** the MBB hover-preview toggle, alongside PDF export itself.
 
