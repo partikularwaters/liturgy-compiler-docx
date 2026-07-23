@@ -2,7 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 
-// v3 groundwork (2026-07-22): unrestricted for now -- every user can delete
+// v3 groundwork: unrestricted for now -- every user can delete
 // any liturgy. Access is meant to be gated once Supabase Auth + role-based
 // access lands (v3 item 6, formulas.access_level's original reservation);
 // this is the mechanism prepared ahead of that, not the final access model.

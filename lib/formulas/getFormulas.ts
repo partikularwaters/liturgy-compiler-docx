@@ -24,7 +24,7 @@ export async function getFormulas(sectionName?: string): Promise<Formula[]> {
     marks: (row.marks as TextMark[] | null) ?? [],
   }));
 
-  // Direct feedback (2026-07-22): Order of Worship sequence instead of
+  // Order of Worship sequence instead of
   // alphabetical by Section name.
   return formulas.sort((a, b) => getSectionOrderIndex(a.sectionName) - getSectionOrderIndex(b.sectionName));
 }

@@ -2,7 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 
-// Direct feedback (2026-07-22): per-liturgy "add this Prayer Guide to the
+// Per-liturgy "add this Prayer Guide to the
 // Leader's Guide" toggle -- mirrors setColumnBreakAction.ts's pattern
 // exactly (update by liturgy_id + template_section_index, not a fetched row
 // id, matching every other per-Section instance-level action in this file's

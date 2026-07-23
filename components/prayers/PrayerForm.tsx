@@ -20,20 +20,20 @@ interface PrayerFormProps {
   onCancel?: () => void;
 }
 
-// 2026-07-23: Prayer never had a marking toolbar at all -- Bold could only
+// Prayer never had a marking toolbar at all -- Bold could only
 // be typed by hand as raw asterisks, with no button and (before Bold became
 // a real mark) nowhere to persist it anyway. Bold-only here (no availableMarks
 // -- Congregation/Minister/Small-Caps stay scoped to the Sections that
 // actually need them, per markableSections.ts), same as every other library
 // form's toolbar.
 //
-// 2026-07-23 redesign: Kind is now purely audience (Corporate/Leader),
+// Kind is purely audience (Corporate/Leader),
 // driving derived Bulletin visibility -- see types/liturgy.ts's Prayer.kind
 // comment. The old "Guide" kind option is gone; guide/reference-only is now
-// a separate, de-emphasized checkbox (Madrid: "I don't think the Guide is
-// relevant any more... The Guide... can be triggered in the Compile view
-// already") since it's an orthogonal, rarely-used fact, not a third
-// audience choice competing for attention with the two real ones.
+// a separate, de-emphasized checkbox, since the reference-outline mechanism
+// is an orthogonal, rarely-used fact (it can already be reached from the
+// Compile View directly), not a third audience choice competing for
+// attention with the two real ones.
 export default function PrayerForm({
   sectionNames,
   initialSectionName,

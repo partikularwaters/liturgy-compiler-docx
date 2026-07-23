@@ -89,7 +89,7 @@ const FILIPINO_TO_ENGLISH: Record<string, string> = Object.fromEntries(
 );
 const FILIPINO_BOOK_NAMES = Object.keys(FILIPINO_TO_ENGLISH).sort((a, b) => b.length - a.length);
 
-// Display-time transform (2026-07-20) -- every Selection's citation should
+// Display-time transform -- every Selection's citation should
 // read in Filipino, since AB1905 (the only translation the Reader currently
 // builds citations from) is a Tagalog text; a citation typed by hand in
 // English gets Filipino-ized too, for consistency. Idempotent: a citation
@@ -132,7 +132,7 @@ export function displayCitation(citation: string, translation: "fil" | "en" = "f
   return translation === "fil" ? toFilipinoCitation(citation) : citation;
 }
 
-// v2 (BSB), 2026-07-21: normalizes a citation's *stored* spelling to match
+// v2 (BSB): normalizes a citation's *stored* spelling to match
 // its own translation tag -- Filipino book names for "fil", English for
 // "en". Deliberately NOT done before this: a citation's spelling used to be
 // the only signal of which language it was in, so normalizing at save time

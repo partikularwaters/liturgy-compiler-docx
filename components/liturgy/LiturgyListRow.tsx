@@ -13,7 +13,7 @@ interface LiturgyListRowProps {
   isLast: boolean;
 }
 
-// v3 groundwork (2026-07-22): delete is unrestricted for now -- prepared
+// v3 groundwork: delete is unrestricted for now -- prepared
 // ahead of role-based access (see deleteLiturgyAction.ts's own note), not
 // gated to any user yet.
 export default function LiturgyListRow({ liturgy, isLast }: LiturgyListRowProps): React.ReactElement {

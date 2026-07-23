@@ -1,6 +1,5 @@
 // Grows a textarea to fit its content instead of scrolling internally --
-// used by the Add/Edit Scripture boxes per Madrid's "let the text dictate
-// the size" request. Plain height-reset-then-measure, no ResizeObserver
+// used by the Add/Edit Scripture boxes. Plain height-reset-then-measure, no ResizeObserver
 // needed since it's only ever called from a value-change effect.
 export function autosizeTextarea(el: HTMLTextAreaElement | null): void {
   if (!el) return;

@@ -6,8 +6,8 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
-// First shared modal in the project (2026-07-22) -- built for Library
-// "See more" previews, generic enough for any simple content overlay.
+// Generic modal for a simple content overlay -- built for Library
+// "See more" previews.
 export default function Modal({ title, onClose, children }: ModalProps): React.ReactElement {
   return (
     <div

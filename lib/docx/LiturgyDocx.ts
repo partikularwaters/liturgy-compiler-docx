@@ -41,10 +41,10 @@ const PRAYER_GUIDE_SECTIONS = [
   "Pastoral Prayer",
 ];
 
-// Same long-landscape page Madrid asked for on the PDF side (13in x 8in) --
+// Same long-landscape page as the PDF side (13in x 8in) --
 // gives the 3-column layout a wide enough page to sit in. Margins: 0.3in
-// top/bottom, 0.4in left/right (Madrid's confirmed landscape spec,
-// 2026-07-22 -- corrected from an earlier 0.25in left/right guess).
+// top/bottom, 0.4in left/right (the confirmed landscape spec --
+// corrected from an earlier 0.25in left/right guess).
 const PAGE_SHORT_SIDE = convertInchesToTwip(8);
 const PAGE_LONG_SIDE = convertInchesToTwip(13);
 const MARGIN_TOP_BOTTOM = convertInchesToTwip(0.3);
@@ -57,8 +57,8 @@ const TITLE_SIZE = 28; // 14pt
 const META_SIZE = 20; // 10pt
 const LABEL_SIZE = 18; // 9pt
 
-// Madrid's confirmed structural convention (2026-07-22, verified against his
-// own hand-edited reference export): 0.5 line after a Section heading and
+// The confirmed structural convention (verified against a real
+// hand-edited reference export): 0.5 line after a Section heading and
 // after any internal division (Leader->Congregation, Scripture->Formula,
 // etc.), but 0pt after a Section's final body line -- a dedicated blank
 // paragraph (also 0.5 line) carries the actual gap before the next Section's
@@ -67,7 +67,7 @@ const LABEL_SIZE = 18; // 9pt
 // gets sandwiched by that same blank separator on both sides, since it has
 // no last-body-line of its own to zero out -- this falls out automatically
 // below rather than needing special-casing. 120 twips matches the literal
-// value in Madrid's reference file for "0.5 line" at 12pt body text.
+// value in the reference export for "0.5 line" at 12pt body text.
 const HALF_LINE = 120;
 
 interface RunStyle {
@@ -101,9 +101,9 @@ function toParagraph(spec: ParagraphSpec): Paragraph {
 // paragraph -- a literal "\n" inside a run's text is not a recognized break
 // (confirmed empirically: docx preserves it as a literal character inside
 // <w:t>, which most Word versions don't render as a line break at all).
-// Madrid's real content (e.g. the Decalogue, one commandment per line) uses
+// Real content (e.g. the Decalogue, one commandment per line) uses
 // separate Word *paragraphs* per line, not soft breaks within one paragraph
-// -- matches his reference file's actual structure and is what makes the
+// -- matches the reference export's actual structure and is what makes the
 // 0.5-line/0pt spacing rule meaningful (paragraph-level spacing has nothing
 // to attach to otherwise). This walks mark segments -> bold segments ->
 // newline-split lines in one pass so a **bold** span or a Congregation/
@@ -156,7 +156,7 @@ function textToParagraphSpecs(text: string, marks: TextMark[] | undefined, leade
     // Bold marks (matches lib/pdf's markCongregationText treatment); Minister
     // and Leader keep whatever applyMarks() resolved per run -- forcing
     // `bold: false` here would silently strip a genuine Bold mark inside
-    // Minister's own dialogue. Small Caps is a per-run overlay now (2026-07-23
+    // Minister's own dialogue. Small Caps is a per-run overlay now
     // -- it used to be a per-segment "exclusive" mark, wrongly competing with
     // Congregation/Minister for the same range), so it's read off each run
     // below instead of this shared style.
@@ -294,7 +294,7 @@ function renderSection({ section, formulas, prayers, songs, audience }: RenderSe
   // Heading always gets the 0.5-line gap, whether or not this Section has
   // any body at all -- a body-less Section (e.g. Psalm of Adoration) then
   // relies on the trailing Section-separator paragraph below to complete
-  // its "sandwich," matching Madrid's reference file exactly.
+  // its "sandwich," matching the reference export exactly.
   paragraphs.push(
     new Paragraph({
       tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
@@ -487,7 +487,7 @@ export function buildLiturgyDocx({ liturgy, formulas, prayers, songs, audience }
     year: "numeric",
   });
 
-  // Logo, real church file supplied by Madrid (2026-07-22) -- floated at
+  // Logo, real church file -- floated at
   // the top-left with text wrapping to its right, so the title/date lines
   // sit beside it rather than needing manual column math to avoid it.
   // Absent gracefully (see getLogoBuffer's own comment) if the file is ever
@@ -513,7 +513,7 @@ export function buildLiturgyDocx({ liturgy, formulas, prayers, songs, audience }
       children: [
         ...(logoRun ? [logoRun] : []),
         new TextRun({
-          // Madrid's confirmed default (2026-07-22) -- the full "ORDER FOR
+          // The confirmed default -- the full "ORDER FOR
           // THE ... Service" wording, shortened by hand afterward only if a
           // given week's layout genuinely needs the space.
           text: `ORDER FOR THE ${liturgy.templateName} Service`,
@@ -574,7 +574,7 @@ export function buildLiturgyDocx({ liturgy, formulas, prayers, songs, audience }
             // landscape 13x8 values directly with orientation set (the
             // earlier, wrong attempt) would have been rotated a second time
             // into an 8x13 page mislabeled "landscape" -- confirmed against
-            // the library's own source, and against Madrid's real report of
+            // the library's own source, and against a real report of
             // the file printing in portrait (no w:orient at all, previously).
             size: { width: PAGE_SHORT_SIDE, height: PAGE_LONG_SIDE, orientation: PageOrientation.LANDSCAPE },
             margin: {

@@ -10,7 +10,7 @@ interface MarkedTextProps {
 // Feature 25: Leader/Congregation/Minister/Small-Caps rendering
 // (redesign-plan-v1.1.md §U) -- Leader is the implicit default (flush left,
 // no label); Congregation is indented and labeled "Congr:"; Minister stays
-// flush left but labeled "Min:". Bold and Small Caps (2026-07-23: both real,
+// flush left but labeled "Min:". Bold and Small Caps (both real,
 // independent overlay marks -- Small Caps used to wrongly compete with
 // Congregation/Minister for the same range, which split a marked block in
 // two whenever a word inside it was also small-capped) are both resolved

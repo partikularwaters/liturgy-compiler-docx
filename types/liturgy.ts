@@ -38,7 +38,7 @@ export interface TemplateSection {
 // `end` are character offsets into that item's `text` (0-indexed,
 // end-exclusive, same convention as String.slice).
 //
-// 2026-07-23: `bold` joins this same system, replacing the old `**markdown**`
+// `bold` joins this same system, replacing the old `**markdown**`
 // convention -- previously Bold was the one exception that mutated the raw
 // text instead of pointing at it, which broke whenever a Congregation/
 // Minister/Small-Caps mark's boundary fell inside a `**...**` span (the
@@ -128,10 +128,10 @@ export interface VerbalCueItem {
   // the default treatment. Optional/defensive, same pattern as item_types --
   // a missing value means "not a rubric," the common case.
   rubric?: boolean;
-  // v2, direct feedback (2026-07-22): a second-language variant of this cue
-  // -- scoped in the UI to Confession of Sin's rubric only, but a generic
+  // A second-language variant of this cue
+  // -- scoped in the UI to Confession of Sin's Call-to-Confession cue only, but a generic
   // field here like rubric/amenExpected above. Both texts are freely typed
-  // by Madrid through the Verbal Cue form, not a fixed hardcoded pair (this
+  // through the Verbal Cue form, not a fixed hardcoded pair (this
   // differs from Trinitarian Seal's TRINITARIAN_SEAL_TEXT constant, since a
   // Verbal Cue's wording isn't a single fixed liturgical formula). Absent
   // means "no alternate authored yet"; showAlternate absent/false means
@@ -144,29 +144,23 @@ export interface Prayer {
   id: string;
   sectionName: string;
   text: string;
-  // 2026-07-23 redesign: `kind` used to conflate two unrelated facts --
-  // audience ("who's this for") and placeability ("is this real content or
-  // reference material"). Split into two independent fields: `kind` is now
+  // `kind` is
   // purely about audience, driving derived Bulletin/Guide visibility the
   // same way Formula/Verbal Cue's `visibility` field already does (see
   // resolveItemText.ts's "prayer" case) -- 'corporate' means the whole
   // church prays it (both Bulletin + Guide), 'leader' means it's the
-  // leader/minister's own material (Guide only). Confirmed with Madrid:
-  // "except for corporate prayers... [prayers are] for leaders in the first
-  // place" -- previously every placed Prayer showed in both regardless of
-  // kind, a real gap this closes. Meaningless when `isGuide` is true (a
+  // leader/minister's own material (Guide only, since a leader-only prayer
+  // isn't for the congregation). Meaningless when `isGuide` is true (a
   // guide entry is never placed, so it has no audience).
   kind: "corporate" | "leader";
-  // 2026-07-23: replaces the old `kind: 'guide'` value -- placeability is
+  // Placeability is
   // its own independent fact from audience (see `kind` above). A guide
   // entry is structural reference material (redesign-plan-v1.1.md §W's
   // checklists) shown next to "Add Prayer" on the Sections that need one,
   // never placeable as an actual liturgy item themselves. Defaults `false`
-  // at the DB level (migration 20260723020000_prayer_kind_redesign.sql),
-  // backfilled `true` for every row that was `kind = 'guide'` under the old
-  // model.
+  // at the DB level (migration 20260723020000_prayer_kind_redesign.sql).
   isGuide?: boolean;
-  // 2026-07-23: library-level marking, same convention as Formula.marks --
+  // Library-level marking, same convention as Formula.marks --
   // added specifically so Bold (now a real mark, not `**markdown**`) has
   // somewhere to live on a Prayer; a placed PrayerItem has no per-instance
   // override of its own (unlike Formula), so it always reflects this
@@ -237,7 +231,7 @@ export interface CompiledSection extends TemplateSection {
   // here -- absent/missing (a pre-migration row) means "no break," the
   // correct default matching every liturgy's current visual layout.
   columnBreakBefore: boolean;
-  // Direct feedback (2026-07-22): Prayer Guide redesigned from an
+  // Prayer Guide redesigned from an
   // always-expanded box into an icon-button toggle; once revealed, an
   // "add this to the Leader's Guide" checkbox controls whether *this*
   // liturgy's docx export actually includes it. Defaults true -- matches
@@ -259,9 +253,9 @@ export interface CompiledLiturgy {
   serviceDate: string;
   lordsDayNumber: number;
   sections: CompiledSection[];
-  // v2, direct feedback (2026-07-22): whether the exported docx appends
+  // Whether the exported docx appends
   // "~ End of {templateName} ~" at the very end. Defaults to true in the DB
-  // (matches Madrid's actual practice of adding this by hand every time,
+  // (matches the prior practice of adding this by hand every time,
   // with removal being the rare exception when a week's layout is tight).
   showEndNote: boolean;
 }

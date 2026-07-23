@@ -7,8 +7,8 @@ export function formatVerseSpec(verseNumbers: number[]): string {
   const sorted = [...verseNumbers].sort((a, b) => a - b);
   const isContiguous = sorted.every((n, i) => i === 0 || n === sorted[i - 1] + 1);
   if (sorted.length === 1) return `${sorted[0]}`;
-  // En dash for a verse range, not a hyphen -- matches Madrid's manual
-  // typesetting convention (e.g. "Psalm 47:5–9").
+  // En dash for a verse range, not a hyphen -- matches this project's
+  // established typesetting convention (e.g. "Psalm 47:5–9").
   if (isContiguous) return `${sorted[0]}–${sorted[sorted.length - 1]}`;
   return sorted.join(",");
 }

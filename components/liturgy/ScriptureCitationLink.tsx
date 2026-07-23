@@ -5,7 +5,7 @@ interface ScriptureCitationLinkProps {
   className?: string;
 }
 
-// 2026-07-20: BibleGateway's RefTag/BGLinks widget (ScriptureLinker.tsx) only
+// BibleGateway's RefTag/BGLinks widget (ScriptureLinker.tsx) only
 // recognizes English book names/abbreviations in its own text-scanning --
 // it never found a Filipino-named citation like "Mga Awit 95:1-3" on its
 // own, which is why the hover widget worked in some Sections and not

@@ -14,7 +14,7 @@ interface CitationFieldProps {
   onChange: (value: string) => void;
 }
 
-// Feature-request (2026-07-18): the citation is a value first, a field
+// The citation is a value first, a field
 // second -- showing it as plain hoverable text by default (so BibleGateway's
 // bglinks widget can pick it up mid-composition, before the Selection is
 // even saved) and only switching to an editable input when the pencil icon

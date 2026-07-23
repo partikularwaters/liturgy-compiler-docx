@@ -15,7 +15,7 @@ interface MarkEditorProps {
   onMarksChange: (marks: TextMark[]) => void;
   availableMarks: Exclude<TextMark["type"], "bold">[];
   textareaRef: RefObject<HTMLTextAreaElement | null>;
-  // 2026-07-20: folded the Trinitarian Seal toggle into this same toolbar +
+  // Folds the Trinitarian Seal toggle into this same toolbar +
   // preview instead of AddSelectionPanel/SelectionEditForm/FormulaEditForm
   // each carrying their own separate radio group and duplicate preview --
   // the seal is just another thing that changes what gets previewed, same
@@ -88,9 +88,8 @@ export default function MarkEditor({
     onMarksChange([...carved, { start, end, type }]);
   };
 
-  // 2026-07-23: Bold and Small Caps are both independent overlay marks --
-  // Bold was promoted from `**markdown**` first; Small Caps was still
-  // wrongly grouped in with Congregation/Minister as a competing "exclusive"
+  // Bold and Small Caps are both independent overlay marks -- Small Caps was
+  // previously wrongly grouped in with Congregation/Minister as a competing "exclusive"
   // option, which meant marking a word inside an existing Congregation span
   // split that span into two separate blocks with the word sandwiched (and
   // visually isolated onto its own line) between them. Both now use this

@@ -63,8 +63,6 @@ export default function VerseDisplay({
               {marker && marker.state === "saved" && (
                 // Passive typographic mark, not a control -- per the v1.1
                 // marker redesign, "saved" is no longer a disabled button.
-                // Direct feedback (2026-07-22): enlarged from 13px -- the
-                // confirmed-added marker was too easy to miss at a glance.
                 <sup className="text-success text-[19px] mr-1" title={`Already added to ${marker.label}`}>
                   ●
                 </sup>

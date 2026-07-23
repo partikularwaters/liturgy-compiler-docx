@@ -12,7 +12,7 @@
 // real layout (redesign-plan-v1.1.md §F); Vesper's is stated directly in
 // build-plan.md's v2 item 2 ("this also resolves Vesper's 3-column
 // layout"). Flagging this as the source for that number rather than a
-// fresh guess -- worth Madrid's eyes once a real Vesper docx is produced.
+// fresh guess -- worth re-checking once a real Vesper docx is produced.
 export const TEMPLATE_COLUMN_COUNT: Record<string, number> = {
   "Morning Worship": 3,
   "Vesper Worship": 3,

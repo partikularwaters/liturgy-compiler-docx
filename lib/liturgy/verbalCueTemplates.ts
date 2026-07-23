@@ -1,5 +1,4 @@
-// Feature 26 (default Verbal Cue seeding), content supplied by Madrid
-// 2026-07-22. Each template names its Section's actual Selection/Song/Formula
+// Default Verbal Cue seeding. Each template names its Section's actual Selection/Song/Formula
 // via a `{{scripture}}`/`{{song}}`/`{{creed}}` token instead of a hardcoded
 // citation, so the cue always speaks whatever is really placed there for a
 // given liturgy (resolveVerbalCueTemplate.ts does the substitution at render
@@ -9,7 +8,7 @@
 //
 // Psalm of Proclamation is a deliberate exception: its second reference
 // ("Ito ang sinasabi ng [Scripture]") is a literal, hand-fillable placeholder,
-// not a live-bound token -- confirmed with Madrid 2026-07-22, since that
+// not a live-bound token, since that
 // Scripture reading is a distinct choice made per week (often the Sermon's
 // own passage) that this Section has no data slot for today.
 export const MORNING_VERBAL_CUE_TEMPLATES: Record<string, string> = {

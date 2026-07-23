@@ -3,9 +3,9 @@ import type { CompiledLiturgy, CompiledSection, Item, TemplateSection } from "@/
 
 export async function getLiturgy(id: string): Promise<CompiledLiturgy | null> {
   // Same missing-column safety as the sections query below --
-  // 20260722010000_end_note_and_cue_language.sql is a DDL migration Madrid
-  // runs manually; until then, fall back to the true default (matches
-  // Madrid's actual practice) rather than failing the whole query.
+  // 20260722010000_end_note_and_cue_language.sql is a DDL migration applied
+  // manually (no direct Postgres connection in this environment); until
+  // then, fall back to the true default rather than failing the whole query.
   let liturgy: {
     id: string;
     service_date: string;
@@ -40,7 +40,7 @@ export async function getLiturgy(id: string): Promise<CompiledLiturgy | null> {
   }
 
   // 20260721030000_column_break_before.sql and 20260722020000_
-  // show_prayer_guide.sql are DDL migrations Madrid runs manually (this
+  // show_prayer_guide.sql are DDL migrations applied manually (this
   // project has no direct Postgres connection -- see those files' own
   // notes); until applied, selecting either new column outright would fail
   // this entire query (a missing-column error, not a per-row gap), taking

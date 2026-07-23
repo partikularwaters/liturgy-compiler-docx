@@ -10,13 +10,13 @@ interface EndNoteToggleProps {
   showEndNote: boolean;
 }
 
-// v2, direct feedback (2026-07-22): per-liturgy on/off for the trailing
+// Per-liturgy on/off for the trailing
 // "~ End of [Service] ~" note in the docx export -- previously added by hand
 // every time, with removal only as the rare exception when a week's layout
 // is tight. Lives at the top of the Compile View (not per-Section) since
 // it's a whole-document setting.
 //
-// Real bug found and fixed (2026-07-22): a failed save (e.g. the
+// A failed save (e.g. the
 // show_end_note migration not yet applied in a given environment) used to
 // fail completely silently -- the button just did nothing, no error shown,
 // which read as "this feature doesn't work" from the outside. Now surfaces

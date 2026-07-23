@@ -45,8 +45,8 @@ const PRAYER_GUIDE_SECTIONS = [
   "Pastoral Prayer",
 ];
 
-// 13in x 8in landscape (long/legal-adjacent width, short height), per
-// Madrid's request -- gives the 3-column layout a wider page to sit in
+// 13in x 8in landscape (long/legal-adjacent width, short height) --
+// gives the 3-column layout a wider page to sit in
 // instead of A4 portrait's narrower columns. react-pdf takes a custom page
 // size as [width, height] in points (1in = 72pt); width > height already
 // makes this landscape, no separate orientation prop needed.
@@ -55,7 +55,7 @@ const LONG_LANDSCAPE_SIZE: [number, number] = [13 * 72, 8 * 72];
 const styles = StyleSheet.create({
   page: {
     backgroundColor: pdfColors.surface,
-    // Tight margins to maximize page use, per Madrid's spec: 0.3in
+    // Tight margins to maximize page use: 0.3in
     // top/bottom (21.6pt), 0.25in left/right (18pt).
     paddingTop: 21.6,
     paddingBottom: 21.6,
@@ -99,8 +99,8 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 12,
   },
-  // Feature 28 Part A: box/border stripped per Madrid's "plain as the
-  // printed bulletin" direction -- no more bottom rule under the heading.
+  // Box/border stripped for a "plain as the
+  // printed bulletin" look -- no more bottom rule under the heading.
   sectionHeadingRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -198,8 +198,8 @@ const styles = StyleSheet.create({
   markCongregation: {
     paddingLeft: 18,
   },
-  // Congregation renders in bold throughout (label + text), per Madrid's
-  // spec -- Minister keeps normal weight, just the label.
+  // Congregation renders in bold throughout (label + text) --
+  // Minister keeps normal weight, just the label.
   markCongregationText: {
     fontWeight: "bold",
   },

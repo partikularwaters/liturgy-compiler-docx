@@ -42,8 +42,8 @@ export async function createLiturgy(
     return { success: false, error: "Unable to start this liturgy right now." };
   }
 
-  // v2 item 4: automated rotation-cycle assignment (lib/liturgy/
-  // vesperTableRotation.ts) -- replaces Madrid manually cross-referencing
+  // Automated rotation-cycle assignment (lib/liturgy/
+  // vesperTableRotation.ts) -- replaces manually cross-referencing
   // the Handbook's printed table by hand for every new Vesper liturgy.
   // Best-effort: a failure here shouldn't fail liturgy creation, since
   // every Section is still editable by hand afterward exactly as before
@@ -52,8 +52,7 @@ export async function createLiturgy(
     await autoAssignVesperTableReadings(liturgyId, serviceDate, templateRow.sections as TemplateSection[]);
   }
 
-  // Feature 26: default Verbal Cue seeding (content supplied by Madrid
-  // 2026-07-22) -- gives a new Morning liturgy a starting cue in every
+  // Default Verbal Cue seeding -- gives a new Morning liturgy a starting cue in every
   // Section that has one, instead of every Section starting silent.
   // Best-effort, same discipline as the Vesper auto-assign above: a failure
   // here shouldn't fail liturgy creation, and every cue stays freely

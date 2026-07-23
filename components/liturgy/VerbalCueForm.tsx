@@ -6,8 +6,8 @@ interface VerbalCueFormProps {
   initialText: string;
   initialVisibility: "both" | "leader_only";
   initialRubric?: boolean;
-  // v2, direct feedback (2026-07-22): Confession of Sin's Silent Confession
-  // rubric needs a second-language variant, toggleable in the Compile View.
+  // Confession of Sin's Call-to-Confession cue
+  // needs a second-language variant, toggleable in the Compile View.
   // Gated per-Section (see SectionCard.tsx's ALTERNATE_LANGUAGE_CUE_SECTIONS)
   // rather than shown on every Verbal Cue -- most cues never need this.
   allowAlternateLanguage?: boolean;

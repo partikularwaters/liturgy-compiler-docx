@@ -30,7 +30,7 @@ export interface ResolvedItem {
 // Single source of truth for "what does this Item actually display" — used by
 // both the Compile View (SectionCard) and the PDF export, so they can never
 // drift apart. leaderOnly is true for Formula/Verbal Cue items whose
-// visibility is set to 'leader_only', and (2026-07-23) for Prayer items whose
+// visibility is set to 'leader_only', and for Prayer items whose
 // library entry's `kind` is 'leader' (Selection has no such concept); the
 // Bulletin export and the "Leader only" badge both key off it.
 // Exported separately so callers that need an item's displayed text
@@ -103,7 +103,7 @@ export function resolveBase(
 // Single source of truth for "what does this Item actually display" — used by
 // both the Compile View (SectionCard) and the PDF export, so they can never
 // drift apart. leaderOnly is true for Formula/Verbal Cue items whose
-// visibility is set to 'leader_only', and (2026-07-23) for Prayer items whose
+// visibility is set to 'leader_only', and for Prayer items whose
 // library entry's `kind` is 'leader' (Selection has no such concept); the
 // Bulletin export and the "Leader only" badge both key off it.
 export function resolveItemText(

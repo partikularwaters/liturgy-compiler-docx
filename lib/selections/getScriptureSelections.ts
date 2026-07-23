@@ -27,7 +27,7 @@ export async function getScriptureSelections(sectionName?: string): Promise<Scri
     marks: (row.marks as TextMark[] | null) ?? [],
   }));
 
-  // Direct feedback (2026-07-22): Order of Worship sequence for Section,
+  // Order of Worship sequence for Section,
   // then real OT/NT canonical order for citation within a Section (not
   // alphabetical, which scattered e.g. "1 Peter" before "Genesis"). A
   // Filipino/English translation pair for the same passage now sorts

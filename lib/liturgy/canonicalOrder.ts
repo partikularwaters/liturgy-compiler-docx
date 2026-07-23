@@ -1,14 +1,14 @@
 import { canon } from "@/lib/bible/canon";
 import { parseCitationReference, toEnglishCitation } from "@/lib/bible/bookNamesTagalog";
 
-// Direct feedback (2026-07-22): Library lists (Formulas, Prayers, Existing
-// Scripture) were sorted alphabetically by Section name, which reads as
-// arbitrary against the actual service -- Madrid wants the Order of Worship's
-// own sequence instead. Merged from both templates' real `templates.sections`
+// Library lists (Formulas, Prayers, Existing
+// Scripture) use the Order of Worship's own sequence instead of alphabetical
+// by Section name, which reads as arbitrary against the actual service.
+// Merged from both templates' real `templates.sections`
 // order (Morning's 18 + Vesper's 19), interleaved where a Section only
 // exists in one template, since library entries aren't template-specific.
 // Songs/Affirmations/Guides are intentionally NOT reordered by this --
-// alphabetical stays more useful there per Madrid's own call.
+// alphabetical is more useful there.
 export const SECTION_ORDER: string[] = [
   "Call to Worship",
   "Prayer of Invocation",

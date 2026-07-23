@@ -33,7 +33,7 @@ interface VesperReadingPanelProps {
   onDone: () => void;
 }
 
-// Feature-request (2026-07-21): the Handbook's rotation (lib/liturgy/
+// The Handbook's rotation (lib/liturgy/
 // vesperTableRotation.ts) auto-assigns a reading at liturgy creation, but
 // that's a default, not a mandate -- the Compiler must still be able to
 // pick a different one of the Handbook's own valid options by hand (a

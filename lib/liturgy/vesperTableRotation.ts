@@ -1,13 +1,12 @@
 import { parseLocalDate } from "@/lib/liturgy/lordsDay";
 
-// v2 item 4: automated rotation-cycle assignment for the Liturgy of the
-// Table's three recurring reading series (Handbook for Leading Worship,
-// pg. 45-47, pasted by Madrid 2026-07-21 -- see docs/Handbook for Leading
-// Worship (pg. 45-47).pdf). Previously tracked by Madrid manually
+// Automated rotation-cycle assignment for the Liturgy of the
+// Table's three recurring reading series (see docs/Handbook for Leading
+// Worship (pg. 45-47).pdf). Previously tracked by manually
 // cross-referencing the printed table by hand every time a Vesper liturgy
-// was created (founding-days-liturgy-compiler.md's v3+ parking-lot note).
+// was created.
 //
-// Anchor decision (confirmed directly with Madrid 2026-07-21, since the
+// Anchor decision (explicitly confirmed against the handbook, since the
 // handbook text itself never states which calendar month starts a new
 // 3-month Discourse cycle -- guessing wrong here would assign the wrong
 // Scripture reading to a real service): the Lord's Discourse's 12-reading
@@ -29,7 +28,7 @@ export interface DiscourseReading {
 // - Row 7's citation was badly OCR-mangled in the source PDF ("Matthew
 //   5–6:1–8, 6–34, 7:1–29"); rendered here as the plain chapter range
 //   "Matthew 5–7" (the traditional bounds of the Sermon on the Mount) --
-//   needs Madrid to confirm against the actual handbook page.
+//   TODO: needs confirmation against the actual handbook page.
 // - Rows 9 and 11 are both titled "The Parabolic Discourse" in the source
 //   table (Matthew 13 and Matthew 24–25 respectively) -- likely a title
 //   typo in the handbook itself (Matthew 24–25 is traditionally the
@@ -92,16 +91,16 @@ function getSundayOfMonth(date: Date): number {
 
 // 0/1/2 -- which third of the recurring 3-month Discourse supercycle this
 // calendar month belongs to. Jan/Apr/Jul/Oct -> 0, Feb/May/Aug/Nov -> 1,
-// Mar/Jun/Sep/Dec -> 2, per the calendar-quarter anchor Madrid confirmed.
+// Mar/Jun/Sep/Dec -> 2, per the calendar-quarter anchor confirmed above.
 function getDiscourseQuarterIndex(date: Date): 0 | 1 | 2 {
   return (date.getMonth() % 3) as 0 | 1 | 2;
 }
 
-// Feature-request (2026-07-21): the automated assignment above is a
+// The automated assignment above is a
 // default, not a mandate -- the Compiler must still be able to choose a
 // different reading from the fixed list by hand (e.g. a pastoral exception,
-// or a correction if the calendar-quarter anchor ever drifts from Madrid's
-// actual practice). Exported read-only so VesperReadingPanel.tsx can build
+// or a correction if the calendar-quarter anchor ever drifts from actual
+// practice). Exported read-only so VesperReadingPanel.tsx can build
 // its picker options directly from the same source of truth this file's
 // automation already uses -- the two can never list different options than
 // what the automation itself would pick from.

@@ -41,8 +41,8 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
   const dateIsSunday = isSunday(parseLocalDate(liturgy.serviceDate));
   const grouped = groupSectionsByPageColumn(liturgy.sections);
 
-  // v2 item 1: docx is the only export mechanism surfaced here for now --
-  // PDF download links removed per Madrid's direct request (2026-07-22);
+  // docx is the only export mechanism surfaced here for now --
+  // PDF download links removed;
   // lib/pdf/ itself stays untouched/frozen, this is just a UI removal.
   const downloadButtons = (
     <div className="flex items-center gap-3">
@@ -64,9 +64,8 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
   );
 
   // Vesper has no PDF export in v1 (deferred to v3/v4) -- a shareable web
-  // view replaces it instead. Morning also gets this link now (2026-07-15,
-  // extending Feature 18 past its original Vesper-only scope), since
-  // LiturgyWebView was already verified to work for Morning unmodified.
+  // view replaces it instead. Morning also gets this link, since
+  // LiturgyWebView works for Morning unmodified.
   const viewLink = <CopyLinkButton path={`/liturgy/${liturgy.id}/view`} />;
 
   // Feature 28 Part A: title ~14pt bold all-caps, metadata ~12pt small caps
@@ -135,7 +134,7 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
         {downloadButtons}
       </div>
       {grouped.map((pageGroup) => (
-        // Direct feedback (2026-07-22): a bounding box per page so the
+        // A bounding box per page so the
         // Page 1/Page 2 boundary reads clearly at a glance, instead of two
         // page labels with visually identical content underneath them.
         <div key={pageGroup.page} className="flex flex-col gap-3 border-2 border-border rounded-lg p-6">

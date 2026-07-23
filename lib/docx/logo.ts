@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-// The church's real logo, supplied by Madrid (2026-07-22) as
+// The church's real logo, sourced from
 // docs/Reformed Life Logo.png -- copied to public/images/ (same convention
 // as public/fonts/ for react-pdf) so this module can read it from disk.
 // docx (unlike react-pdf) needs no font-embedding equivalent, but an

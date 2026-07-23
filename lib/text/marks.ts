@@ -13,7 +13,7 @@ export interface MarkedSegment {
   // per-run below, since either may freely combine with this region's
   // speaker mark, with each other, or stand alone.
   //
-  // 2026-07-23 correction: Small Caps used to be grouped in with
+  // Correction: Small Caps used to be grouped in with
   // Congregation/Minister as a third "exclusive" option. That's wrong --
   // Small Caps is a typographic convention (reverential capitalization of a
   // divine name), orthogonal to *who's speaking*, not a competing claim on

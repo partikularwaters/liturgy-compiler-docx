@@ -26,7 +26,7 @@ export function registerPdfFonts(): void {
     fonts: [
       { src: path.join(fontsDir, "IbarraRealNova-Regular.ttf"), fontWeight: "normal" },
       { src: path.join(fontsDir, "IbarraRealNova-Bold.ttf"), fontWeight: "bold" },
-      // Sourced 2026-07-18 the same way as the original two (Google's
+      // Sourced the same way as the original two (Google's
       // css2 API, forced to a static instance) -- this pass only got woff
       // back, not ttf, so these register as woff. fontkit (react-pdf's
       // underlying parser) supports woff; if that ever stops being true,

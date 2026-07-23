@@ -14,12 +14,11 @@ export function getSelectionMarks(sectionName: string): Exclude<TextMark["type"]
   return DIALOGUE_MARK_SECTIONS.includes(sectionName) ? ["congregation", "small_caps"] : ["small_caps"];
 }
 
-// Feature 25 (redesign-plan-v1.1.md §U's Minister piece) -- moved here
-// 2026-07-21 (v2, library-level marking toolbar) from a SectionCard.tsx-local
-// constant so the library-edit forms (FormulaForm) can share the exact same
-// lookup instead of Compile-View-edit-time and library-edit-time drifting.
-// Every other Section's Formula gets no marking toolbar at all --
-// `**bold**` markdown remains the live option there, unchanged.
+// Shared between the Compile View's edit-time toolbar and the library-edit
+// forms (FormulaForm) so the two lookups can't drift apart.
+// Every other Section's Formula gets no Congregation/Minister/Small-Caps
+// toolbar at all -- Bold is still available everywhere via MarkEditor's
+// Bold-only mode, since it's a real mark type, not scoped like these.
 const FORMULA_MARK_SECTIONS: Record<string, Exclude<TextMark["type"], "bold">[]> = {
   "Assurance of Pardon": ["minister", "congregation"],
   Charge: ["minister"],

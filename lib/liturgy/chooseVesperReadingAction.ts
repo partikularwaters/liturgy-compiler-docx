@@ -3,7 +3,7 @@
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
 import { addSelection, updateSelectionItem } from "@/lib/liturgy/addSelectionAction";
 
-// Feature-request (2026-07-21): lets the Compiler pick a different reading
+// Lets the Compiler pick a different reading
 // than vesperTableRotation.ts's automated pick, from that Section's own
 // fixed list (see VesperReadingPanel.tsx) -- these three Sections
 // (VESPER_TABLE_SECTIONS) only ever carry a single Selection at a time, so

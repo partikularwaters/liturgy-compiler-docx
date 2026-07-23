@@ -18,9 +18,9 @@ interface PrayerGuidePanelProps {
 // that need one, never selectable/placeable as an actual liturgy item.
 // Renders nothing when no guide exists yet for this Section, same "real
 // gap, not a placeholder" discipline as everywhere else -- guides are
-// optional reference material Madrid authors through /library, not seeded.
+// optional reference material authored through /library, not seeded.
 //
-// Redesigned (2026-07-22, direct feedback) from an always-present collapsible
+// Redesigned from an always-present collapsible
 // box into a small icon-button toggle -- same 24x24 circle size as the
 // alternate-translation button (AddExistingSelectionPanel.tsx) -- so a
 // Section with a guide doesn't visually dominate the Compile View. Once

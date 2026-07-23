@@ -12,7 +12,7 @@ interface LibraryTextPreviewProps {
   className?: string;
 }
 
-// Direct feedback (2026-07-22): every Library list row (Formula/Prayer/
+// Every Library list row (Formula/Prayer/
 // Scripture/Guide) previewed its full text unclamped, with line breaks
 // collapsed by default <p> whitespace handling and **bold** markdown shown
 // literally instead of rendered -- a long entry (the Apostles' Creed) could
@@ -22,7 +22,7 @@ interface LibraryTextPreviewProps {
 // needs to catch entries that are obviously longer than 3 lines, not be
 // pixel-exact.
 //
-// Direct feedback (2026-07-22, follow-up): this used to render its own
+// This used to render its own
 // bold-only, sans-font text instead of the shared MarkedText component --
 // Minister/Congregation marks were invisible here even though the library
 // row itself has them (v2's library-level marking toolbar), and the font

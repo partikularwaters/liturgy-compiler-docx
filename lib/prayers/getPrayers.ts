@@ -11,11 +11,10 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
 
   let { data, error } = await query;
 
-  // 2026-07-23: `is_guide` (20260723020000_prayer_kind_redesign.sql) may not
-  // be run yet -- same graceful missing-column fallback as `marks` below, so
-  // the whole Library's Prayer list doesn't go down while Madrid gets to the
-  // migration. Falls back to the old `kind === 'guide'` reading so behavior
-  // is unchanged until the column exists.
+  // Graceful fallback if `is_guide` isn't present yet -- migrations are
+  // applied manually, not automatically, so the whole Library's Prayer list
+  // shouldn't go down over a missing column. Falls back to the old
+  // `kind === 'guide'` reading so behavior is unchanged until it exists.
   if (error?.message.includes("is_guide")) {
     let fallbackQuery = supabase.from("prayers").select("id, section_name, text, kind, marks");
     if (sectionName) fallbackQuery = fallbackQuery.eq("section_name", sectionName);
@@ -24,9 +23,8 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
     error = fallback.error;
   }
 
-  // 2026-07-23: `marks` (20260723010000_prayer_marks.sql) may not be run yet
-  // -- same graceful missing-column fallback as getLiturgy.ts, so the whole
-  // Library's Prayer list doesn't go down while Madrid gets to the migration.
+  // Same graceful missing-column fallback as getLiturgy.ts, so the whole
+  // Library's Prayer list doesn't go down over a missing column.
   if (error?.message.includes("marks")) {
     let fallbackQuery = supabase.from("prayers").select("id, section_name, text, kind");
     if (sectionName) fallbackQuery = fallbackQuery.eq("section_name", sectionName);
@@ -49,10 +47,10 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
     isGuide: Boolean((row as { is_guide?: boolean }).is_guide),
   }));
 
-  // Direct feedback (2026-07-22): Order of Worship sequence for actual
-  // Prayers; Guides stay in whatever order they came back in (Madrid: more
-  // sensible alphabetical-ish grouping for reference material, not a strict
-  // service sequence) -- so this only reorders the non-guide rows.
+  // Order of Worship sequence for actual
+  // Prayers; Guides stay in whatever order they came back in -- alphabetical-ish
+  // grouping is more sensible for reference material than a strict
+  // service sequence -- so this only reorders the non-guide rows.
   return prayers.sort((a, b) => {
     if (a.isGuide !== b.isGuide) return 0;
     if (a.isGuide) return 0;

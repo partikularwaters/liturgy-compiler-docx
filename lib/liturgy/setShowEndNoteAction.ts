@@ -2,7 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 
-// v2, direct feedback (2026-07-22): per-liturgy toggle for the trailing
+// Per-liturgy toggle for the trailing
 // "~ End of [Service] ~" note in the docx export (see CompiledLiturgy.showEndNote).
 export async function setShowEndNote(
   liturgyId: string,

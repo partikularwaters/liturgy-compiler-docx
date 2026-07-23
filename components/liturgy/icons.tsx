@@ -1,5 +1,4 @@
-// Small shared icon set -- stroke-width 2 throughout (bumped up from 1.5,
-// per Madrid's "increase the weight of icons" request) so they read clearly
+// Small shared icon set -- stroke-width 2 throughout so they read clearly
 // at the small sizes they're used at (16-18px).
 interface IconProps {
   size?: number;
@@ -24,8 +23,8 @@ export function PencilIcon({ size = 16, className }: IconProps): React.ReactElem
   );
 }
 
-// v2 (BSB): solid glyph, not stroke-based like the rest of this set -- the
-// source artwork (docs/Translate.svg, supplied by Madrid) is a filled icon,
+// Solid glyph, not stroke-based like the rest of this set -- the
+// source artwork (docs/Translate.svg) is a filled icon,
 // so this one uses fill="currentColor" instead of stroke, keeping the
 // source's own viewBox rather than forcing it into the 0-20 grid the
 // stroke icons share.
@@ -37,8 +36,7 @@ export function TranslateIcon({ size = 16, className }: IconProps): React.ReactE
   );
 }
 
-// Direct feedback (2026-07-22): the nav had no direct link back to the
-// homepage -- a plain house glyph, same stroke convention as the rest.
+// Plain house glyph, same stroke convention as the rest.
 export function HomeIcon({ size = 16, className }: IconProps): React.ReactElement {
   return (
     <svg
@@ -59,8 +57,7 @@ export function HomeIcon({ size = 16, className }: IconProps): React.ReactElemen
   );
 }
 
-// Direct feedback (2026-07-22): Prayer Guide's icon-button toggle -- a
-// simple open-book glyph (reference material), same stroke convention as
+// Simple open-book glyph (reference material), same stroke convention as
 // the rest of this set.
 export function GuideIcon({ size = 16, className }: IconProps): React.ReactElement {
   return (

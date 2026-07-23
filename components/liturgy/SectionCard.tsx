@@ -45,9 +45,9 @@ const ALL_ITEM_TYPES: Item["type"][] = ["selection", "formula", "verbal_cue", "p
 // as ReaderClient.tsx).
 const REFERENCE_ONLY_SECTIONS = ["The Lord's Discourses", "Words of Institution", "Closing of the Table"];
 
-// v2, direct feedback (2026-07-22): Confession of Sin's Silent Confession
-// rubric is the only Verbal Cue that needs a second-language toggle -- every
-// other cue keeps the single-text form.
+// Confession of Sin's Call-to-Confession cue is the only Verbal Cue that
+// needs a second-language toggle -- every other cue keeps the single-text
+// form.
 const ALTERNATE_LANGUAGE_CUE_SECTIONS = ["Confession of Sin"];
 
 // Feature 27: Sections needing a Prayer Guide reference panel, per
@@ -62,7 +62,7 @@ const PRAYER_GUIDE_SECTIONS = [
   "Pastoral Prayer",
 ];
 
-// Feature-request (2026-07-18): Sections whose sole content is a recited
+// Sections whose sole content is a recited
 // text (a Creed, Vesper's Church Covenant) get that Formula's own name
 // treated the same way a Selection's citation is -- shown inline with the
 // Section title, plain (not citation-red/small-caps, since it isn't
@@ -173,11 +173,6 @@ function PrayerEditForm({
   onCancel,
 }: PrayerEditFormProps): React.ReactElement {
   const [text, setText] = useState(initialText);
-  // 2026-07-23: Prayer gained real marks storage (marks are now the mark
-  // system, not `**markdown**`) -- this form used to keep a transient local
-  // `marks` state that was never read by onSubmit or persisted, since there
-  // was nowhere to persist it. Now initialized from the placed item's actual
-  // current marks and threaded through onSubmit for real.
   const [marks, setMarks] = useState<TextMark[]>(initialMarks);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -237,10 +232,9 @@ export default function SectionCard({
   const router = useRouter();
   const sectionFormulas = formulas.filter((f) => f.sectionName === section.name);
   const sectionScriptureSelections = scriptureSelections.filter((s) => s.sectionName === section.name);
-  // Feature 27, redesigned 2026-07-23: `isGuide` entries are reference
+  // `isGuide` entries are reference
   // material, never placeable as an actual liturgy item -- keep them out of
-  // AddPrayerPanel's picker entirely (was `kind === 'guide'`, before
-  // placeability and audience became separate fields).
+  // AddPrayerPanel's picker entirely.
   const sectionPrayers = prayers.filter((p) => p.sectionName === section.name && !p.isGuide);
   const sectionGuides = prayers.filter((p) => p.sectionName === section.name && p.isGuide);
   const sectionPsalms = songs.filter((s) => s.sectionName === section.name && s.kind === "psalm");
@@ -263,13 +257,12 @@ export default function SectionCard({
   // buttons in that case.
   const allowedTypes = section.item_types ?? ALL_ITEM_TYPES;
 
-  // Feature 28 Part A, generalized 2026-07-18: every Selection's citation in
+  // Every Selection's citation in
   // this Section moves up onto the Section-name line (matching the reference
   // bulletin's "reference shares the heading line, right-aligned" layout)
   // instead of repeating as its own label line in the items list below --
-  // originally scoped only to the single-Selection case, but Madrid flagged
-  // that a Section mixing a Formula with one or more Selections (e.g.
-  // Assurance of Pardon) should behave the same way. Multiple citations join
+  // applies even when a Formula is mixed in with one or more Selections
+  // (e.g. Assurance of Pardon). Multiple citations join
   // with "; "; every other item type (Formula, Cue, Prayer, Sermon, Song)
   // keeps its own per-item label rendering, unaffected.
   const selectionItems = section.items.filter((item) => item.type === "selection");
@@ -308,7 +301,7 @@ export default function SectionCard({
             }
           : null;
 
-  // Feature-request (2026-07-18): when a Section draws from more than one
+  // When a Section draws from more than one
   // passage (e.g. Assurance of Pardon: John 3:16 + Acts 13:38-39), they
   // should read as one naturally-spoken flow -- the last words of one
   // immediately followed by the first words of the next -- not as separate

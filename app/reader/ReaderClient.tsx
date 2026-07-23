@@ -189,7 +189,7 @@ export default function ReaderClient({
     <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-6">
       <h1 className="text-[28px] font-bold leading-9 text-text-primary">Bible Reader</h1>
 
-      {/* Direct feedback (2026-07-22): AB/BSB toggle and Highlight picker
+      {/* AB/BSB toggle and Highlight picker
           weren't aligned with the Book/Chapter selects -- BookChapterPicker
           is a two-row block (label above select), while these are single-row
           controls, so `items-center` centered them against its full height
@@ -233,8 +233,6 @@ export default function ReaderClient({
       </div>
 
       {targetSection && (
-        // Direct feedback (2026-07-22): shrunk and shortened -- this bar was
-        // reading as more prominent than the actual Reader controls above it.
         <div className="flex items-center justify-between bg-accent-light rounded-md px-3 py-1.5">
           <p className="text-[12px] text-accent-dark truncate" title={targetLabel}>
             → {targetSection.sectionName}

@@ -89,12 +89,10 @@ export async function addSelection(
   return { success: true, companionSaved };
 }
 
-// Feature-request (2026-07-18): edits a Selection item already placed into a
-// Section -- until now Selection was the one item type with no edit path at
-// all once saved (Formula/Prayer/Verbal Cue/Sermon all gained one earlier),
-// which was the actual root cause behind "I can't apply Small Caps after
-// using Congregation" -- there was no way back into a saved Selection's
-// marking toolbar. Mirrors updateFormulaItem's shape. Re-upserts the
+// Edits a Selection item already placed into a
+// Section -- Selection is the one item type whose marking toolbar needs to
+// stay reachable after the initial save, same as Formula/Prayer/Verbal
+// Cue/Sermon. Mirrors updateFormulaItem's shape. Re-upserts the
 // scripture_selections library row too, same as the initial add, so a text
 // edit here doesn't leave the library cache stale.
 export async function updateSelectionItem(
