@@ -10,15 +10,24 @@
 -- visibility automatically instead of every Prayer always showing in both
 -- Guide and Bulletin unconditionally (the prior, admittedly leaky, default).
 --
--- Idempotent -- safe to re-run in full even after a partial run (this file
--- originally shipped as additive-only; the `kind` check constraint/default
--- fix below was folded in afterward, once the reclassification data script
--- revealed the original 20260716010000_prayer_guides.sql constraint still
--- only allowed 'prayer'/'guide' and was never touched by this migration).
+-- Idempotent -- safe to re-run in full even after a partial run. Ordering
+-- matters: the old constraint (`kind in ('prayer', 'guide')`, from
+-- 20260716010000_prayer_guides.sql) has to come off, and every row's `kind`
+-- has to already satisfy the new constraint, before the new constraint goes
+-- on -- otherwise ADD CONSTRAINT fails against whatever rows still hold the
+-- old values (confirmed live: "check constraint ... is violated by some row").
 alter table prayers add column if not exists is_guide boolean not null default false;
 
 update prayers set is_guide = true where kind = 'guide';
 
 alter table prayers drop constraint if exists prayers_kind_check;
+
+-- Reclassification confirmed with Madrid (2026-07-23/24): the 2 Confession
+-- of Sin prayers are corporate (prayed by the whole church); everything
+-- else -- including the 6 real `is_guide` checklist rows, for which `kind`
+-- is now meaningless -- gets 'leader'.
+update prayers set kind = 'corporate' where section_name = 'Confession of Sin' and not is_guide;
+update prayers set kind = 'leader' where kind not in ('corporate');
+
 alter table prayers add constraint prayers_kind_check check (kind in ('corporate', 'leader'));
 alter table prayers alter column kind set default 'leader';
