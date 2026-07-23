@@ -10,12 +10,13 @@ interface PrayerFormProps {
   sectionNames: string[];
   initialSectionName: string;
   initialText: string;
-  initialKind?: "prayer" | "guide";
+  initialKind?: "corporate" | "leader";
+  initialIsGuide?: boolean;
   initialMarks?: TextMark[];
   isSaving: boolean;
   error: string | null;
   submitLabel: string;
-  onSubmit: (sectionName: string, text: string, kind: "prayer" | "guide", marks: TextMark[]) => void;
+  onSubmit: (sectionName: string, text: string, kind: "corporate" | "leader", marks: TextMark[], isGuide: boolean) => void;
   onCancel?: () => void;
 }
 
@@ -25,11 +26,20 @@ interface PrayerFormProps {
 // -- Congregation/Minister/Small-Caps stay scoped to the Sections that
 // actually need them, per markableSections.ts), same as every other library
 // form's toolbar.
+//
+// 2026-07-23 redesign: Kind is now purely audience (Corporate/Leader),
+// driving derived Bulletin visibility -- see types/liturgy.ts's Prayer.kind
+// comment. The old "Guide" kind option is gone; guide/reference-only is now
+// a separate, de-emphasized checkbox (Madrid: "I don't think the Guide is
+// relevant any more... The Guide... can be triggered in the Compile view
+// already") since it's an orthogonal, rarely-used fact, not a third
+// audience choice competing for attention with the two real ones.
 export default function PrayerForm({
   sectionNames,
   initialSectionName,
   initialText,
-  initialKind = "prayer",
+  initialKind = "leader",
+  initialIsGuide = false,
   initialMarks = [],
   isSaving,
   error,
@@ -39,7 +49,8 @@ export default function PrayerForm({
 }: PrayerFormProps): React.ReactElement {
   const [sectionName, setSectionName] = useState(initialSectionName || sectionNames[0] || "");
   const [text, setText] = useState(initialText);
-  const [kind, setKind] = useState<"prayer" | "guide">(initialKind);
+  const [kind, setKind] = useState<"corporate" | "leader">(initialKind);
+  const [isGuide, setIsGuide] = useState(initialIsGuide);
   const [marks, setMarks] = useState<TextMark[]>(initialMarks);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -73,11 +84,11 @@ export default function PrayerForm({
         <select
           id="prayer-kind"
           value={kind}
-          onChange={(e) => setKind(e.target.value as "prayer" | "guide")}
+          onChange={(e) => setKind(e.target.value as "corporate" | "leader")}
           className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
         >
-          <option value="prayer">Prayer (placeable in a liturgy)</option>
-          <option value="guide">Guide (reference outline only, per redesign-plan-v1.1.md §W)</option>
+          <option value="corporate">Corporate (whole church prays it — Bulletin + Guide)</option>
+          <option value="leader">Leader (leader/minister's own material — Guide only)</option>
         </select>
       </div>
       <div className="flex flex-col gap-1">
@@ -97,11 +108,16 @@ export default function PrayerForm({
         />
       </div>
       <MarkEditor text={text} marks={marks} onMarksChange={setMarks} availableMarks={[]} textareaRef={textareaRef} />
+      <label className="flex items-center gap-2 text-[12px] text-text-muted">
+        <input type="checkbox" checked={isGuide} onChange={(e) => setIsGuide(e.target.checked)} />
+        This is reference material only (a Prayer Guide checklist, per redesign-plan-v1.1.md §W) — never placeable
+        in a liturgy
+      </label>
       {error && <p className="text-sm text-error">{error}</p>}
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(sectionName, text, kind, marks)}
+          onClick={() => onSubmit(sectionName, text, kind, marks, isGuide)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >

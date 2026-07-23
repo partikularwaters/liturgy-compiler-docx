@@ -26,8 +26,8 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
   const psalms = songs.filter((s) => s.kind === "psalm");
   const hymns = songs.filter((s) => s.kind === "hymn");
 
-  const prayers = allPrayers.filter((p) => p.kind === "prayer");
-  const guides = allPrayers.filter((p) => p.kind === "guide");
+  const prayers = allPrayers.filter((p) => !p.isGuide);
+  const guides = allPrayers.filter((p) => p.isGuide);
 
   return (
     <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-8">

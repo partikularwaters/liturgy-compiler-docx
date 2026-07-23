@@ -1,7 +1,7 @@
 import { applyTrinitarianSeal } from "@/lib/liturgy/trinitarianSeal";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
 import { displayCitation } from "@/lib/bible/bookNamesTagalog";
-import { resolveVerbalCueTemplate } from "@/lib/liturgy/resolveVerbalCueTemplate";
+import { resolveVerbalCueTemplate, type VerbalCueRun } from "@/lib/liturgy/resolveVerbalCueTemplate";
 import type { Formula, Item, Prayer, Song, TextMark } from "@/types/liturgy";
 
 export interface ResolvedItem {
@@ -12,6 +12,11 @@ export interface ResolvedItem {
   // Sentence case + italic instead of the default treatment. Always false
   // for every other item type.
   rubric: boolean;
+  // Set only for Verbal Cue items -- `text` split into runs so the
+  // substituted {{scripture}}/{{song}} token renders in citation-red while
+  // the rest of the cue's prose stays plain (see
+  // resolveVerbalCueTemplate.ts). Absent for every other item type.
+  verbalCueRuns?: VerbalCueRun[];
   // Feature 21: set only for Song items -- `text` above already holds the
   // title (what every audience sees), `song` carries the rest of the
   // metadata for surfaces that show it (Leader Guide only, per §L).
@@ -24,9 +29,10 @@ export interface ResolvedItem {
 
 // Single source of truth for "what does this Item actually display" — used by
 // both the Compile View (SectionCard) and the PDF export, so they can never
-// drift apart. leaderOnly is true only for Formula/Verbal Cue items whose
-// visibility is set to 'leader_only' (Selection/Prayer have no visibility
-// flag); the Bulletin export and the "Leader only" badge both key off it.
+// drift apart. leaderOnly is true for Formula/Verbal Cue items whose
+// visibility is set to 'leader_only', and (2026-07-23) for Prayer items whose
+// library entry's `kind` is 'leader' (Selection has no such concept); the
+// Bulletin export and the "Leader only" badge both key off it.
 // Exported separately so callers that need an item's displayed text
 // *without* a Trinitarian Seal appended (e.g. FormulaEditForm's textarea,
 // which must edit the underlying override text, not a seal baked on top of
@@ -60,11 +66,13 @@ export function resolveBase(
     }
     case "verbal_cue": {
       const rawText = item.showAlternate && item.textAlternate ? item.textAlternate : item.text;
+      const resolvedCue = resolveVerbalCueTemplate(rawText, siblingItems, formulas, songs);
       return {
         label: "Verbal Cue",
-        text: resolveVerbalCueTemplate(rawText, siblingItems, formulas, songs),
+        text: resolvedCue.text,
         leaderOnly: item.visibility === "leader_only",
         rubric: item.rubric ?? false,
+        verbalCueRuns: resolvedCue.runs,
       };
     }
     case "prayer": {
@@ -72,7 +80,7 @@ export function resolveBase(
       return {
         label: "Prayer",
         text: prayer?.text ?? "(Prayer not found)",
-        leaderOnly: false,
+        leaderOnly: prayer?.kind === "leader",
         rubric: false,
         marks: prayer?.marks ?? [],
       };
@@ -94,9 +102,10 @@ export function resolveBase(
 
 // Single source of truth for "what does this Item actually display" — used by
 // both the Compile View (SectionCard) and the PDF export, so they can never
-// drift apart. leaderOnly is true only for Formula/Verbal Cue items whose
-// visibility is set to 'leader_only' (Selection/Prayer have no visibility
-// flag); the Bulletin export and the "Leader only" badge both key off it.
+// drift apart. leaderOnly is true for Formula/Verbal Cue items whose
+// visibility is set to 'leader_only', and (2026-07-23) for Prayer items whose
+// library entry's `kind` is 'leader' (Selection has no such concept); the
+// Bulletin export and the "Leader only" badge both key off it.
 export function resolveItemText(
   item: Item,
   formulas: Formula[],

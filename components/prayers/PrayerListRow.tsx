@@ -19,10 +19,16 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSave = (sectionName: string, text: string, kind: "prayer" | "guide", marks: TextMark[]): void => {
+  const handleSave = (
+    sectionName: string,
+    text: string,
+    kind: "corporate" | "leader",
+    marks: TextMark[],
+    isGuide: boolean
+  ): void => {
     setIsSaving(true);
     setError(null);
-    updatePrayer(prayer.id, sectionName, text, kind, marks).then((result) => {
+    updatePrayer(prayer.id, sectionName, text, kind, marks, isGuide).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setIsEditing(false);
@@ -34,7 +40,7 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
   };
 
   const handleDelete = (): void => {
-    const label = prayer.kind === "guide" ? "guide" : "prayer";
+    const label = prayer.isGuide ? "guide" : "prayer";
     if (!window.confirm(`Delete this ${label}? This does not remove it from liturgies it's already placed in.`)) {
       return;
     }
@@ -55,6 +61,7 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
           initialSectionName={prayer.sectionName}
           initialText={prayer.text}
           initialKind={prayer.kind}
+          initialIsGuide={prayer.isGuide ?? false}
           initialMarks={prayer.marks ?? []}
           isSaving={isSaving}
           error={error}
@@ -71,7 +78,7 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
       <div>
         <p className="text-[13px] text-text-secondary">{prayer.sectionName}</p>
         <LibraryTextPreview
-          title={prayer.kind === "guide" ? "Prayer Guide" : "Prayer"}
+          title={prayer.isGuide ? "Prayer Guide" : `Prayer (${prayer.kind === "corporate" ? "Corporate" : "Leader"})`}
           text={prayer.text}
           marks={prayer.marks}
           className="mt-1"

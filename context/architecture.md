@@ -47,7 +47,8 @@
 │   ├── docx/                    # .docx generation (v2) — the active export mechanism (LiturgyDocx.ts, logo.ts,
 │   │                             # fonts.ts, columnLayout.ts, tokens.ts)
 │   ├── formulas/                # Formula library reads/writes (added Feature 08)
-│   ├── prayers/                 # Prayer library reads/writes (added Feature 10; gains `guide` kind in v1.1)
+│   ├── prayers/                 # Prayer library reads/writes (added Feature 10; gains `guide` kind in v1.1,
+│   │                             # redesigned 2026-07-23 into independent `kind` (audience) + `is_guide` (placeability))
 │   ├── songs/                    # Psalm/Hymn ("Songs") library reads/writes (v1.1)
 │   ├── selections/                # Scripture Text Library ("Existing Selections") reads/writes (v1.1)
 │   ├── text/                    # Typographic normalization, markdown bold parsing, span-tag (marks) handling
@@ -206,8 +207,9 @@ All tables below are live and shipped. The hybrid relational/jsonb split (decide
 | --- | --- | --- |
 | id | uuid | Primary key |
 | section_name | text | Which Section this prayer belongs to (e.g. "Confession of Sin") — filtered by Section **name**, so the same tag matches that Section in both Morning and Vesper |
-| text | text | The prayer itself, or the guide's checklist text if `kind = 'guide'` |
-| kind | text | `'prayer'` \| `'guide'` — added v1.1. A `guide` entry is a fixed structural checklist (e.g. Invocation's Adoration → Humble Approach → Acceptance → Thanksgiving → Trinitarian Conclusion) shown as reference next to "Add Prayer," never stored as liturgy content itself. Default `'prayer'` for all rows that predate this column. |
+| text | text | The prayer itself, or the guide's checklist text if `is_guide = true` |
+| kind | text | `'corporate'` \| `'leader'` — redesigned 2026-07-23 (was `'prayer'` \| `'guide'`, v1.1). Now purely audience: `'corporate'` means the whole church prays it (both Bulletin + Guide, same as before); `'leader'` means it's the leader/minister's own material (Guide only — `resolveItemText.ts`'s `leaderOnly` is now derived from this, the same pattern Formula/Verbal Cue's `visibility` already used). Meaningless when `is_guide` is true. |
+| is_guide | boolean | Added 2026-07-23 (`20260723020000_prayer_kind_redesign.sql`), replacing the old `kind = 'guide'` value — placeability is now independent of audience. A `true` row is a fixed structural checklist (e.g. Invocation's Adoration → Humble Approach → Acceptance → Thanksgiving → Trinitarian Conclusion) shown as reference next to "Add Prayer," never stored as liturgy content itself. Defaults `false`. |
 | marks | jsonb | 2026-07-23 (`20260723010000_prayer_marks.sql`) — library-level marking, same convention as `formulas.marks`/`scripture_selections.marks`. A placed `PrayerItem` has no per-instance override of its own (unlike Formula), so it always reflects this row's current marks directly, same as it already does for `text`. Defaults `[]`. |
 
 ### `songs` (v1.1, new)

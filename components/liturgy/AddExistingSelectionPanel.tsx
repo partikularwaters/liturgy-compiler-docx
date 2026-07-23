@@ -6,6 +6,7 @@ import { addSelection } from "@/lib/liturgy/addSelectionAction";
 import { toEnglishCitation } from "@/lib/bible/bookNamesTagalog";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
 import { TranslateIcon } from "@/components/liturgy/icons";
+import MarkedText from "@/components/liturgy/MarkedText";
 import type { ScriptureSelection } from "@/types/liturgy";
 
 interface AddExistingSelectionPanelProps {
@@ -182,11 +183,13 @@ export default function AddExistingSelectionPanel({
             </div>
           </div>
 
-          {selected && (
+          {selected && (selected.text ? (
+            <MarkedText text={selected.text} marks={selected.marks} />
+          ) : (
             <p className="font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap">
-              {selected.text || "(citation only)"}
+              (citation only)
             </p>
-          )}
+          ))}
 
           {error && <p className="text-sm text-error">{error}</p>}
 

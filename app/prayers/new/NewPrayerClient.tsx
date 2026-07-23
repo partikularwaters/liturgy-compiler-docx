@@ -15,10 +15,16 @@ export default function NewPrayerClient({ sectionNames }: NewPrayerClientProps):
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSave = (sectionName: string, text: string, kind: "prayer" | "guide", marks: TextMark[]): void => {
+  const handleSave = (
+    sectionName: string,
+    text: string,
+    kind: "corporate" | "leader",
+    marks: TextMark[],
+    isGuide: boolean
+  ): void => {
     setIsSaving(true);
     setError(null);
-    createPrayer(sectionName, text, kind, marks).then((result) => {
+    createPrayer(sectionName, text, kind, marks, isGuide).then((result) => {
       setIsSaving(false);
       if (result.success) {
         router.push("/library");

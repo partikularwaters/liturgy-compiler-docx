@@ -29,10 +29,12 @@ import { getSelectionMarks, getFormulaMarks } from "@/lib/liturgy/markableSectio
 import { VESPER_TABLE_SECTIONS } from "@/lib/liturgy/vesperTableRotation";
 import { toEnglishCitation } from "@/lib/bible/bookNamesTagalog";
 import { TRINITARIAN_SEAL_SECTIONS } from "@/lib/liturgy/trinitarianSeal";
+import { SILENT_CONFESSION_SECTION, SILENT_CONFESSION_RUBRIC_TEXT } from "@/lib/liturgy/silentConfessionRubric";
 import { applyMarks, shiftMarksForEdit } from "@/lib/text/marks";
 import { updatePrayer } from "@/lib/prayers/prayerActions";
 import { removeItem } from "@/lib/liturgy/removeItemAction";
 import { PencilIcon, TrashIcon } from "@/components/liturgy/icons";
+import type { VerbalCueRun } from "@/lib/liturgy/resolveVerbalCueTemplate";
 import type { CompiledSection, Formula, Item, Prayer, ScriptureSelection, Song, TextMark } from "@/types/liturgy";
 
 const ALL_ITEM_TYPES: Item["type"][] = ["selection", "formula", "verbal_cue", "prayer", "sermon", "song"];
@@ -120,6 +122,27 @@ function BodyText({ text, rubric = false }: { text: string; rubric?: boolean }):
           )
         )
       )}
+    </p>
+  );
+}
+
+// A Verbal Cue's substituted {{scripture}}/{{song}} token renders in
+// citation-red (matching a Selection header/Psalm title elsewhere), never
+// Small Caps -- the rest of the cue's hand-written prose stays plain.
+function VerbalCueBody({ runs, rubric = false }: { runs: VerbalCueRun[]; rubric?: boolean }): React.ReactElement {
+  return (
+    <p
+      className={
+        rubric
+          ? "font-serif-body text-[16px] leading-[1.6] text-text-primary italic whitespace-pre-wrap text-justify"
+          : "font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap text-justify"
+      }
+    >
+      {runs.map((run, i) => (
+        <span key={i} className={run.citation ? "text-citation" : undefined}>
+          {run.text}
+        </span>
+      ))}
     </p>
   );
 }
@@ -214,11 +237,12 @@ export default function SectionCard({
   const router = useRouter();
   const sectionFormulas = formulas.filter((f) => f.sectionName === section.name);
   const sectionScriptureSelections = scriptureSelections.filter((s) => s.sectionName === section.name);
-  // Feature 27: 'guide'-kind entries are reference material, never
-  // placeable as an actual liturgy item -- keep them out of AddPrayerPanel's
-  // picker entirely.
-  const sectionPrayers = prayers.filter((p) => p.sectionName === section.name && p.kind === "prayer");
-  const sectionGuides = prayers.filter((p) => p.sectionName === section.name && p.kind === "guide");
+  // Feature 27, redesigned 2026-07-23: `isGuide` entries are reference
+  // material, never placeable as an actual liturgy item -- keep them out of
+  // AddPrayerPanel's picker entirely (was `kind === 'guide'`, before
+  // placeability and audience became separate fields).
+  const sectionPrayers = prayers.filter((p) => p.sectionName === section.name && !p.isGuide);
+  const sectionGuides = prayers.filter((p) => p.sectionName === section.name && p.isGuide);
   const sectionPsalms = songs.filter((s) => s.sectionName === section.name && s.kind === "psalm");
   const sectionHymns = songs.filter((s) => s.sectionName === section.name && s.kind === "hymn");
   const [isAddingExistingSelection, setIsAddingExistingSelection] = useState(false);
@@ -896,6 +920,8 @@ export default function SectionCard({
                 </div>
                 {item.type === "song" ? (
                   <SongTitle song={resolved.song} />
+                ) : item.type === "verbal_cue" && resolved.verbalCueRuns ? (
+                  <VerbalCueBody runs={resolved.verbalCueRuns} rubric={resolved.rubric} />
                 ) : (
                   resolved.text &&
                   ((item.type === "selection" || item.type === "formula" || item.type === "prayer") &&
@@ -911,6 +937,11 @@ export default function SectionCard({
             });
           })()}
         </ul>
+      )}
+      {section.name === SILENT_CONFESSION_SECTION && (
+        <p className="font-serif-body text-[16px] leading-[1.6] text-text-primary italic text-center whitespace-pre-line">
+          {SILENT_CONFESSION_RUBRIC_TEXT}
+        </p>
       )}
     </div>
   );

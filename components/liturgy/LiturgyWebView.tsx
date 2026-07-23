@@ -2,6 +2,7 @@ import { sectionTitle } from "@/lib/liturgy/sectionTitle";
 import { applyMarks } from "@/lib/text/marks";
 import { prepareSectionRender } from "@/lib/liturgy/prepareSectionRender";
 import { isSunday, parseLocalDate } from "@/lib/liturgy/lordsDay";
+import { SILENT_CONFESSION_SECTION, SILENT_CONFESSION_RUBRIC_TEXT } from "@/lib/liturgy/silentConfessionRubric";
 import ScriptureCitationLink from "@/components/liturgy/ScriptureCitationLink";
 import type { CompiledLiturgy, Formula, Prayer, Song, TextMark } from "@/types/liturgy";
 
@@ -132,6 +133,21 @@ export default function LiturgyWebView({
                       >
                         {resolved.text}
                       </p>
+                    ) : item.type === "verbal_cue" && resolved.verbalCueRuns ? (
+                      <p
+                        key={itemIndex}
+                        className={
+                          resolved.rubric
+                            ? "font-serif-body text-[16px] leading-[1.6] text-text-primary italic whitespace-pre-wrap text-justify"
+                            : "font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap text-justify"
+                        }
+                      >
+                        {resolved.verbalCueRuns.map((run, runIndex) => (
+                          <span key={runIndex} className={run.citation ? "text-citation" : undefined}>
+                            {run.text}
+                          </span>
+                        ))}
+                      </p>
                     ) : (
                       resolved.text &&
                       ((item.type === "selection" || item.type === "formula" || item.type === "prayer") &&
@@ -161,6 +177,11 @@ export default function LiturgyWebView({
                     )
                   )}
                 </>
+              )}
+              {section.name === SILENT_CONFESSION_SECTION && (
+                <p className="font-serif-body text-[16px] leading-[1.6] text-text-primary italic text-center whitespace-pre-line">
+                  {SILENT_CONFESSION_RUBRIC_TEXT}
+                </p>
               )}
             </div>
           );

@@ -144,13 +144,28 @@ export interface Prayer {
   id: string;
   sectionName: string;
   text: string;
-  // Feature 27: Prayer Guides -- 'guide' entries are structural reference
-  // material (per redesign-plan-v1.1.md §W's checklists) shown next to
-  // "Add Prayer" on the Sections that need one, never placeable as an
-  // actual liturgy item themselves. Defaults to 'prayer' at the DB level
-  // (migration 20260716010000_prayer_guides.sql), so every pre-existing row
-  // keeps its current meaning.
-  kind: "prayer" | "guide";
+  // 2026-07-23 redesign: `kind` used to conflate two unrelated facts --
+  // audience ("who's this for") and placeability ("is this real content or
+  // reference material"). Split into two independent fields: `kind` is now
+  // purely about audience, driving derived Bulletin/Guide visibility the
+  // same way Formula/Verbal Cue's `visibility` field already does (see
+  // resolveItemText.ts's "prayer" case) -- 'corporate' means the whole
+  // church prays it (both Bulletin + Guide), 'leader' means it's the
+  // leader/minister's own material (Guide only). Confirmed with Madrid:
+  // "except for corporate prayers... [prayers are] for leaders in the first
+  // place" -- previously every placed Prayer showed in both regardless of
+  // kind, a real gap this closes. Meaningless when `isGuide` is true (a
+  // guide entry is never placed, so it has no audience).
+  kind: "corporate" | "leader";
+  // 2026-07-23: replaces the old `kind: 'guide'` value -- placeability is
+  // its own independent fact from audience (see `kind` above). A guide
+  // entry is structural reference material (redesign-plan-v1.1.md §W's
+  // checklists) shown next to "Add Prayer" on the Sections that need one,
+  // never placeable as an actual liturgy item themselves. Defaults `false`
+  // at the DB level (migration 20260723020000_prayer_kind_redesign.sql),
+  // backfilled `true` for every row that was `kind = 'guide'` under the old
+  // model.
+  isGuide?: boolean;
   // 2026-07-23: library-level marking, same convention as Formula.marks --
   // added specifically so Bold (now a real mark, not `**markdown**`) has
   // somewhere to live on a Prayer; a placed PrayerItem has no per-instance

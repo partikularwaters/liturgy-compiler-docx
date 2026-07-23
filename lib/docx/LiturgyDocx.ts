@@ -26,7 +26,9 @@ import { getLogoBuffer, LOGO_HEIGHT_PX, LOGO_WIDTH_PX } from "@/lib/docx/logo";
 import { sectionTitle } from "@/lib/liturgy/sectionTitle";
 import { applyMarks } from "@/lib/text/marks";
 import { prepareSectionRender } from "@/lib/liturgy/prepareSectionRender";
+import { SILENT_CONFESSION_SECTION, SILENT_CONFESSION_RUBRIC_TEXT } from "@/lib/liturgy/silentConfessionRubric";
 import { isSunday, parseLocalDate } from "@/lib/liturgy/lordsDay";
+import type { VerbalCueRun } from "@/lib/liturgy/resolveVerbalCueTemplate";
 import type { CompiledLiturgy, CompiledSection, Formula, Prayer, Song, TextMark } from "@/types/liturgy";
 
 // Mirrors lib/pdf/LiturgyDocument.tsx's PRAYER_GUIDE_SECTIONS.
@@ -201,6 +203,42 @@ function textToParagraphSpecs(text: string, marks: TextMark[] | undefined, leade
 // it was accumulated (a division's trailing block might otherwise leave a
 // provisional 0.5-line on it) -- this is the one thing that can only be
 // known once the whole body is assembled.
+// A Verbal Cue's substituted {{scripture}}/{{song}} token renders in
+// citation-red (matching a Selection header/Psalm title elsewhere), never
+// Small Caps -- the rest of the cue's hand-written prose stays plain, same
+// treatment Rubric style already gets.
+function verbalCueRunsToParagraphSpecs(runs: VerbalCueRun[], rubric: boolean): ParagraphSpec[] {
+  const specs: ParagraphSpec[] = [];
+  let currentRuns: TextRun[] = [];
+
+  const flush = (): void => {
+    if (currentRuns.length === 0) return;
+    specs.push({ runs: currentRuns, spacingAfter: 0 });
+    currentRuns = [];
+  };
+
+  for (const run of runs) {
+    const lines = run.text.split("\n");
+    lines.forEach((line, lineIndex) => {
+      if (lineIndex > 0) flush();
+      if (line.length > 0) {
+        currentRuns.push(
+          new TextRun({
+            text: line,
+            size: BODY_SIZE,
+            font: DOCX_FONT_FAMILY,
+            italics: rubric,
+            color: run.citation ? docxColors.citation : rubric ? docxColors.textSecondary : docxColors.textPrimary,
+          })
+        );
+      }
+    });
+  }
+
+  flush();
+  return specs;
+}
+
 function finalizeParagraphs(specs: ParagraphSpec[]): Paragraph[] {
   if (specs.length === 0) return [];
   const last = specs[specs.length - 1];
@@ -220,7 +258,7 @@ function renderSection({ section, formulas, prayers, songs, audience }: RenderSe
   const prepared = prepareSectionRender(section, formulas, prayers, songs);
   const visibleItems = prepared.items.filter(({ resolved }) => audience === "guide" || !resolved.leaderOnly);
   const isEmpty = visibleItems.length === 0 && !prepared.mergedSelection;
-  const guides = prayers.filter((p) => p.sectionName === section.name && p.kind === "guide");
+  const guides = prayers.filter((p) => p.sectionName === section.name && p.isGuide);
 
   const paragraphs: Paragraph[] = [];
 
@@ -339,8 +377,12 @@ function renderSection({ section, formulas, prayers, songs, audience }: RenderSe
         continue;
       }
 
+      // "Leader only" is deliberately not badged here (unlike the Compile
+      // View's SectionCard, where it stays) -- a Leader-only item only ever
+      // reaches the docx pipeline inside the Leader Guide export itself (the
+      // Bulletin already filters it out via visibleItems above), so telling
+      // the leader "this is leader-only" inside their own guide is redundant.
       const badgeText = [
-        resolved.leaderOnly ? "Leader only" : null,
         audience === "guide" && item.type === "selection" && item.amenExpected ? "Amen" : null,
       ]
         .filter(Boolean)
@@ -364,7 +406,11 @@ function renderSection({ section, formulas, prayers, songs, audience }: RenderSe
 
       if (!resolved.text) continue;
 
-      if (
+      if (item.type === "verbal_cue" && resolved.verbalCueRuns) {
+        paragraphs.push(
+          ...finalizeParagraphs(verbalCueRunsToParagraphSpecs(resolved.verbalCueRuns, resolved.rubric))
+        );
+      } else if (
         (item.type === "selection" || item.type === "formula" || item.type === "prayer") &&
         resolved.marks &&
         resolved.marks.length > 0
@@ -384,6 +430,32 @@ function renderSection({ section, formulas, prayers, songs, audience }: RenderSe
         );
       }
     }
+  }
+
+  // Silent Confession rubric -- fixed, uneditable text (not per-liturgy
+  // data), always present regardless of audience since it's public (shown
+  // to the whole church), unlike this Section's other, Leader-only cue.
+  if (section.name === SILENT_CONFESSION_SECTION) {
+    const [firstLine, ...restLines] = SILENT_CONFESSION_RUBRIC_TEXT.split("\n");
+    paragraphs.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+          new TextRun({ text: firstLine, italics: true, size: BODY_SIZE, font: DOCX_FONT_FAMILY, color: docxColors.textPrimary }),
+          ...restLines.map(
+            (line) =>
+              new TextRun({
+                text: line,
+                italics: true,
+                size: BODY_SIZE,
+                font: DOCX_FONT_FAMILY,
+                color: docxColors.textPrimary,
+                break: 1,
+              })
+          ),
+        ],
+      })
+    );
   }
 
   // The Section-end separator -- always present, whether or not this

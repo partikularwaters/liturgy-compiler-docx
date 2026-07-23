@@ -298,7 +298,7 @@ function RenderedSection({
   const prepared = prepareSectionRender(section, formulas, prayers, songs);
   const visibleItems = prepared.items.filter(({ resolved }) => audience === "guide" || !resolved.leaderOnly);
   const isEmpty = visibleItems.length === 0 && !prepared.mergedSelection;
-  const guides = prayers.filter((p) => p.sectionName === section.name && p.kind === "guide");
+  const guides = prayers.filter((p) => p.sectionName === section.name && p.isGuide);
 
   // Renders a passage's marked text -- Congregation/Minister each get their
   // own block (a forced line break); Leader and Small Caps flow together in
