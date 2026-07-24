@@ -32,5 +32,9 @@ export async function GET(request: Request): Promise<Response> {
     book: parsed.book,
     chapter: parsed.chapter,
     verses,
+    // The citation's own verses, distinct from the padded window above --
+    // lets the client briefly highlight which verses are actually the
+    // reference, versus the surrounding context added around them.
+    referencedVerses: parsed.verses,
   });
 }

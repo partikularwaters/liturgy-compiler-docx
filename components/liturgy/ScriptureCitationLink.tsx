@@ -38,10 +38,13 @@ function ABLink({ citation, className }: { citation: string; className?: string 
 // chapter for the full context.
 function BSBLink({ citation, className }: { citation: string; className?: string }): React.ReactElement {
   const [verses, setVerses] = useState<BibleVerse[] | null>(null);
+  const [referencedVerses, setReferencedVerses] = useState<Set<number>>(new Set());
   const [isOpen, setIsOpen] = useState(false);
+  const [highlightActive, setHighlightActive] = useState(true);
   const [tooltipSide, setTooltipSide] = useState<"left" | "right">("left");
   const hasFetched = useRef(false);
   const linkRef = useRef<HTMLAnchorElement>(null);
+  const highlightTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const parsed = parseCitationReference(citation);
   const href = parsed
@@ -52,14 +55,26 @@ function BSBLink({ citation, className }: { citation: string; className?: string
     const rect = linkRef.current?.getBoundingClientRect();
     if (rect) {
       const spaceOnRight = window.innerWidth - rect.left;
-      setTooltipSide(spaceOnRight >= 320 ? "left" : "right");
+      setTooltipSide(spaceOnRight >= 400 ? "left" : "right");
     }
     setIsOpen(true);
+
+    // Briefly highlights the actually-referenced verse(s) so it's obvious,
+    // at a glance, which lines are the citation itself versus the padding
+    // added around it -- fades on its own rather than staying lit, since
+    // it's an orientation cue, not a permanent marker.
+    setHighlightActive(true);
+    if (highlightTimeout.current) clearTimeout(highlightTimeout.current);
+    highlightTimeout.current = setTimeout(() => setHighlightActive(false), 1500);
+
     if (hasFetched.current) return;
     hasFetched.current = true;
     fetch(`/api/bible/context?citation=${encodeURIComponent(citation)}`)
       .then((res) => res.json())
-      .then((data) => setVerses(data.verses ?? []))
+      .then((data) => {
+        setVerses(data.verses ?? []);
+        setReferencedVerses(new Set<number>(data.referencedVerses ?? []));
+      })
       .catch(() => setVerses([]));
   };
 
@@ -77,17 +92,24 @@ function BSBLink({ citation, className }: { citation: string; className?: string
       {isOpen && (
         <span
           className={[
-            "pointer-events-none absolute top-full mt-1 w-72 rounded-md border border-border bg-surface p-3 text-[13px] text-text-primary shadow-lg z-10 font-serif-body leading-[1.5]",
+            "pointer-events-none absolute top-full mt-1 w-[374px] rounded-md border border-border bg-surface p-3 shadow-lg z-10",
+            "font-serif-body text-[16px] leading-[1.6] text-text-primary [font-variant:normal]",
             tooltipSide === "left" ? "left-0" : "right-0",
           ].join(" ")}
         >
           {verses === null ? (
-            <span className="block text-text-muted">Loading…</span>
+            <span className="block text-text-muted text-[13px]">Loading…</span>
           ) : verses.length === 0 ? (
-            <span className="block text-text-muted">Unable to load this passage.</span>
+            <span className="block text-text-muted text-[13px]">Unable to load this passage.</span>
           ) : (
             verses.map((v) => (
-              <span key={v.number} className="block mb-1 last:mb-0">
+              <span
+                key={v.number}
+                className={[
+                  "block mb-1 last:mb-0 -mx-1 px-1 rounded transition-colors duration-1000",
+                  referencedVerses.has(v.number) && highlightActive ? "bg-warning/30" : "bg-transparent",
+                ].join(" ")}
+              >
                 <span className="text-[11px] font-medium text-accent-dark align-super">{v.number}</span> {v.text}
               </span>
             ))
