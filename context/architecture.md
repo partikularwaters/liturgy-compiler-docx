@@ -13,7 +13,7 @@
 | PDF (legacy, frozen) | @react-pdf/renderer | Original Leader Guide / Congregation Bulletin export, Morning only — still present and working (`app/api/liturgy/[id]/export?format=pdf`) but no longer linked from the UI |
 | Styling | Tailwind CSS v4 | UI, via `@theme` tokens (see ui-tokens.md) |
 | Language | TypeScript strict | Throughout |
-| Bible text | Self-hosted AB1905 + BSB datasets; BibleGateway RefTag/BGLinks widget for AB2001/MBB hover | Reader + licensed hover preview |
+| Bible text | Self-hosted AB1905 + BSB datasets; BibleGateway RefTag/BGLinks widget for AB1905→AB2001 hover cross-check; self-hosted expanded-context hover for BSB citations (`/api/bible/context`) | Reader + licensed hover preview + self-hosted context preview |
 
 ---
 
@@ -300,6 +300,10 @@ interface BibleProvider {
 // AB2001/MBB are NOT providers here — they are display-only via the
 // BibleGateway hover widget (lib/bible does not fetch or store their text).
 ```
+
+**Citation hover behavior (`components/liturgy/ScriptureCitationLink.tsx`), split by translation:**
+- **AB1905 citations** link to BibleGateway's AB2001 (a genuine cross-translation check against a newer Filipino translation this project doesn't self-host) — unchanged, existing behavior.
+- **BSB citations** use a self-hosted expanded-context hover instead — showing this passage's own self-hosted BSB text is redundant with what's already displayed, but showing *more of it* (surrounding verses) has real value, and doesn't require any external service since BSB is already self-hosted. `app/api/bible/context/route.ts` parses the citation, fetches the chapter via `getChapter("BSB", ...)`, and slices out a ~7-verse window via `lib/bible/contextWindow.ts` (short citations get padded outward to the window size, shifting instead of truncating at a chapter boundary; citations already at or above the window size pass through untouched). Clicking through opens `/reader` at that chapter for full context.
 
 ---
 

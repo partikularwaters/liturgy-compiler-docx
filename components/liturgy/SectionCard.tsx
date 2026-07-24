@@ -273,13 +273,14 @@ export default function SectionCard({
   const headerSongItem =
     selectionItems.length === 0 && !showCreedTitleInHeader && songItems.length === 1 ? songItems[0] : null;
   const headerSong = headerSongItem ? songs.find((s) => s.id === headerSongItem.songId) : null;
-  const selectionCitations = selectionItems.map((item) =>
-    displayCitation(formatCitation(item.citation), item.translation)
-  );
+  const selectionCitations = selectionItems.map((item) => ({
+    text: displayCitation(formatCitation(item.citation), item.translation),
+    translation: item.translation ?? "fil",
+  }));
   const headerReference =
     selectionItems.length > 0
       ? {
-          text: selectionCitations.join("; "),
+          text: selectionCitations.map((c) => c.text).join("; "),
           citations: selectionCitations,
           citationColor: true,
           smallCaps: true,
@@ -484,9 +485,9 @@ export default function SectionCard({
           >
             {headerReference.citations
               ? headerReference.citations.map((citation, citationIndex) => (
-                  <span key={citation}>
+                  <span key={citation.text}>
                     {citationIndex > 0 && "; "}
-                    <ScriptureCitationLink citation={citation} />
+                    <ScriptureCitationLink citation={citation.text} translation={citation.translation} />
                   </span>
                 ))
               : headerReference.text}

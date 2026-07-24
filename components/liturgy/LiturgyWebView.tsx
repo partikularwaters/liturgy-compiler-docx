@@ -107,9 +107,9 @@ export default function LiturgyWebView({
                   >
                     {prepared.header.citations
                       ? prepared.header.citations.map((citation, citationIndex) => (
-                          <span key={citation}>
+                          <span key={citation.text}>
                             {citationIndex > 0 && "; "}
-                            <ScriptureCitationLink citation={citation} />
+                            <ScriptureCitationLink citation={citation.text} translation={citation.translation} />
                           </span>
                         ))
                       : prepared.header.text}

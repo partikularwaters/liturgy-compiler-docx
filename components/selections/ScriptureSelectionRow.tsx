@@ -137,7 +137,11 @@ export default function ScriptureSelectionRow({
         <p className="text-[13px] text-text-secondary">
           {selection.sectionName} · {selection.translation === "en" ? "BSB" : "AB"}
         </p>
-        <ScriptureCitationLink citation={selection.citation} className="text-sm font-medium text-text-primary" />
+        <ScriptureCitationLink
+          citation={selection.citation}
+          translation={selection.translation}
+          className="text-sm font-medium text-text-primary"
+        />
         <LibraryTextPreview title={selection.citation} text={selection.text} marks={selection.marks} className="mt-1" />
       </div>
       <div className="flex items-center gap-3 shrink-0">
