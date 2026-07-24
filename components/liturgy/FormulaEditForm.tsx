@@ -5,6 +5,7 @@ import type { TextMark } from "@/types/liturgy";
 import { autosizeTextarea } from "@/lib/text/autosize";
 import { shiftMarksForEdit } from "@/lib/text/marks";
 import MarkEditor from "@/components/liturgy/MarkEditor";
+import { XIcon } from "@/components/liturgy/icons";
 
 interface FormulaEditFormProps {
   initialText: string;
@@ -14,7 +15,7 @@ interface FormulaEditFormProps {
   // Feature 25: which mark buttons to offer -- Minister-only Sections
   // (Assurance of Pardon, Charge, Great Commission, Benediction) get just
   // "minister"; Vesper's Church Covenant portion gets the full
-  // Leader/Congregation/Small-Caps set, matching redesign-plan-v1.1.md §U.
+  // Leader/Congregation/Small-Caps set, matching redesign-plan-v1.1.md U.
   availableMarks: Exclude<TextMark["type"], "bold">[];
   // Trinitarian Seal, extended from Benediction-only -- true for
   // Sections whose Formula instance may close with the fixed seal line, e.g.
@@ -109,9 +110,9 @@ export default function FormulaEditForm({
         <button
           type="button"
           onClick={onCancel}
-          className="self-start bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
         >
-          Cancel
+          <XIcon size={15} /> Cancel
         </button>
       </div>
     </div>

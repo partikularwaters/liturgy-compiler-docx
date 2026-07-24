@@ -54,7 +54,7 @@ export default function CitationField({ value, onChange }: CitationFieldProps): 
             title="Edit citation"
             className="text-text-muted hover:text-accent-dark"
           >
-            <PencilIcon size={14} />
+            <PencilIcon size={15} />
           </button>
         </div>
       )}

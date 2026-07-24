@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { chooseVesperReading } from "@/lib/liturgy/chooseVesperReadingAction";
+import { XIcon } from "@/components/liturgy/icons";
 import {
   VESPER_DISCOURSE_OPTIONS,
   VESPER_WORDS_OF_INSTITUTION_OPTIONS,
@@ -103,9 +104,9 @@ export default function VesperReadingPanel({
         <button
           type="button"
           onClick={onDone}
-          className="self-start bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
         >
-          Cancel
+          <XIcon size={15} /> Cancel
         </button>
       </div>
     </div>

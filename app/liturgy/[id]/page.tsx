@@ -50,14 +50,14 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
         href={`/api/liturgy/${liturgy.id}/export?audience=guide&format=docx`}
         className="flex items-center gap-2 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
       >
-        <DownloadIcon size={15} />
+        <DownloadIcon size={16} />
         Guide (.docx)
       </a>
       <a
         href={`/api/liturgy/${liturgy.id}/export?audience=bulletin&format=docx`}
         className="flex items-center gap-2 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
       >
-        <DownloadIcon size={15} />
+        <DownloadIcon size={16} />
         Bulletin (.docx)
       </a>
     </div>
@@ -70,7 +70,7 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
 
   // Feature 28 Part A: title ~14pt bold all-caps, metadata ~12pt small caps
   // right-aligned on one line -- matches the reference bulletin exactly
-  // (redesign-plan-v1.1.md §AB), not the earlier centered-two-line guess.
+  // (redesign-plan-v1.1.md AB), not the earlier centered-two-line guess.
   const formattedDate = parseLocalDate(liturgy.serviceDate).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",

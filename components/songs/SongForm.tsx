@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { XIcon } from "@/components/liturgy/icons";
 import TranslationPairFields from "@/components/library/TranslationPairFields";
 import type { Song } from "@/types/liturgy";
 
@@ -175,9 +176,9 @@ export default function SongForm({
           <button
             type="button"
             onClick={onCancel}
-            className="self-start bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+            className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
           >
-            Cancel
+            <XIcon size={15} /> Cancel
           </button>
         )}
       </div>

@@ -33,7 +33,7 @@ import { SILENT_CONFESSION_SECTION, SILENT_CONFESSION_RUBRIC_TEXT } from "@/lib/
 import { applyMarks, shiftMarksForEdit } from "@/lib/text/marks";
 import { updatePrayer } from "@/lib/prayers/prayerActions";
 import { removeItem } from "@/lib/liturgy/removeItemAction";
-import { PencilIcon, TrashIcon } from "@/components/liturgy/icons";
+import { PencilIcon, TrashIcon, PlusIcon, XIcon } from "@/components/liturgy/icons";
 import type { VerbalCueRun } from "@/lib/liturgy/resolveVerbalCueTemplate";
 import type { CompiledSection, Formula, Item, Prayer, ScriptureSelection, Song, TextMark } from "@/types/liturgy";
 
@@ -51,7 +51,7 @@ const REFERENCE_ONLY_SECTIONS = ["The Lord's Discourses", "Words of Institution"
 const ALTERNATE_LANGUAGE_CUE_SECTIONS = ["Confession of Sin"];
 
 // Feature 27: Sections needing a Prayer Guide reference panel, per
-// redesign-plan-v1.1.md §W's table -- "Prayer after Communion" there refers
+// redesign-plan-v1.1.md W's table -- "Prayer after Communion" there refers
 // to the Section actually named "Closing of the Table" in both templates.
 const PRAYER_GUIDE_SECTIONS = [
   "Prayer of Invocation",
@@ -75,7 +75,7 @@ const TITLE_IN_HEADER_SECTIONS = ["Affirmation of Faith", "Affirmation of Faith 
 // standard secondary button, transparent fill -- shared by every Add
 // trigger below (both the <Link> and <button> ones) so they stay identical.
 const addButtonClass =
-  "inline-flex items-center rounded-md border border-border px-3 py-1.5 text-[11px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground hover:border-accent-dark";
+  "inline-flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-[11px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground hover:border-accent-dark";
 
 interface SectionCardProps {
   section: CompiledSection;
@@ -89,7 +89,7 @@ interface SectionCardProps {
 
 // Feature 21: title-only display for a Song item -- Title Case + italic
 // always; Psalm additionally gets the citation-red treatment since it's
-// still Scripture-adjacent (redesign-plan-v1.1.md §L), Hymn doesn't.
+// still Scripture-adjacent (redesign-plan-v1.1.md L), Hymn doesn't.
 function SongTitle({ song }: { song?: Song }): React.ReactElement {
   return (
     <p
@@ -129,6 +129,21 @@ function BodyText({ text, rubric = false }: { text: string; rubric?: boolean }):
 // A Verbal Cue's substituted {{scripture}}/{{song}} token renders in
 // citation-red (matching a Selection header/Psalm title elsewhere), never
 // Small Caps -- the rest of the cue's hand-written prose stays plain.
+//
+// Citation runs render as an <a> WITHOUT an href, not a <span> -- purely to
+// keep BibleGateway's own BGLinks widget (ScriptureLinker.tsx) out of them.
+// BGLinks re-scans the whole document body on every navigation for anything
+// that looks like an English/Latin book name + chapter:verse, and wraps
+// matches into its own auto-generated link -- it explicitly skips recursing
+// into existing <a>/<h1-6>/<img>/<pre>/<input>/<option> elements (confirmed
+// in bglinks.js's own source). A citation like "Exodo 20:1-17" starts with
+// "Exod", which its regex happily matches even though the visible word is
+// Filipino -- producing a second, stray, differently-encoded BibleGateway
+// link/tooltip right inside the cue, duplicating the deliberate one already
+// on the Section's own header line (ScriptureCitationLink). An href-less <a>
+// has no navigation, isn't focusable, and isn't announced as a link by
+// screen readers -- visually and behaviorally identical to the <span> it
+// replaces, it just happens to be a tag BGLinks knows to leave alone.
 function VerbalCueBody({ runs, rubric = false }: { runs: VerbalCueRun[]; rubric?: boolean }): React.ReactElement {
   return (
     <p
@@ -138,11 +153,15 @@ function VerbalCueBody({ runs, rubric = false }: { runs: VerbalCueRun[]; rubric?
           : "font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap text-justify"
       }
     >
-      {runs.map((run, i) => (
-        <span key={i} className={run.citation ? "text-citation" : undefined}>
-          {run.text}
-        </span>
-      ))}
+      {runs.map((run, i) =>
+        run.citation ? (
+          <a key={i} className="text-citation">
+            {run.text}
+          </a>
+        ) : (
+          <span key={i}>{run.text}</span>
+        )
+      )}
     </p>
   );
 }
@@ -211,9 +230,9 @@ function PrayerEditForm({
         <button
           type="button"
           onClick={onCancel}
-          className="self-start bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
         >
-          Cancel
+          <XIcon size={15} /> Cancel
         </button>
       </div>
     </div>
@@ -498,7 +517,7 @@ export default function SectionCard({
         {allowedTypes.includes("selection") && (
           <>
             <Link href={`/reader?liturgyId=${liturgyId}&sectionIndex=${sectionIndex}`} className={addButtonClass}>
-              + Scripture
+              <PlusIcon size={13} /> Scripture
             </Link>
             <button
               type="button"
@@ -508,7 +527,7 @@ export default function SectionCard({
               }}
               className={addButtonClass}
             >
-              + From Library
+              <PlusIcon size={13} /> From Library
             </button>
             {VESPER_TABLE_SECTIONS.includes(section.name) && (
               <button
@@ -519,14 +538,14 @@ export default function SectionCard({
                 }}
                 className={addButtonClass}
               >
-                + Reading
+                <PlusIcon size={13} /> Reading
               </button>
             )}
           </>
         )}
         {allowedTypes.includes("formula") && (
           <button type="button" onClick={() => setIsAddingFormula((prev) => !prev)} className={addButtonClass}>
-            + Formula
+            <PlusIcon size={13} /> Formula
           </button>
         )}
         {allowedTypes.includes("verbal_cue") && (
@@ -538,7 +557,7 @@ export default function SectionCard({
             }}
             className={addButtonClass}
           >
-            + Cue
+            <PlusIcon size={13} /> Cue
           </button>
         )}
         {allowedTypes.includes("prayer") && (
@@ -550,7 +569,7 @@ export default function SectionCard({
             }}
             className={addButtonClass}
           >
-            + Prayer
+            <PlusIcon size={13} /> Prayer
           </button>
         )}
         {allowedTypes.includes("sermon") && !hasSermon && (
@@ -562,7 +581,7 @@ export default function SectionCard({
             }}
             className={addButtonClass}
           >
-            + Sermon
+            <PlusIcon size={13} /> Sermon
           </button>
         )}
         {allowedTypes.includes("song") && (
@@ -575,7 +594,7 @@ export default function SectionCard({
               }}
               className={addButtonClass}
             >
-              + Psalm
+              <PlusIcon size={13} /> Psalm
             </button>
             <button
               type="button"
@@ -585,7 +604,7 @@ export default function SectionCard({
               }}
               className={addButtonClass}
             >
-              + Hymn
+              <PlusIcon size={13} /> Hymn
             </button>
           </>
         )}
@@ -732,7 +751,7 @@ export default function SectionCard({
                           }}
                           className="text-text-muted hover:text-accent-dark"
                         >
-                          <PencilIcon size={14} />
+                          <PencilIcon size={15} />
                         </button>
                         <button
                           type="button"
@@ -740,7 +759,7 @@ export default function SectionCard({
                           onClick={() => handleRemoveItem(s.id)}
                           className="text-text-muted hover:text-error"
                         >
-                          <TrashIcon size={14} />
+                          <TrashIcon size={15} />
                         </button>
                       </span>
                     ))}
@@ -900,7 +919,7 @@ export default function SectionCard({
                       }}
                       className="text-text-muted hover:text-accent-dark"
                     >
-                      <PencilIcon size={14} />
+                      <PencilIcon size={15} />
                     </button>
                   )}
                   <button
@@ -909,7 +928,7 @@ export default function SectionCard({
                     onClick={() => handleRemoveItem(item.id)}
                     className="text-text-muted hover:text-error"
                   >
-                    <TrashIcon size={14} />
+                    <TrashIcon size={15} />
                   </button>
                 </div>
                 {item.type === "song" ? (

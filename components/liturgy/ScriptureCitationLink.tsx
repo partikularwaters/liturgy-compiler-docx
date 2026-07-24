@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { toEnglishCitation, parseCitationReference } from "@/lib/bible/bookNamesTagalog";
+import { ExternalLinkIcon } from "@/components/liturgy/icons";
 import type { BibleVerse } from "@/types/bible";
 
 interface ScriptureCitationLinkProps {
@@ -119,9 +120,9 @@ function BSBLink({ citation, className }: { citation: string; className?: string
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="self-start bg-error text-error-foreground rounded-full px-3 py-1 text-[12px] font-medium [font-variant:normal] hover:opacity-90"
+            className="self-start inline-flex items-center gap-1 bg-error text-error-foreground rounded-full px-3 py-1 text-[12px] font-medium [font-variant:normal] hover:opacity-90"
           >
-            View in Reader ↗
+            View in Reader <ExternalLinkIcon size={13} />
           </a>
         </span>
       )}

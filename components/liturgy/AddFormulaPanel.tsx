@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { addFormula } from "@/lib/liturgy/addFormulaAction";
+import { XIcon } from "@/components/liturgy/icons";
 import type { Formula } from "@/types/liturgy";
 
 interface AddFormulaPanelProps {
@@ -137,9 +138,9 @@ export default function AddFormulaPanel({
         <button
           type="button"
           onClick={onDone}
-          className="self-start bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
         >
-          Cancel
+          <XIcon size={15} /> Cancel
         </button>
       </div>
     </div>

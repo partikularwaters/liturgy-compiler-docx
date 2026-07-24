@@ -6,6 +6,7 @@ import { autosizeTextarea } from "@/lib/text/autosize";
 import { shiftMarksForEdit } from "@/lib/text/marks";
 import { getFormulaMarks } from "@/lib/liturgy/markableSections";
 import MarkEditor from "@/components/liturgy/MarkEditor";
+import { XIcon } from "@/components/liturgy/icons";
 import TranslationPairFields from "@/components/library/TranslationPairFields";
 
 interface FormulaFormProps {
@@ -154,9 +155,9 @@ export default function FormulaForm({
           <button
             type="button"
             onClick={onCancel}
-            className="self-start bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+            className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
           >
-            Cancel
+            <XIcon size={15} /> Cancel
           </button>
         )}
       </div>

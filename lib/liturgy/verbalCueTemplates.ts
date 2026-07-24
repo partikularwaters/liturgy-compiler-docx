@@ -33,7 +33,7 @@ export const MORNING_VERBAL_CUE_TEMPLATES: Record<string, string> = {
     "Bilang paghahanda sa pangangaral ng Salita ng Diyos, ating awitin ang {{song}}. Ito ang sinasabi ng [Scripture]:",
   "Hymn of Dedication":
     "Matapos nating marinig ang pangangaral ng Salita ng Diyos na mamuhay bilang mga Kristiyano ayon sa Espiritu, ating awitin ang “{{song}}” bilang tugon.",
-  "Affirmation of Faith": "Ano ang ating paniniwala at dapat paniwalaan? <{{creed}}>:",
+  "Affirmation of Faith": "Ano ang ating paniniwala at dapat paniwalaan?",
   "Offertory Call":
     "Bilang bahagi ng ating pagsamba sa ating Diyos na buháy, tayo ay magkakaloob. Sa sulat ni Apostol Pablo sa {{scripture}}, makikita natin ang pangako ng Diyos sa mga nagkakaloob para sa gawain ng Panginoon:",
   "Psalm of Thanksgiving":

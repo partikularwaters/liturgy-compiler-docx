@@ -7,7 +7,7 @@ import { autosizeTextarea } from "@/lib/text/autosize";
 import { shiftMarksForEdit } from "@/lib/text/marks";
 import { getSelectionMarks } from "@/lib/liturgy/markableSections";
 import MarkEditor from "@/components/liturgy/MarkEditor";
-import { TrashIcon } from "@/components/liturgy/icons";
+import { PencilIcon, TrashIcon, XIcon } from "@/components/liturgy/icons";
 import LibraryTextPreview from "@/components/library/LibraryTextPreview";
 import ScriptureCitationLink from "@/components/liturgy/ScriptureCitationLink";
 import type { ScriptureSelection, TextMark } from "@/types/liturgy";
@@ -122,9 +122,9 @@ export default function ScriptureSelectionRow({
               setError(null);
               setIsEditing(false);
             }}
-            className="self-start bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+            className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
           >
-            Cancel
+            <XIcon size={15} /> Cancel
           </button>
         </div>
       </div>
@@ -148,9 +148,9 @@ export default function ScriptureSelectionRow({
         <button
           type="button"
           onClick={() => setIsEditing(true)}
-          className="text-sm font-medium text-accent-dark"
+          className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
         >
-          Edit
+          <PencilIcon size={15} /> Edit
         </button>
         <button
           type="button"
@@ -159,7 +159,7 @@ export default function ScriptureSelectionRow({
           title="Delete"
           className="text-text-muted hover:text-error disabled:opacity-50"
         >
-          <TrashIcon size={16} />
+          <TrashIcon size={17} />
         </button>
       </div>
       {error && !isEditing && <p className="text-[12px] text-error">{error}</p>}

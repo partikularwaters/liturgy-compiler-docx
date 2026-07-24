@@ -142,11 +142,19 @@ export default function LiturgyWebView({
                             : "font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap text-justify"
                         }
                       >
-                        {resolved.verbalCueRuns.map((run, runIndex) => (
-                          <span key={runIndex} className={run.citation ? "text-citation" : undefined}>
-                            {run.text}
-                          </span>
-                        ))}
+                        {resolved.verbalCueRuns.map((run, runIndex) =>
+                          // href-less <a> for citation runs -- keeps BibleGateway's global
+                          // BGLinks auto-scanner (ScriptureLinker.tsx) from wrapping this
+                          // text into a second, stray citation link; see SectionCard.tsx's
+                          // VerbalCueBody for the full explanation.
+                          run.citation ? (
+                            <a key={runIndex} className="text-citation">
+                              {run.text}
+                            </a>
+                          ) : (
+                            <span key={runIndex}>{run.text}</span>
+                          )
+                        )}
                       </p>
                     ) : (
                       resolved.text &&

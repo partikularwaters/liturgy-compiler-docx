@@ -14,7 +14,7 @@ interface PrayerGuidePanelProps {
 }
 
 // Feature 27: reference panel for 'guide'-kind Prayer library entries
-// (redesign-plan-v1.1.md §W) -- shown next to "+ Prayer" on the six Sections
+// (redesign-plan-v1.1.md W) -- shown next to "+ Prayer" on the six Sections
 // that need one, never selectable/placeable as an actual liturgy item.
 // Renders nothing when no guide exists yet for this Section, same "real
 // gap, not a placeholder" discipline as everywhere else -- guides are
@@ -55,7 +55,7 @@ export default function PrayerGuidePanel({
         title="Prayer Guide"
         className="shrink-0 flex items-center justify-center w-6 h-6 rounded-full border border-border text-accent-dark hover:bg-surface-secondary"
       >
-        <GuideIcon size={14} />
+        <GuideIcon size={15} />
       </button>
       {isOpen && (
         <div className="bg-surface-secondary border border-border rounded-md p-3 flex flex-col gap-2 max-w-[420px]">

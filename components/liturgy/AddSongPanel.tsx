@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { addSong } from "@/lib/liturgy/addSongAction";
 import { createSong, updateSong } from "@/lib/songs/songActions";
+import { XIcon } from "@/components/liturgy/icons";
 import type { Song } from "@/types/liturgy";
 
 interface AddSongPanelProps {
@@ -201,9 +202,9 @@ export default function AddSongPanel({
         <button
           type="button"
           onClick={onDone}
-          className="self-start bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
         >
-          Cancel
+          <XIcon size={15} /> Cancel
         </button>
       </div>
     </div>

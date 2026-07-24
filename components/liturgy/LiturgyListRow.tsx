@@ -48,7 +48,7 @@ export default function LiturgyListRow({ liturgy, isLast }: LiturgyListRowProps)
         title="Delete this liturgy"
         className="text-text-muted hover:text-error disabled:opacity-50"
       >
-        <TrashIcon size={16} />
+        <TrashIcon size={17} />
       </button>
     </div>
   );

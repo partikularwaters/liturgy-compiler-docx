@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import SongForm from "@/components/songs/SongForm";
 import { updateSong, deleteSong } from "@/lib/songs/songActions";
-import { TrashIcon } from "@/components/liturgy/icons";
+import { PencilIcon, TrashIcon } from "@/components/liturgy/icons";
 import type { Song } from "@/types/liturgy";
 
 interface SongListRowProps {
@@ -99,9 +99,9 @@ export default function SongListRow({ song, sectionNames, allSongs }: SongListRo
         <button
           type="button"
           onClick={() => setIsEditing(true)}
-          className="text-sm font-medium text-accent-dark"
+          className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
         >
-          Edit
+          <PencilIcon size={15} /> Edit
         </button>
         <button
           type="button"
@@ -109,7 +109,7 @@ export default function SongListRow({ song, sectionNames, allSongs }: SongListRo
           onClick={handleDelete}
           className="text-text-muted hover:text-error"
         >
-          <TrashIcon size={15} />
+          <TrashIcon size={16} />
         </button>
       </div>
     </div>

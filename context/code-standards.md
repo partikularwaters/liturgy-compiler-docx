@@ -121,6 +121,7 @@ Approved dependencies for this project:
 - `@react-pdf/renderer` — PDF generation (frozen; retained until docx export is proven stable, see build-plan.md v2 item 1)
 - `docx` — .docx generation (v2 item 1), replacing `@react-pdf/renderer` as the export mechanism going forward
 - `tailwindcss` (v4) — styling
+- `@tabler/icons-react` — shared icon set (2026-07-25: replaced the hand-rolled SVGs in `components/liturgy/icons.tsx`; that file still owns the exported names/props every call site uses, just backed by Tabler now)
 
 Do not install any other packages without updating this list first.
 

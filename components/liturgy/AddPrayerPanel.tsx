@@ -5,6 +5,7 @@ import { useState } from "react";
 import { addPrayer } from "@/lib/liturgy/addPrayerAction";
 import { createPrayer, updatePrayer } from "@/lib/prayers/prayerActions";
 import { shiftMarksForEdit } from "@/lib/text/marks";
+import { XIcon } from "@/components/liturgy/icons";
 import type { Prayer } from "@/types/liturgy";
 
 interface AddPrayerPanelProps {
@@ -168,9 +169,9 @@ export default function AddPrayerPanel({
         <button
           type="button"
           onClick={onDone}
-          className="self-start bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
         >
-          Cancel
+          <XIcon size={15} /> Cancel
         </button>
       </div>
     </div>

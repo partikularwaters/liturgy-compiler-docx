@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { autosizeTextarea } from "@/lib/text/autosize";
 import { shiftMarksForEdit } from "@/lib/text/marks";
 import MarkEditor from "@/components/liturgy/MarkEditor";
+import { XIcon } from "@/components/liturgy/icons";
 import TranslationPairFields from "@/components/library/TranslationPairFields";
 import type { Prayer, TextMark } from "@/types/liturgy";
 
@@ -142,7 +143,7 @@ export default function PrayerForm({
       <MarkEditor text={text} marks={marks} onMarksChange={setMarks} availableMarks={[]} textareaRef={textareaRef} />
       <label className="flex items-center gap-2 text-[12px] text-text-muted">
         <input type="checkbox" checked={isGuide} onChange={(e) => setIsGuide(e.target.checked)} />
-        This is reference material only (a Prayer Guide checklist, per redesign-plan-v1.1.md §W) — never placeable
+        This is reference material only (a Prayer Guide checklist, per redesign-plan-v1.1.md W) — never placeable
         in a liturgy
       </label>
       <TranslationPairFields
@@ -169,9 +170,9 @@ export default function PrayerForm({
           <button
             type="button"
             onClick={onCancel}
-            className="self-start bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+            className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
           >
-            Cancel
+            <XIcon size={15} /> Cancel
           </button>
         )}
       </div>

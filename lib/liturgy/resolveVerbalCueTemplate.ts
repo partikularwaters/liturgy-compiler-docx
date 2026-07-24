@@ -48,7 +48,12 @@ export function resolveVerbalCueTemplate(
           : "[Scripture]",
       citation: true,
     },
-    "{{song}}": { value: song ? formatCitation(song.title) : "[Psalm/Hymn]", citation: true },
+    // Metrical Psalters are Scripture-paraphrases and get the citation-red
+    // treatment (matching prepareSectionRender.ts's own song.kind === "psalm"
+    // rule for a Section-header title); a Hymn is human-authored, not
+    // Scripture, so its title stays plain even though it fills the same
+    // {{song}} token.
+    "{{song}}": { value: song ? formatCitation(song.title) : "[Psalm/Hymn]", citation: song?.kind === "psalm" },
     "{{creed}}": { value: formula?.name ?? "[Creed]", citation: false },
   };
 

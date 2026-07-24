@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { addSelection } from "@/lib/liturgy/addSelectionAction";
 import { toEnglishCitation } from "@/lib/bible/bookNamesTagalog";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
-import { TranslateIcon } from "@/components/liturgy/icons";
+import { TranslateIcon, XIcon } from "@/components/liturgy/icons";
 import MarkedText from "@/components/liturgy/MarkedText";
 import type { ScriptureSelection } from "@/types/liturgy";
 
@@ -163,19 +163,19 @@ export default function AddExistingSelectionPanel({
                   className="relative shrink-0 flex items-center justify-center w-6 h-6 rounded-full border border-border text-accent-dark cursor-default"
                   title="Alternate translation"
                 >
-                  <TranslateIcon size={14} />
+                  <TranslateIcon size={15} />
                   {tooltipSide && (
                     <span
                       className={[
-                        "pointer-events-none absolute top-1/2 -translate-y-1/2 w-64 rounded-md border border-border bg-surface p-3 text-[13px] text-text-primary shadow-lg z-10",
+                        "pointer-events-none absolute top-1/2 -translate-y-1/2 w-[282px] rounded-md border border-border bg-surface p-3 text-[14.3px] text-text-primary shadow-lg z-10",
                         tooltipSide === "right" ? "left-full ml-2" : "right-full mr-2",
                       ].join(" ")}
                     >
-                      <span className="block text-[11px] font-medium text-text-secondary mb-1">
+                      <span className="block text-[12.1px] font-medium text-text-secondary mb-1">
                         {companionOf(selected)!.translation === "en" ? "BSB" : "AB"} —{" "}
                         {companionOf(selected)!.citation}
                       </span>
-                      {companionOf(selected)!.text || "(citation only)"}
+                      <span className="font-serif-body">{companionOf(selected)!.text || "(citation only)"}</span>
                     </span>
                   )}
                 </span>
@@ -205,9 +205,9 @@ export default function AddExistingSelectionPanel({
             <button
               type="button"
               onClick={onDone}
-              className="self-start bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+              className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
             >
-              Cancel
+              <XIcon size={15} /> Cancel
             </button>
           </div>
         </>

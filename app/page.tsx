@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getLiturgies } from "@/lib/liturgy/getLiturgies";
 import { formatLiturgyName } from "@/lib/liturgy/formatLiturgyName";
+import { ArrowRightIcon } from "@/components/liturgy/icons";
 
 const RECENT_COUNT = 5;
 
@@ -23,16 +24,32 @@ export default async function Home(): Promise<React.ReactElement> {
           window effectively zoomed further into the image the wider the
           screen got, sliding the visible portion of the page around instead
           of staying anchored on "Assurance of Pardon."
-          ASPECT_RATIO: width/height of the crop window itself.
-          FOCAL_Y: which horizontal band of the (rotated, oversized) image
-            sits at the container's vertical center, as a percentage top-to-
-            bottom of the source image -- 30% centers on "Assurance of
-            Pardon," which sits about 30% of the way down the page.
+          ASPECT_RATIO: width/height of the crop window itself. The source
+            image is roughly square (2329x2152) and this box is 3:1, so
+            showing only a slice of the image's height is unavoidable --
+            same as any full-bleed background image (object-fit: cover is
+            the standard, deterministic way to do this). That slice is not
+            the bug that caused corner gaps -- OVERSIZE was.
+          FOCAL_Y: where the crop window's top edge lands, as a percentage
+            top-to-bottom of the source image -- NOT the same as "where the
+            heading sits," because object-position anchors a point in the
+            image to that same fractional point in the (smaller) container,
+            which pushes the window's actual top edge down by a factor of
+            (1 - window-height-fraction). 43% lands the window's top edge
+            right at the "Assurance of Pardon" heading (~32% down the page).
+            Recompute (top = FOCAL_Y * (1 - windowFraction), where
+            windowFraction = (imageAspect / ASPECT_RATIO) / OVERSIZE) if the
+            source image, ASPECT_RATIO, or OVERSIZE changes.
           ANGLE: 0 = straight. Negative tilts so text reads upward left-to-right.
           OVERSIZE: how much the image is scaled up beyond exactly filling the
-            box. Needs enough margin that rotating it never exposes the page
-            background at a corner -- if you see gaps at any screen width,
-            increase this.
+            box, to guarantee the rotated image still fully covers every
+            corner. This is NOT a "just eyeball it" number -- rotating a
+            W:H box by angle θ needs oversize >= max(cosθ + (H/W)sinθ,
+            (W/H)sinθ + cosθ). For this 3:1 box at 7°, that minimum is
+            ~1.358 -- the original 1.2 was mathematically guaranteed to
+            expose gaps at two opposite corners (which is exactly the bug
+            Madrid saw). 1.4 gives a small safety margin above the true
+            minimum. If ASPECT_RATIO or ANGLE change, recompute this.
           TINT_OPACITY: strength of the accent-color tint over the image, 0-1.
             Uses the site's actual --color-accent token (bg-accent), not a
             hardcoded color -- if the brand color ever changes, this updates
@@ -46,8 +63,8 @@ export default async function Home(): Promise<React.ReactElement> {
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
           style={{
-            objectPosition: "50% 30%", // FOCAL_Y
-            transform: "rotate(-7deg) scale(1.2)", // ANGLE, OVERSIZE
+            objectPosition: "50% 43%", // FOCAL_Y
+            transform: "rotate(-7deg) scale(1.4)", // ANGLE, OVERSIZE
           }}
         />
         <div className="absolute inset-0 bg-cta-yellow mix-blend-multiply" style={{ opacity: 0.18 }} /> {/* TINT_OPACITY */}
@@ -96,8 +113,11 @@ export default async function Home(): Promise<React.ReactElement> {
           </div>
         )}
 
-        <Link href="/liturgies" className="text-sm font-medium text-accent-dark self-start">
-          View all liturgies →
+        <Link
+          href="/liturgies"
+          className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark self-start"
+        >
+          View all liturgies <ArrowRightIcon size={13} />
         </Link>
       </div>
       </div>

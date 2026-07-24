@@ -9,6 +9,7 @@ import VerseDisplay from "@/components/reader/VerseDisplay";
 import type { VerseMarker } from "@/components/reader/VerseDisplay";
 import AddSelectionPanel from "@/components/liturgy/AddSelectionPanel";
 import ReaderTargetPicker from "@/components/reader/ReaderTargetPicker";
+import { ArrowRightIcon, ArrowLeftIcon } from "@/components/liturgy/icons";
 import { setHighlight } from "@/lib/bible/highlightActions";
 import { addSelection } from "@/lib/liturgy/addSelectionAction";
 import { buildCitation, buildSelectionText, parseCitationVerses } from "@/lib/liturgy/citations";
@@ -241,66 +242,61 @@ export default function ReaderClient({
 
       {targetSection && (
         <div className="flex items-center justify-between bg-accent-light rounded-md px-3 py-1.5">
-          <p className="text-[12px] text-accent-dark truncate" title={targetLabel}>
-            → {targetSection.sectionName}
+          <p className="flex items-center gap-1 text-[12px] text-accent-dark truncate" title={targetLabel}>
+            <ArrowRightIcon size={13} className="shrink-0" /> {targetSection.sectionName}
           </p>
           <Link
             href={`/liturgy/${targetSection.liturgyId}#section-${targetSection.sectionIndex}`}
-            className="text-[12px] font-medium text-accent-dark underline shrink-0"
+            className="flex items-center gap-1 text-[12px] font-medium text-accent-dark underline shrink-0"
           >
-            ← Liturgy
+            <ArrowLeftIcon size={13} /> Liturgy
           </Link>
         </div>
       )}
-      {targetSection ? (
-        <div className="flex items-start gap-6">
-          <div className="w-[340px] shrink-0 sticky top-8 flex flex-col gap-4">
-            {candidateCitation ? (
-              <AddSelectionPanel
-                key={candidateCitation}
-                targetLabel={targetLabel}
-                initialCitation={candidateCitation}
-                initialText={candidateText}
-                alreadySaved={alreadySaved}
-                isSaving={isSaving}
-                saveError={saveError}
-                onSave={handleSaveSelection}
-                textOptional={targetSection ? REFERENCE_ONLY_SECTIONS.includes(targetSection.sectionName) : false}
-                isSongSlot={targetSection?.dynamicNaming ?? false}
-                availableMarks={targetSection ? getSelectionMarks(targetSection.sectionName) : []}
-                allowTrinitarianSeal={
-                  targetSection ? TRINITARIAN_SEAL_SECTIONS.includes(targetSection.sectionName) : false
-                }
-              />
-            ) : (
-              <p className="text-sm text-text-muted">Click the + beside a verse to add it to this Section.</p>
-            )}
-            {successMessage && (
-              <div className="bg-success-light rounded-lg px-4 py-3">
-                <p className="text-sm font-medium text-success-foreground">{successMessage}</p>
-              </div>
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <VerseDisplay
-              chapter={chapter}
-              highlights={highlights}
-              onVerseClick={handleVerseClick}
-              verseMarkers={verseMarkers}
-              onVerseMarkerClick={handleVerseMarkerClick}
+      {/* One shared two-column shell for both states -- previously a target
+          Section rendered a sidebar+verses layout while free-browsing (no
+          target yet) rendered a full-width stack with a picker bar on top,
+          so the Reader looked like two different pages depending on how you
+          arrived. The sidebar now always renders; its contents are just
+          whichever of the three is relevant right now. */}
+      <div className="flex items-start gap-6">
+        <div className="w-[340px] shrink-0 sticky top-8 flex flex-col gap-4">
+          {!targetSection ? (
+            <ReaderTargetPicker liturgies={liturgies} />
+          ) : candidateCitation ? (
+            <AddSelectionPanel
+              key={candidateCitation}
+              targetLabel={targetLabel}
+              initialCitation={candidateCitation}
+              initialText={candidateText}
+              alreadySaved={alreadySaved}
+              isSaving={isSaving}
+              saveError={saveError}
+              onSave={handleSaveSelection}
+              textOptional={REFERENCE_ONLY_SECTIONS.includes(targetSection.sectionName)}
+              isSongSlot={targetSection.dynamicNaming ?? false}
+              availableMarks={getSelectionMarks(targetSection.sectionName)}
+              allowTrinitarianSeal={TRINITARIAN_SEAL_SECTIONS.includes(targetSection.sectionName)}
             />
-          </div>
+          ) : (
+            <p className="text-sm text-text-muted">Click the + beside a verse to add it to this Section.</p>
+          )}
+          {successMessage && (
+            <div className="bg-success-light rounded-lg px-4 py-3">
+              <p className="text-sm font-medium text-success-foreground">{successMessage}</p>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          <ReaderTargetPicker liturgies={liturgies} />
+        <div className="flex-1 min-w-0">
           <VerseDisplay
             chapter={chapter}
             highlights={highlights}
             onVerseClick={handleVerseClick}
+            verseMarkers={targetSection ? verseMarkers : undefined}
+            onVerseMarkerClick={targetSection ? handleVerseMarkerClick : undefined}
           />
         </div>
-      )}
+      </div>
     </div>
   );
 }
