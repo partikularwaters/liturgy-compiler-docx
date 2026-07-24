@@ -15,28 +15,39 @@ export default async function Home(): Promise<React.ReactElement> {
   return (
     <>
       {/* Banner image -- adjust the four values below.
+          The container's height is a proportion of its width (ASPECT_RATIO),
+          never a fixed pixel/inch value -- that's what keeps the same crop of
+          the source image visible at every screen size. A fixed height was
+          the original bug here: the image (sized by width) grew taller on a
+          wider screen while the crop window's height stayed constant, so the
+          window effectively zoomed further into the image the wider the
+          screen got, sliding the visible portion of the page around instead
+          of staying anchored on "Assurance of Pardon."
+          ASPECT_RATIO: width/height of the crop window itself.
+          FOCAL_Y: which horizontal band of the (rotated, oversized) image
+            sits at the container's vertical center, as a percentage top-to-
+            bottom of the source image -- 30% centers on "Assurance of
+            Pardon," which sits about 30% of the way down the page.
           ANGLE: 0 = straight. Negative tilts so text reads upward left-to-right.
-          OVERSIZE: how much bigger than 100% width the image is. If you see the
-            page background peeking through any corner (check at a few browser
-            widths), increase this number until it's gone -- this is what
-            prevents gaps, and a bigger ANGLE or bigger HORIZONTAL shift both
-            need a bigger OVERSIZE to stay gap-free.
-          HORIZONTAL: -50 = centered. Move toward 0 to shift the image right,
-            more negative to shift left.
-          VERTICAL: which part of the source page shows. More negative moves
-            the visible window further down the page.
+          OVERSIZE: how much the image is scaled up beyond exactly filling the
+            box. Needs enough margin that rotating it never exposes the page
+            background at a corner -- if you see gaps at any screen width,
+            increase this.
           TINT_OPACITY: strength of the accent-color tint over the image, 0-1.
             Uses the site's actual --color-accent token (bg-accent), not a
             hardcoded color -- if the brand color ever changes, this updates
             with it automatically. Set to 0 to remove the tint entirely. */}
-      <div className="w-full h-[4in] overflow-hidden relative bg-surface-secondary">
+      <div
+        className="w-full overflow-hidden relative bg-surface-secondary"
+        style={{ aspectRatio: "3 / 1" }} /* ASPECT_RATIO */
+      >
         <img
           src="/images/Calvin-Absolution.png"
           alt=""
-          className="absolute top-1/2 left-1/2 max-w-none"
+          className="absolute inset-0 w-full h-full object-cover"
           style={{
-            width: "calc(100% + 10px)", // OVERSIZE
-            transform: "translate(-49%, -45%) rotate(-7deg)", // HORIZONTAL, VERTICAL, ANGLE
+            objectPosition: "50% 30%", // FOCAL_Y
+            transform: "rotate(-7deg) scale(1.2)", // ANGLE, OVERSIZE
           }}
         />
         <div className="absolute inset-0 bg-cta-yellow mix-blend-multiply" style={{ opacity: 0.18 }} /> {/* TINT_OPACITY */}
