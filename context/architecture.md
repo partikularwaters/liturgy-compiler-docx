@@ -200,6 +200,8 @@ All tables below are live and shipped. The hybrid relational/jsonb split (decide
 | default_text | text | Editable master default |
 | access_level | text | Reserved for v3 role-based control; unused in v1 |
 | marks | jsonb | v2 — library-level Congregation/Minister/Small-Caps marking (see Invariants). Placing this Formula copies these onto the new placed instance as a starting point. Defaults `[]`. |
+| translation | text | Added 2026-07-25 (`20260725010000_bilingual_tagging.sql`) — `'fil'` \| `'en'` \| `null`. Nullable, no default — an untagged existing row honestly means "not yet tagged." |
+| paired_id | uuid | Added same migration — self-referencing FK to another `formulas` row, this Formula's translation companion. Unlike `scripture_selections.translation`, there's no canonical key to auto-match a companion against, so this is a real link set explicitly via a picker (`lib/liturgy/translationPairing.ts`), symmetric on both rows. |
 
 ### `prayers`
 
@@ -211,6 +213,8 @@ All tables below are live and shipped. The hybrid relational/jsonb split (decide
 | kind | text | `'corporate'` \| `'leader'` — redesigned 2026-07-23 (was `'prayer'` \| `'guide'`, v1.1). Now purely audience: `'corporate'` means the whole church prays it (both Bulletin + Guide, same as before); `'leader'` means it's the leader/minister's own material (Guide only — `resolveItemText.ts`'s `leaderOnly` is now derived from this, the same pattern Formula/Verbal Cue's `visibility` already used). Meaningless when `is_guide` is true. |
 | is_guide | boolean | Added 2026-07-23 (`20260723020000_prayer_kind_redesign.sql`), replacing the old `kind = 'guide'` value — placeability is now independent of audience. A `true` row is a fixed structural checklist (e.g. Invocation's Adoration → Humble Approach → Acceptance → Thanksgiving → Trinitarian Conclusion) shown as reference next to "Add Prayer," never stored as liturgy content itself. Defaults `false`. |
 | marks | jsonb | 2026-07-23 (`20260723010000_prayer_marks.sql`) — library-level marking, same convention as `formulas.marks`/`scripture_selections.marks`. A placed `PrayerItem` has no per-instance override of its own (unlike Formula), so it always reflects this row's current marks directly, same as it already does for `text`. Defaults `[]`. |
+| translation | text | Added 2026-07-25 (`20260725010000_bilingual_tagging.sql`) — same shape/reasoning as `formulas.translation` above. |
+| paired_id | uuid | Added same migration — same shape/reasoning as `formulas.paired_id` above. |
 
 ### `songs` (v1.1, new)
 
@@ -225,6 +229,8 @@ Shared Psalm/Hymn library — one table, tagged by kind, mirroring the `prayers`
 | attribution | text | Psalm: versification (e.g. "Reformed Life Community Church"). Hymn: author. Same column, different meaning per `kind` — no lyric/body text stored either way. |
 | year_published | integer | Optional |
 | notes | text | Optional |
+| translation | text | Added 2026-07-25 (`20260725010000_bilingual_tagging.sql`) — same shape/reasoning as `formulas.translation` above. Pairing candidates are also scoped to the same `kind` (a Psalm never pairs with a Hymn). |
+| paired_id | uuid | Added same migration — same shape/reasoning as `formulas.paired_id` above. |
 
 Congregation-facing output shows `title` only (Psalm: title case, italic, `text-citation` red; Hymn: title case, italic, no red). Leader Guide shows all columns.
 
@@ -303,7 +309,7 @@ interface BibleProvider {
 
 **Citation hover behavior (`components/liturgy/ScriptureCitationLink.tsx`), split by translation:**
 - **AB1905 citations** link to BibleGateway's AB2001 (a genuine cross-translation check against a newer Filipino translation this project doesn't self-host) — unchanged, existing behavior.
-- **BSB citations** use a self-hosted expanded-context hover instead — showing this passage's own self-hosted BSB text is redundant with what's already displayed, but showing *more of it* (surrounding verses) has real value, and doesn't require any external service since BSB is already self-hosted. `app/api/bible/context/route.ts` parses the citation, fetches the chapter via `getChapter("BSB", ...)`, and slices out a ~7-verse window via `lib/bible/contextWindow.ts` (short citations get padded outward to the window size, shifting instead of truncating at a chapter boundary; citations already at or above the window size pass through untouched). Clicking through opens `/reader` at that chapter for full context.
+- **BSB citations** use a self-hosted expanded-context hover instead — showing this passage's own self-hosted BSB text is redundant with what's already displayed, but showing *more of it* (surrounding verses) has real value, and doesn't require any external service since BSB is already self-hosted. `app/api/bible/context/route.ts` parses the citation, fetches the chapter via `getChapter("BSB", ...)`, and slices out a ~5-verse window via `lib/bible/contextWindow.ts` (short citations get padded outward to the window size, shifting instead of truncating at a chapter boundary; citations already at or above the window size pass through untouched). The tooltip persists (hover tracking on the whole group, not just the citation link) with a dedicated "View in Reader" button (styled as a solid red pill) opening `/reader` at that chapter, in a new tab, for full context.
 
 ---
 

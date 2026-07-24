@@ -1,6 +1,18 @@
 # Progress Tracker
 
-**Last updated:** 2026-07-24 (Prayer Kind redesign + five consistency fixes, fully shipped, migrated, reclassified, and live-verified. Committed (`6bc5d79`, `8fc16da`, `c2da5eb`); not yet pushed.)
+**Last updated:** 2026-07-25 (Bilingual FIL/ENG tagging for Formula/Prayer/Song shipped, migrated, and backfilled; self-hosted BSB citation hover-context widget shipped and refined. See entry below.)
+
+**2026-07-25 — Bilingual FIL/ENG tagging (Formula/Prayer/Song) + BSB citation hover widget, both fully closed out:**
+
+1. **Bilingual tagging.** Unlike `scripture_selections`, there's no canonical key to auto-match a Formula/Prayer/Song translation pair against (a Bible verse reference is language-independent; two independently-authored prayers aren't) — so this is a real link the user sets explicitly via a picker (`lib/liturgy/translationPairing.ts`'s `setTranslationPair()`, symmetric on both rows), never auto-matching or auto-creation. `translation`/`paired_id` added to all three tables (nullable, no default — untagged honestly means "not yet tagged"). Shared `TranslationPairFields` component on all three library forms; list rows show a Filipino/English badge once tagged. Migration (`20260725010000_bilingual_tagging.sql`) run by Madrid.
+   - **Backfill, confirmed before any data mutation:** Apostles' Creed ↔ Kredong Apostolico (Affirmation of Faith) paired; the 2 Confession of Sin prayers paired; Benediction's Trinitarian Seal tagged English (its Filipino wording lives inside the Absolution Formula's own text, not a separate row — no pairing needed there).
+   - **A stray duplicate Formula found and removed along the way:** a second "Trinitarian Seal" row existed under Affirmation of Faith (English, same wording as Benediction's) — Madrid confirmed this was a mistake (Trinitarian Seal is Benediction-only per `TRINITARIAN_SEAL_SECTIONS`). Confirmed unused in any real liturgy's placed items before deleting.
+2. **Self-hosted BSB citation hover widget.** Every citation used to route through the same BibleGateway AB2001 widget regardless of translation — a real bug, since a BSB citation's hover preview showed the *wrong translation's* text. Since BSB is already self-hosted, a same-text preview added nothing anyway; the real value is showing more context than the placed excerpt. New `/api/bible/context` route + `lib/bible/contextWindow.ts` (padding a short citation outward to a 5-verse window, shifting instead of truncating at a chapter boundary) power a hover tooltip on `ScriptureCitationLink` for BSB citations only — AB1905 citations are untouched, still linking to BibleGateway's AB2001 for a genuine cross-translation check that self-hosted data can't replace. Refined across several passes: fixed a small-caps inheritance bug, widened 30%, matched the app's serif body font, lowered the referenced-verse highlight flash to a subtle `/10` opacity, made the tooltip persist (hover tracking on the whole group, not just the link) with a dedicated "View in Reader ↗" button (styled as a solid red pill, `bg-error`/`rounded-full`) opening in a new tab.
+
+**Still open, explicitly deferred to their own scoping pass (not yet architected):**
+- Scripture-add UX unification + a Reader entry point
+- Homepage/banner redesign + responsive/anchor-stable banner image
+- Role-based access control (v3) — deferred by Madrid's own call, motivated by a real point he raised: unlike Scripture (backed by the permanent `bible_verses` table), a Formula/Prayer/Song's translation tag and pairing live only on that row itself — delete the row, lose the hand-done curation work permanently, with no fallback. Restricting who can edit/delete Library content is the mitigation, already half-scoped (`formulas.access_level`, reserved since v1).
 
 **2026-07-23/24 — Prayer Kind redesign + five consistency fixes, now fully closed out:**
 
