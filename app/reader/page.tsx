@@ -2,6 +2,7 @@ import { getChapter } from "@/lib/bible";
 import { getHighlights } from "@/lib/bible/highlights";
 import { canon } from "@/lib/bible/canon";
 import { getTargetSection } from "@/lib/liturgy/getTargetSection";
+import { getLiturgies } from "@/lib/liturgy/getLiturgies";
 import ReaderClient from "@/app/reader/ReaderClient";
 
 // Always reads live data -- same cached-fetch bug class fixed on the
@@ -34,6 +35,10 @@ export default async function ReaderPage({ searchParams }: ReaderPageProps): Pro
       : Promise.resolve(null),
   ]);
 
+  // Only fetched when there's no target yet -- someone who arrived via
+  // "+ Scripture" already has a target pre-set, and never needs this list.
+  const liturgies = targetSection ? [] : await getLiturgies();
+
   return (
     <ReaderClient
       books={canon}
@@ -41,6 +46,7 @@ export default async function ReaderPage({ searchParams }: ReaderPageProps): Pro
       initialHighlights={highlights}
       targetSection={targetSection}
       language={language}
+      liturgies={liturgies}
     />
   );
 }

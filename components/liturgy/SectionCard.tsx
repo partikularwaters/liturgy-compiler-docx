@@ -467,7 +467,7 @@ export default function SectionCard({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div id={`section-${sectionIndex}`} className="flex flex-col gap-2 scroll-mt-6">
       <div className="flex items-baseline justify-between gap-4 flex-wrap">
         <h2 className="font-serif-body text-[16px] font-bold uppercase text-text-primary">
           {sectionTitle(section, songs)}

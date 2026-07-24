@@ -8,6 +8,7 @@ import HighlightColorPicker from "@/components/reader/HighlightColorPicker";
 import VerseDisplay from "@/components/reader/VerseDisplay";
 import type { VerseMarker } from "@/components/reader/VerseDisplay";
 import AddSelectionPanel from "@/components/liturgy/AddSelectionPanel";
+import ReaderTargetPicker from "@/components/reader/ReaderTargetPicker";
 import { setHighlight } from "@/lib/bible/highlightActions";
 import { addSelection } from "@/lib/liturgy/addSelectionAction";
 import { buildCitation, buildSelectionText, parseCitationVerses } from "@/lib/liturgy/citations";
@@ -15,7 +16,7 @@ import type { BibleBook, BibleChapter, HighlightColor, VerseHighlights } from "@
 import type { TargetSection } from "@/lib/liturgy/getTargetSection";
 import { getSelectionMarks } from "@/lib/liturgy/markableSections";
 import { TRINITARIAN_SEAL_SECTIONS } from "@/lib/liturgy/trinitarianSeal";
-import type { TextMark } from "@/types/liturgy";
+import type { LiturgySummary, TextMark } from "@/types/liturgy";
 
 // Feature 22: mirrors addSelectionAction.ts's REFERENCE_ONLY_SECTIONS -- kept
 // as a separate constant since the Reader is a client component and can't
@@ -31,6 +32,11 @@ interface ReaderClientProps {
   // is currently browsing. Drives citation language (buildCitation/
   // parseCitationVerses) and what gets saved onto a new Selection.
   language: "fil" | "en";
+  // Only populated when there's no targetSection yet -- powers
+  // ReaderTargetPicker so someone who free-browsed in via the top nav can
+  // still choose a liturgy/Section to add to, without a round trip back to
+  // the Compile View first.
+  liturgies: LiturgySummary[];
 }
 
 export default function ReaderClient({
@@ -39,6 +45,7 @@ export default function ReaderClient({
   initialHighlights,
   targetSection,
   language,
+  liturgies,
 }: ReaderClientProps): React.ReactElement {
   const router = useRouter();
   const [activeColor, setActiveColor] = useState<HighlightColor | null>("accent");
@@ -238,7 +245,7 @@ export default function ReaderClient({
             → {targetSection.sectionName}
           </p>
           <Link
-            href={`/liturgy/${targetSection.liturgyId}`}
+            href={`/liturgy/${targetSection.liturgyId}#section-${targetSection.sectionIndex}`}
             className="text-[12px] font-medium text-accent-dark underline shrink-0"
           >
             ← Liturgy
@@ -285,11 +292,14 @@ export default function ReaderClient({
           </div>
         </div>
       ) : (
-        <VerseDisplay
-          chapter={chapter}
-          highlights={highlights}
-          onVerseClick={handleVerseClick}
-        />
+        <div className="flex flex-col gap-4">
+          <ReaderTargetPicker liturgies={liturgies} />
+          <VerseDisplay
+            chapter={chapter}
+            highlights={highlights}
+            onVerseClick={handleVerseClick}
+          />
+        </div>
       )}
     </div>
   );
