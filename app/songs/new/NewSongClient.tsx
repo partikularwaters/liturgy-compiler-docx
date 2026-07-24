@@ -4,12 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import SongForm from "@/components/songs/SongForm";
 import { createSong } from "@/lib/songs/songActions";
+import type { Song } from "@/types/liturgy";
 
 interface NewSongClientProps {
   sectionNames: string[];
+  allSongs: Song[];
 }
 
-export default function NewSongClient({ sectionNames }: NewSongClientProps): React.ReactElement {
+export default function NewSongClient({ sectionNames, allSongs }: NewSongClientProps): React.ReactElement {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,11 +22,13 @@ export default function NewSongClient({ sectionNames }: NewSongClientProps): Rea
     title: string,
     attribution: string,
     yearPublished: string,
-    notes: string
+    notes: string,
+    translation: "fil" | "en" | null,
+    pairedId: string | null
   ): void => {
     setIsSaving(true);
     setError(null);
-    createSong(sectionName, kind, title, attribution, yearPublished, notes).then((result) => {
+    createSong(sectionName, kind, title, attribution, yearPublished, notes, translation, pairedId).then((result) => {
       setIsSaving(false);
       if (result.success) {
         router.push("/library");
@@ -43,6 +47,7 @@ export default function NewSongClient({ sectionNames }: NewSongClientProps): Rea
       initialAttribution=""
       initialYearPublished=""
       initialNotes=""
+      allSongs={allSongs}
       isSaving={isSaving}
       error={error}
       submitLabel="Create Song"

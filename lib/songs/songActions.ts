@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 import { normalizeTypography } from "@/lib/text/typographic";
+import { setTranslationPair } from "@/lib/liturgy/translationPairing";
 
 export async function createSong(
   sectionName: string,
@@ -9,7 +10,9 @@ export async function createSong(
   title: string,
   attribution: string,
   yearPublished: string,
-  notes: string
+  notes: string,
+  translation: "fil" | "en" | null = null,
+  pairedId: string | null = null
 ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
   if (!sectionName.trim() || !title.trim()) {
     return { success: false, error: "Section and title are required." };
@@ -24,6 +27,7 @@ export async function createSong(
       attribution: attribution.trim() ? normalizeTypography(attribution) : null,
       year_published: yearPublished.trim() || null,
       notes: notes.trim() ? normalizeTypography(notes) : null,
+      translation,
     })
     .select("id")
     .single();
@@ -31,6 +35,10 @@ export async function createSong(
   if (error) {
     console.error("[lib/songs/songActions/createSong]", error.message);
     return { success: false, error: "Unable to save this Song right now." };
+  }
+
+  if (pairedId) {
+    await setTranslationPair("songs", data.id, pairedId);
   }
 
   return { success: true, data: { id: data.id } };
@@ -43,7 +51,9 @@ export async function updateSong(
   title: string,
   attribution: string,
   yearPublished: string,
-  notes: string
+  notes: string,
+  translation?: "fil" | "en" | null,
+  pairedId?: string | null
 ): Promise<{ success: boolean; error?: string }> {
   if (!sectionName.trim() || !title.trim()) {
     return { success: false, error: "Section and title are required." };
@@ -58,12 +68,18 @@ export async function updateSong(
       attribution: attribution.trim() ? normalizeTypography(attribution) : null,
       year_published: yearPublished.trim() || null,
       notes: notes.trim() ? normalizeTypography(notes) : null,
+      ...(translation !== undefined ? { translation } : {}),
     })
     .eq("id", id);
 
   if (error) {
     console.error("[lib/songs/songActions/updateSong]", error.message);
     return { success: false, error: "Unable to update this Song right now." };
+  }
+
+  if (pairedId !== undefined) {
+    const pairResult = await setTranslationPair("songs", id, pairedId);
+    if (!pairResult.success) return pairResult;
   }
 
   return { success: true };

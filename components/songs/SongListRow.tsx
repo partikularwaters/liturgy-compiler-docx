@@ -10,9 +10,10 @@ import type { Song } from "@/types/liturgy";
 interface SongListRowProps {
   song: Song;
   sectionNames: string[];
+  allSongs: Song[];
 }
 
-export default function SongListRow({ song, sectionNames }: SongListRowProps): React.ReactElement {
+export default function SongListRow({ song, sectionNames, allSongs }: SongListRowProps): React.ReactElement {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -24,19 +25,23 @@ export default function SongListRow({ song, sectionNames }: SongListRowProps): R
     title: string,
     attribution: string,
     yearPublished: string,
-    notes: string
+    notes: string,
+    translation: "fil" | "en" | null,
+    pairedId: string | null
   ): void => {
     setIsSaving(true);
     setError(null);
-    updateSong(song.id, sectionName, kind, title, attribution, yearPublished, notes).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        setIsEditing(false);
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to update this Song right now.");
+    updateSong(song.id, sectionName, kind, title, attribution, yearPublished, notes, translation, pairedId).then(
+      (result) => {
+        setIsSaving(false);
+        if (result.success) {
+          setIsEditing(false);
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to update this Song right now.");
+        }
       }
-    });
+    );
   };
 
   const handleDelete = (): void => {
@@ -63,6 +68,10 @@ export default function SongListRow({ song, sectionNames }: SongListRowProps): R
           initialAttribution={song.attribution ?? ""}
           initialYearPublished={song.yearPublished ?? ""}
           initialNotes={song.notes ?? ""}
+          initialTranslation={song.translation}
+          initialPairedId={song.pairedId}
+          allSongs={allSongs}
+          id={song.id}
           isSaving={isSaving}
           error={error}
           submitLabel="Save"
@@ -76,7 +85,10 @@ export default function SongListRow({ song, sectionNames }: SongListRowProps): R
   return (
     <div className="border-b border-border py-4 flex items-start justify-between gap-4">
       <div>
-        <p className="text-[13px] text-text-secondary">{song.sectionName}</p>
+        <p className="text-[13px] text-text-secondary">
+          {song.sectionName}
+          {song.translation && <> · {song.translation === "en" ? "English" : "Filipino"}</>}
+        </p>
         <p className="text-sm font-medium text-text-primary">
           {song.title}
           {song.attribution && <span className="text-text-secondary"> — {song.attribution}</span>}

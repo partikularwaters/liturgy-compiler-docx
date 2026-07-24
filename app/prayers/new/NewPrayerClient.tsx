@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PrayerForm from "@/components/prayers/PrayerForm";
 import { createPrayer } from "@/lib/prayers/prayerActions";
-import type { TextMark } from "@/types/liturgy";
+import type { Prayer, TextMark } from "@/types/liturgy";
 
 interface NewPrayerClientProps {
   sectionNames: string[];
+  allPrayers: Prayer[];
 }
 
-export default function NewPrayerClient({ sectionNames }: NewPrayerClientProps): React.ReactElement {
+export default function NewPrayerClient({ sectionNames, allPrayers }: NewPrayerClientProps): React.ReactElement {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,11 +21,13 @@ export default function NewPrayerClient({ sectionNames }: NewPrayerClientProps):
     text: string,
     kind: "corporate" | "leader",
     marks: TextMark[],
-    isGuide: boolean
+    isGuide: boolean,
+    translation: "fil" | "en" | null,
+    pairedId: string | null
   ): void => {
     setIsSaving(true);
     setError(null);
-    createPrayer(sectionName, text, kind, marks, isGuide).then((result) => {
+    createPrayer(sectionName, text, kind, marks, isGuide, translation, pairedId).then((result) => {
       setIsSaving(false);
       if (result.success) {
         router.push("/library");
@@ -39,6 +42,7 @@ export default function NewPrayerClient({ sectionNames }: NewPrayerClientProps):
       sectionNames={sectionNames}
       initialSectionName=""
       initialText=""
+      allPrayers={allPrayers}
       isSaving={isSaving}
       error={error}
       submitLabel="Create Prayer"

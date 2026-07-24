@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { autosizeTextarea } from "@/lib/text/autosize";
 import { shiftMarksForEdit } from "@/lib/text/marks";
 import MarkEditor from "@/components/liturgy/MarkEditor";
-import type { TextMark } from "@/types/liturgy";
+import TranslationPairFields from "@/components/library/TranslationPairFields";
+import type { Prayer, TextMark } from "@/types/liturgy";
 
 interface PrayerFormProps {
   sectionNames: string[];
@@ -13,11 +14,29 @@ interface PrayerFormProps {
   initialKind?: "corporate" | "leader";
   initialIsGuide?: boolean;
   initialMarks?: TextMark[];
+  initialTranslation?: "fil" | "en" | null;
+  initialPairedId?: string | null;
+  // Every other Prayer, for the translation-pairing picker -- excludes
+  // itself when editing (see the `id` prop below).
+  allPrayers: Prayer[];
+  id?: string;
   isSaving: boolean;
   error: string | null;
   submitLabel: string;
-  onSubmit: (sectionName: string, text: string, kind: "corporate" | "leader", marks: TextMark[], isGuide: boolean) => void;
+  onSubmit: (
+    sectionName: string,
+    text: string,
+    kind: "corporate" | "leader",
+    marks: TextMark[],
+    isGuide: boolean,
+    translation: "fil" | "en" | null,
+    pairedId: string | null
+  ) => void;
   onCancel?: () => void;
+}
+
+function previewText(text: string): string {
+  return text.length > 50 ? `${text.slice(0, 50)}…` : text;
 }
 
 // Prayer never had a marking toolbar at all -- Bold could only
@@ -41,6 +60,10 @@ export default function PrayerForm({
   initialKind = "leader",
   initialIsGuide = false,
   initialMarks = [],
+  initialTranslation = null,
+  initialPairedId = null,
+  allPrayers,
+  id,
   isSaving,
   error,
   submitLabel,
@@ -52,7 +75,16 @@ export default function PrayerForm({
   const [kind, setKind] = useState<"corporate" | "leader">(initialKind);
   const [isGuide, setIsGuide] = useState(initialIsGuide);
   const [marks, setMarks] = useState<TextMark[]>(initialMarks);
+  const [translation, setTranslation] = useState<"fil" | "en" | null>(initialTranslation);
+  const [pairedId, setPairedId] = useState<string | null>(initialPairedId);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const opposite = translation === "fil" ? "en" : "fil";
+  const pairCandidates = translation
+    ? allPrayers
+        .filter((p) => p.id !== id && p.sectionName === sectionName && p.translation === opposite)
+        .map((p) => ({ id: p.id, label: previewText(p.text) }))
+    : [];
 
   useEffect(() => {
     autosizeTextarea(textareaRef.current);
@@ -113,11 +145,21 @@ export default function PrayerForm({
         This is reference material only (a Prayer Guide checklist, per redesign-plan-v1.1.md §W) — never placeable
         in a liturgy
       </label>
+      <TranslationPairFields
+        translation={translation}
+        onTranslationChange={(t) => {
+          setTranslation(t);
+          setPairedId(null);
+        }}
+        pairedId={pairedId}
+        onPairedIdChange={setPairedId}
+        candidates={pairCandidates}
+      />
       {error && <p className="text-sm text-error">{error}</p>}
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(sectionName, text, kind, marks, isGuide)}
+          onClick={() => onSubmit(sectionName, text, kind, marks, isGuide, translation, pairedId)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >

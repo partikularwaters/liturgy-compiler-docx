@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { TextMark } from "@/types/liturgy";
+import type { Formula, TextMark } from "@/types/liturgy";
 import { autosizeTextarea } from "@/lib/text/autosize";
 import { shiftMarksForEdit } from "@/lib/text/marks";
 import { getFormulaMarks } from "@/lib/liturgy/markableSections";
 import MarkEditor from "@/components/liturgy/MarkEditor";
+import TranslationPairFields from "@/components/library/TranslationPairFields";
 
 interface FormulaFormProps {
   sectionNames: string[];
@@ -13,10 +14,23 @@ interface FormulaFormProps {
   initialName: string;
   initialDefaultText: string;
   initialMarks?: TextMark[];
+  initialTranslation?: "fil" | "en" | null;
+  initialPairedId?: string | null;
+  // Every other Formula, for the translation-pairing picker -- excludes
+  // itself when editing (see the `id` prop below).
+  allFormulas: Formula[];
+  id?: string;
   isSaving: boolean;
   error: string | null;
   submitLabel: string;
-  onSubmit: (sectionName: string, name: string, defaultText: string, marks: TextMark[]) => void;
+  onSubmit: (
+    sectionName: string,
+    name: string,
+    defaultText: string,
+    marks: TextMark[],
+    translation: "fil" | "en" | null,
+    pairedId: string | null
+  ) => void;
   onCancel?: () => void;
 }
 
@@ -34,6 +48,10 @@ export default function FormulaForm({
   initialName,
   initialDefaultText,
   initialMarks = [],
+  initialTranslation = null,
+  initialPairedId = null,
+  allFormulas,
+  id,
   isSaving,
   error,
   submitLabel,
@@ -44,7 +62,16 @@ export default function FormulaForm({
   const [name, setName] = useState(initialName);
   const [defaultText, setDefaultText] = useState(initialDefaultText);
   const [marks, setMarks] = useState<TextMark[]>(initialMarks);
+  const [translation, setTranslation] = useState<"fil" | "en" | null>(initialTranslation);
+  const [pairedId, setPairedId] = useState<string | null>(initialPairedId);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const opposite = translation === "fil" ? "en" : "fil";
+  const pairCandidates = translation
+    ? allFormulas
+        .filter((f) => f.id !== id && f.sectionName === sectionName && f.translation === opposite)
+        .map((f) => ({ id: f.id, label: f.name }))
+    : [];
 
   useEffect(() => {
     autosizeTextarea(textareaRef.current);
@@ -103,11 +130,21 @@ export default function FormulaForm({
         availableMarks={getFormulaMarks(sectionName)}
         textareaRef={textareaRef}
       />
+      <TranslationPairFields
+        translation={translation}
+        onTranslationChange={(t) => {
+          setTranslation(t);
+          setPairedId(null);
+        }}
+        pairedId={pairedId}
+        onPairedIdChange={setPairedId}
+        candidates={pairCandidates}
+      />
       {error && <p className="text-sm text-error">{error}</p>}
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(sectionName, name, defaultText, marks)}
+          onClick={() => onSubmit(sectionName, name, defaultText, marks, translation, pairedId)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >

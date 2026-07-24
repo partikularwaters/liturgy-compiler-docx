@@ -3,13 +3,25 @@ import { getSectionOrderIndex } from "@/lib/liturgy/canonicalOrder";
 import type { Prayer, TextMark } from "@/types/liturgy";
 
 export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
-  let query = supabase.from("prayers").select("id, section_name, text, kind, marks, is_guide");
+  let query = supabase
+    .from("prayers")
+    .select("id, section_name, text, kind, marks, is_guide, translation, paired_id");
 
   if (sectionName) {
     query = query.eq("section_name", sectionName);
   }
 
   let { data, error } = await query;
+
+  // Graceful fallback if `translation`/`paired_id` aren't present yet --
+  // migrations are applied manually, not automatically.
+  if (error?.message.includes("translation") || error?.message.includes("paired_id")) {
+    let fallbackQuery = supabase.from("prayers").select("id, section_name, text, kind, marks, is_guide");
+    if (sectionName) fallbackQuery = fallbackQuery.eq("section_name", sectionName);
+    const fallback = await fallbackQuery;
+    data = fallback.data?.map((row) => ({ ...row, translation: null, paired_id: null })) ?? null;
+    error = fallback.error;
+  }
 
   // Graceful fallback if `is_guide` isn't present yet -- migrations are
   // applied manually, not automatically, so the whole Library's Prayer list
@@ -19,7 +31,7 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
     let fallbackQuery = supabase.from("prayers").select("id, section_name, text, kind, marks");
     if (sectionName) fallbackQuery = fallbackQuery.eq("section_name", sectionName);
     const fallback = await fallbackQuery;
-    data = fallback.data?.map((row) => ({ ...row, is_guide: row.kind === "guide" })) ?? null;
+    data = fallback.data?.map((row) => ({ ...row, is_guide: row.kind === "guide", translation: null, paired_id: null })) ?? null;
     error = fallback.error;
   }
 
@@ -29,7 +41,9 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
     let fallbackQuery = supabase.from("prayers").select("id, section_name, text, kind");
     if (sectionName) fallbackQuery = fallbackQuery.eq("section_name", sectionName);
     const fallback = await fallbackQuery;
-    data = fallback.data?.map((row) => ({ ...row, marks: [], is_guide: row.kind === "guide" })) ?? null;
+    data =
+      fallback.data?.map((row) => ({ ...row, marks: [], is_guide: row.kind === "guide", translation: null, paired_id: null })) ??
+      null;
     error = fallback.error;
   }
 
@@ -45,6 +59,8 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
     kind: row.kind as "corporate" | "leader",
     marks: (row.marks as TextMark[] | undefined) ?? [],
     isGuide: Boolean((row as { is_guide?: boolean }).is_guide),
+    translation: (row as { translation?: "fil" | "en" | null }).translation ?? null,
+    pairedId: (row as { paired_id?: string | null }).paired_id ?? null,
   }));
 
   // Order of Worship sequence for actual

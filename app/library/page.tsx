@@ -48,7 +48,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         ) : (
           <div className="bg-surface border border-border rounded-lg px-6">
             {formulas.map((formula) => (
-              <FormulaListRow key={formula.id} formula={formula} sectionNames={sectionNames} />
+              <FormulaListRow key={formula.id} formula={formula} sectionNames={sectionNames} allFormulas={formulas} />
             ))}
           </div>
         )}
@@ -69,7 +69,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         ) : (
           <div className="bg-surface border border-border rounded-lg px-6">
             {prayers.map((prayer) => (
-              <PrayerListRow key={prayer.id} prayer={prayer} sectionNames={sectionNames} />
+              <PrayerListRow key={prayer.id} prayer={prayer} sectionNames={sectionNames} allPrayers={allPrayers} />
             ))}
           </div>
         )}
@@ -86,7 +86,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         ) : (
           <div className="bg-surface border border-border rounded-lg px-6">
             {guides.map((guide) => (
-              <PrayerListRow key={guide.id} prayer={guide} sectionNames={sectionNames} />
+              <PrayerListRow key={guide.id} prayer={guide} sectionNames={sectionNames} allPrayers={allPrayers} />
             ))}
           </div>
         )}
@@ -133,7 +133,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         ) : (
           <div className="bg-surface border border-border rounded-lg px-6">
             {psalms.map((song) => (
-              <SongListRow key={song.id} song={song} sectionNames={sectionNames} />
+              <SongListRow key={song.id} song={song} sectionNames={sectionNames} allSongs={songs} />
             ))}
           </div>
         )}
@@ -146,7 +146,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         ) : (
           <div className="bg-surface border border-border rounded-lg px-6">
             {hymns.map((song) => (
-              <SongListRow key={song.id} song={song} sectionNames={sectionNames} />
+              <SongListRow key={song.id} song={song} sectionNames={sectionNames} allSongs={songs} />
             ))}
           </div>
         )}

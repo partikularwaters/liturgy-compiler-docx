@@ -2,13 +2,16 @@
 
 import { supabase } from "@/lib/db/supabase";
 import { normalizeTypography } from "@/lib/text/typographic";
+import { setTranslationPair } from "@/lib/liturgy/translationPairing";
 import type { TextMark } from "@/types/liturgy";
 
 export async function createFormula(
   sectionName: string,
   name: string,
   defaultText: string,
-  marks: TextMark[] = []
+  marks: TextMark[] = [],
+  translation: "fil" | "en" | null = null,
+  pairedId: string | null = null
 ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
   if (!sectionName.trim() || !name.trim() || !defaultText.trim()) {
     return { success: false, error: "Section, name, and default text are required." };
@@ -21,6 +24,7 @@ export async function createFormula(
       name: normalizeTypography(name),
       default_text: normalizeTypography(defaultText),
       marks,
+      translation,
     })
     .select("id")
     .single();
@@ -33,6 +37,10 @@ export async function createFormula(
     return { success: false, error: "Unable to create this Formula right now." };
   }
 
+  if (pairedId) {
+    await setTranslationPair("formulas", data.id, pairedId);
+  }
+
   return { success: true, data: { id: data.id } };
 }
 
@@ -41,7 +49,9 @@ export async function updateFormula(
   sectionName: string,
   name: string,
   defaultText: string,
-  marks: TextMark[] = []
+  marks: TextMark[] = [],
+  translation?: "fil" | "en" | null,
+  pairedId?: string | null
 ): Promise<{ success: boolean; error?: string }> {
   if (!sectionName.trim() || !name.trim() || !defaultText.trim()) {
     return { success: false, error: "Section, name, and default text are required." };
@@ -54,6 +64,7 @@ export async function updateFormula(
       name: normalizeTypography(name),
       default_text: normalizeTypography(defaultText),
       marks,
+      ...(translation !== undefined ? { translation } : {}),
     })
     .eq("id", id);
 
@@ -63,6 +74,11 @@ export async function updateFormula(
       return { success: false, error: "A Formula with this name already exists in this Section." };
     }
     return { success: false, error: "Unable to update this Formula right now." };
+  }
+
+  if (pairedId !== undefined) {
+    const pairResult = await setTranslationPair("formulas", id, pairedId);
+    if (!pairResult.success) return pairResult;
   }
 
   return { success: true };

@@ -11,21 +11,30 @@ import type { Formula, TextMark } from "@/types/liturgy";
 interface FormulaListRowProps {
   formula: Formula;
   sectionNames: string[];
+  allFormulas: Formula[];
 }
 
 export default function FormulaListRow({
   formula,
   sectionNames,
+  allFormulas,
 }: FormulaListRowProps): React.ReactElement {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSave = (sectionName: string, name: string, defaultText: string, marks: TextMark[]): void => {
+  const handleSave = (
+    sectionName: string,
+    name: string,
+    defaultText: string,
+    marks: TextMark[],
+    translation: "fil" | "en" | null,
+    pairedId: string | null
+  ): void => {
     setIsSaving(true);
     setError(null);
-    updateFormula(formula.id, sectionName, name, defaultText, marks).then((result) => {
+    updateFormula(formula.id, sectionName, name, defaultText, marks, translation, pairedId).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setIsEditing(false);
@@ -58,6 +67,10 @@ export default function FormulaListRow({
           initialName={formula.name}
           initialDefaultText={formula.defaultText}
           initialMarks={formula.marks ?? []}
+          initialTranslation={formula.translation}
+          initialPairedId={formula.pairedId}
+          allFormulas={allFormulas}
+          id={formula.id}
           isSaving={isSaving}
           error={error}
           submitLabel="Save"
@@ -71,7 +84,10 @@ export default function FormulaListRow({
   return (
     <div className="border-b border-border py-4 flex items-start justify-between gap-4">
       <div>
-        <p className="text-[13px] text-text-secondary">{formula.sectionName}</p>
+        <p className="text-[13px] text-text-secondary">
+          {formula.sectionName}
+          {formula.translation && <> · {formula.translation === "en" ? "English" : "Filipino"}</>}
+        </p>
         <p className="text-sm font-medium text-text-primary">{formula.name}</p>
         <LibraryTextPreview title={formula.name} text={formula.defaultText} marks={formula.marks} className="mt-1" />
         {error && <p className="text-sm text-error mt-1">{error}</p>}

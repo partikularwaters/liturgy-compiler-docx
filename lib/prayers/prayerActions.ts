@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 import { normalizeTypography } from "@/lib/text/typographic";
+import { setTranslationPair } from "@/lib/liturgy/translationPairing";
 import type { TextMark } from "@/types/liturgy";
 
 export async function createPrayer(
@@ -9,7 +10,9 @@ export async function createPrayer(
   text: string,
   kind: "corporate" | "leader" = "leader",
   marks: TextMark[] = [],
-  isGuide: boolean = false
+  isGuide: boolean = false,
+  translation: "fil" | "en" | null = null,
+  pairedId: string | null = null
 ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
   if (!text.trim()) {
     return { success: false, error: "Prayer text is required." };
@@ -17,13 +20,17 @@ export async function createPrayer(
 
   const { data, error } = await supabase
     .from("prayers")
-    .insert({ section_name: sectionName, text: normalizeTypography(text), kind, marks, is_guide: isGuide })
+    .insert({ section_name: sectionName, text: normalizeTypography(text), kind, marks, is_guide: isGuide, translation })
     .select("id")
     .single();
 
   if (error) {
     console.error("[lib/prayers/prayerActions/createPrayer]", error.message);
     return { success: false, error: "Unable to save this Prayer right now." };
+  }
+
+  if (pairedId) {
+    await setTranslationPair("prayers", data.id, pairedId);
   }
 
   return { success: true, data: { id: data.id } };
@@ -35,7 +42,9 @@ export async function updatePrayer(
   text: string,
   kind?: "corporate" | "leader",
   marks: TextMark[] = [],
-  isGuide?: boolean
+  isGuide?: boolean,
+  translation?: "fil" | "en" | null,
+  pairedId?: string | null
 ): Promise<{ success: boolean; error?: string }> {
   if (!sectionName.trim() || !text.trim()) {
     return { success: false, error: "Section and text are required." };
@@ -49,12 +58,18 @@ export async function updatePrayer(
       marks,
       ...(kind ? { kind } : {}),
       ...(isGuide !== undefined ? { is_guide: isGuide } : {}),
+      ...(translation !== undefined ? { translation } : {}),
     })
     .eq("id", id);
 
   if (error) {
     console.error("[lib/prayers/prayerActions/updatePrayer]", error.message);
     return { success: false, error: "Unable to update this Prayer right now." };
+  }
+
+  if (pairedId !== undefined) {
+    const pairResult = await setTranslationPair("prayers", id, pairedId);
+    if (!pairResult.success) return pairResult;
   }
 
   return { success: true };

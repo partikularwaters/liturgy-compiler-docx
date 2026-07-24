@@ -11,9 +11,10 @@ import type { Prayer, TextMark } from "@/types/liturgy";
 interface PrayerListRowProps {
   prayer: Prayer;
   sectionNames: string[];
+  allPrayers: Prayer[];
 }
 
-export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowProps): React.ReactElement {
+export default function PrayerListRow({ prayer, sectionNames, allPrayers }: PrayerListRowProps): React.ReactElement {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -24,11 +25,13 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
     text: string,
     kind: "corporate" | "leader",
     marks: TextMark[],
-    isGuide: boolean
+    isGuide: boolean,
+    translation: "fil" | "en" | null,
+    pairedId: string | null
   ): void => {
     setIsSaving(true);
     setError(null);
-    updatePrayer(prayer.id, sectionName, text, kind, marks, isGuide).then((result) => {
+    updatePrayer(prayer.id, sectionName, text, kind, marks, isGuide, translation, pairedId).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setIsEditing(false);
@@ -63,6 +66,10 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
           initialKind={prayer.kind}
           initialIsGuide={prayer.isGuide ?? false}
           initialMarks={prayer.marks ?? []}
+          initialTranslation={prayer.translation}
+          initialPairedId={prayer.pairedId}
+          allPrayers={allPrayers}
+          id={prayer.id}
           isSaving={isSaving}
           error={error}
           submitLabel="Save"
@@ -76,7 +83,10 @@ export default function PrayerListRow({ prayer, sectionNames }: PrayerListRowPro
   return (
     <div className="border-b border-border py-4 flex items-start justify-between gap-4">
       <div>
-        <p className="text-[13px] text-text-secondary">{prayer.sectionName}</p>
+        <p className="text-[13px] text-text-secondary">
+          {prayer.sectionName}
+          {prayer.translation && <> · {prayer.translation === "en" ? "English" : "Filipino"}</>}
+        </p>
         <LibraryTextPreview
           title={prayer.isGuide ? "Prayer Guide" : `Prayer (${prayer.kind === "corporate" ? "Corporate" : "Leader"})`}
           text={prayer.text}

@@ -103,6 +103,15 @@ export interface Formula {
   // convention as FormulaItem.marks. Absent/empty means "no marks," the
   // correct default for every Formula saved before this field existed.
   marks?: TextMark[];
+  // Bilingual tagging -- unlike Scripture's translation, there's no
+  // canonical key to auto-match a Formula's language or companion against,
+  // so both fields are explicit and nullable: `translation` is set by hand
+  // (no default -- an untagged row honestly means "not yet tagged," never
+  // assumed Filipino), and `pairedId` is a real link to this Formula's
+  // translation companion, set once via a picker (see
+  // lib/liturgy/translationPairing.ts), not auto-detected.
+  translation?: "fil" | "en" | null;
+  pairedId?: string | null;
 }
 
 export interface FormulaItem extends TrinitarianSealable {
@@ -167,6 +176,11 @@ export interface Prayer {
   // library entry's current marks directly, the same way it already always
   // reflects the library entry's current text.
   marks?: TextMark[];
+  // Bilingual tagging -- see Formula.translation/pairedId's comment; same
+  // shape, same reasoning (no canonical key to auto-match a Prayer's
+  // translation companion against, so this is a real link set by hand).
+  translation?: "fil" | "en" | null;
+  pairedId?: string | null;
 }
 
 export interface PrayerItem {
@@ -193,6 +207,11 @@ export interface Song {
   attribution: string | null;
   yearPublished: string | null;
   notes: string | null;
+  // Bilingual tagging -- see Formula.translation/pairedId's comment; same
+  // shape, same reasoning (no canonical key to auto-match a Song's
+  // translation companion against, so this is a real link set by hand).
+  translation?: "fil" | "en" | null;
+  pairedId?: string | null;
 }
 
 export interface SongItem {

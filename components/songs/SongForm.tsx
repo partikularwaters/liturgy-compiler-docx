@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import TranslationPairFields from "@/components/library/TranslationPairFields";
+import type { Song } from "@/types/liturgy";
 
 interface SongFormProps {
   sectionNames: string[];
@@ -10,6 +12,12 @@ interface SongFormProps {
   initialAttribution: string;
   initialYearPublished: string;
   initialNotes: string;
+  initialTranslation?: "fil" | "en" | null;
+  initialPairedId?: string | null;
+  // Every other Song, for the translation-pairing picker -- excludes
+  // itself when editing (see the `id` prop below).
+  allSongs: Song[];
+  id?: string;
   isSaving: boolean;
   error: string | null;
   submitLabel: string;
@@ -19,7 +27,9 @@ interface SongFormProps {
     title: string,
     attribution: string,
     yearPublished: string,
-    notes: string
+    notes: string,
+    translation: "fil" | "en" | null,
+    pairedId: string | null
   ) => void;
   onCancel?: () => void;
 }
@@ -35,6 +45,10 @@ export default function SongForm({
   initialAttribution,
   initialYearPublished,
   initialNotes,
+  initialTranslation = null,
+  initialPairedId = null,
+  allSongs,
+  id,
   isSaving,
   error,
   submitLabel,
@@ -47,8 +61,17 @@ export default function SongForm({
   const [attribution, setAttribution] = useState(initialAttribution);
   const [yearPublished, setYearPublished] = useState(initialYearPublished);
   const [notes, setNotes] = useState(initialNotes);
+  const [translation, setTranslation] = useState<"fil" | "en" | null>(initialTranslation);
+  const [pairedId, setPairedId] = useState<string | null>(initialPairedId);
 
   const attributionLabel = kind === "psalm" ? "Versification" : "Author";
+
+  const opposite = translation === "fil" ? "en" : "fil";
+  const pairCandidates = translation
+    ? allSongs
+        .filter((s) => s.id !== id && s.sectionName === sectionName && s.kind === kind && s.translation === opposite)
+        .map((s) => ({ id: s.id, label: s.title }))
+    : [];
 
   return (
     <div className="flex flex-col gap-3">
@@ -128,11 +151,21 @@ export default function SongForm({
           className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
         />
       </div>
+      <TranslationPairFields
+        translation={translation}
+        onTranslationChange={(t) => {
+          setTranslation(t);
+          setPairedId(null);
+        }}
+        pairedId={pairedId}
+        onPairedIdChange={setPairedId}
+        candidates={pairCandidates}
+      />
       {error && <p className="text-sm text-error">{error}</p>}
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(sectionName, kind, title, attribution, yearPublished, notes)}
+          onClick={() => onSubmit(sectionName, kind, title, attribution, yearPublished, notes, translation, pairedId)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
