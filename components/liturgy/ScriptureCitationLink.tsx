@@ -119,7 +119,7 @@ function BSBLink({ citation, className }: { citation: string; className?: string
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="self-start text-[12px] font-medium text-accent-dark hover:underline [font-variant:normal]"
+            className="self-start bg-error text-error-foreground rounded-full px-3 py-1 text-[12px] font-medium [font-variant:normal] hover:opacity-90"
           >
             View in Reader ↗
           </a>
