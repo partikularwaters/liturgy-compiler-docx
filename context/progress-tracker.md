@@ -16,6 +16,7 @@
 - Role-based access control (v3) — deferred by Madrid's own call, motivated by a real point he raised: unlike Scripture (backed by the permanent `bible_verses` table), a Formula/Prayer/Song's translation tag and pairing live only on that row itself — delete the row, lose the hand-done curation work permanently, with no fallback. Restricting who can edit/delete Library content is the mitigation, already half-scoped (`formulas.access_level`, reserved since v1).
 - Mobile responsiveness pass (separate, not yet scoped).
 - docx export pipeline (v2 items 1-2 from `build-plan.md`) — scoped via `/architect` earlier this session, plan produced but not yet approved/built.
+- **Tagged by Madrid for future development:** make the homepage banner responsive to scroll (e.g. a parallax-style effect as the page scrolls), on top of the viewport-width responsiveness already fixed. Not scoped yet — separate from the FOCAL_Y/OVERSIZE crop-math fix above.
 
 **2026-07-25 (second pass) — Library FIL/ENG side-by-side columns, Scripture-add UX unification, homepage banner fix:**
 
