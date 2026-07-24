@@ -34,8 +34,8 @@ function ABLink({ citation, className }: { citation: string; className?: string 
 // that exact same excerpt again in a hover popup adds nothing. What's
 // actually useful is more of it: a window of surrounding verses (see
 // lib/bible/contextWindow.ts), fetched from our own data on hover, no
-// external widget involved. Clicking through opens the Reader at that
-// chapter for the full context.
+// external widget involved. A dedicated button inside the tooltip opens
+// the Reader at that chapter, in a new tab, for the full context.
 function BSBLink({ citation, className }: { citation: string; className?: string }): React.ReactElement {
   const [verses, setVerses] = useState<BibleVerse[] | null>(null);
   const [referencedVerses, setReferencedVerses] = useState<Set<number>>(new Set());
@@ -79,41 +79,50 @@ function BSBLink({ citation, className }: { citation: string; className?: string
   };
 
   return (
-    <span className="relative inline-block">
-      <a
-        ref={linkRef}
-        href={href}
-        className={className}
-        onMouseEnter={showTooltip}
-        onMouseLeave={() => setIsOpen(false)}
-      >
+    // Hover tracking lives on this outer group, not the citation link alone --
+    // the tooltip needs to stay open while the mouse crosses from the link
+    // into the tooltip itself (e.g. to reach the "View in Reader" button
+    // below), matching how BibleGateway's own widget persists rather than
+    // vanishing the instant the cursor leaves the link text.
+    <span className="relative inline-block" onMouseEnter={showTooltip} onMouseLeave={() => setIsOpen(false)}>
+      <a ref={linkRef} href={href} target="_blank" rel="noopener noreferrer" className={className}>
         {citation}
       </a>
       {isOpen && (
         <span
           className={[
-            "pointer-events-none absolute top-full mt-1 w-[374px] rounded-md border border-border bg-surface p-3 shadow-lg z-10",
+            "absolute top-full mt-1 w-[374px] rounded-md border border-border bg-surface p-3 shadow-lg z-10 flex flex-col gap-2",
             "font-serif-body text-[16px] leading-[1.6] text-text-primary [font-variant:normal]",
             tooltipSide === "left" ? "left-0" : "right-0",
           ].join(" ")}
         >
-          {verses === null ? (
-            <span className="block text-text-muted text-[13px]">Loading…</span>
-          ) : verses.length === 0 ? (
-            <span className="block text-text-muted text-[13px]">Unable to load this passage.</span>
-          ) : (
-            verses.map((v) => (
-              <span
-                key={v.number}
-                className={[
-                  "block mb-1 last:mb-0 -mx-1 px-1 rounded transition-colors duration-1000",
-                  referencedVerses.has(v.number) && highlightActive ? "bg-warning/30" : "bg-transparent",
-                ].join(" ")}
-              >
-                <span className="text-[11px] font-medium text-accent-dark align-super">{v.number}</span> {v.text}
-              </span>
-            ))
-          )}
+          <span>
+            {verses === null ? (
+              <span className="block text-text-muted text-[13px]">Loading…</span>
+            ) : verses.length === 0 ? (
+              <span className="block text-text-muted text-[13px]">Unable to load this passage.</span>
+            ) : (
+              verses.map((v) => (
+                <span
+                  key={v.number}
+                  className={[
+                    "block mb-1 last:mb-0 -mx-1 px-1 rounded transition-colors duration-1000",
+                    referencedVerses.has(v.number) && highlightActive ? "bg-warning/10" : "bg-transparent",
+                  ].join(" ")}
+                >
+                  <span className="text-[11px] font-medium text-accent-dark align-super">{v.number}</span> {v.text}
+                </span>
+              ))
+            )}
+          </span>
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="self-start text-[12px] font-medium text-accent-dark hover:underline [font-variant:normal]"
+          >
+            View in Reader ↗
+          </a>
         </span>
       )}
     </span>

@@ -10,7 +10,7 @@
 export function computeContextWindow(
   verses: number[],
   chapterVerseCount: number,
-  target: number = 7
+  target: number = 5
 ): { start: number; end: number } {
   const rangeStart = Math.min(...verses);
   const rangeEnd = Math.max(...verses);
