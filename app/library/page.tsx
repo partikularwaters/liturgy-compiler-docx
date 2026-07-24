@@ -4,15 +4,44 @@ import { getPrayers } from "@/lib/prayers/getPrayers";
 import { getScriptureSelections } from "@/lib/selections/getScriptureSelections";
 import { getSongs } from "@/lib/songs/getSongs";
 import { getSectionNames } from "@/lib/liturgy/getSectionNames";
+import { buildBilingualRows } from "@/lib/library/pairForDisplay";
+import { toEnglishCitation } from "@/lib/bible/bookNamesTagalog";
+import { formatCitation } from "@/lib/liturgy/formatCitation";
 import FormulaListRow from "@/components/formulas/FormulaListRow";
 import PrayerListRow from "@/components/prayers/PrayerListRow";
 import ScriptureSelectionRow from "@/components/selections/ScriptureSelectionRow";
 import SongListRow from "@/components/songs/SongListRow";
+import type { Formula, Prayer, ScriptureSelection, Song } from "@/types/liturgy";
 
 // Always reads the live library data -- otherwise a just-saved edit can look
 // reverted after router.refresh() if Next serves a cached fetch response
 // instead of re-querying Supabase (same bug class fixed on the homepage).
 export const dynamic = "force-dynamic";
+
+// The whole point of bilingual tagging: a Filipino/English translation
+// pair renders side by side on the same row (Filipino left, English
+// right), instead of interleaved in whatever order they were created --
+// which was the original problem ("AB then BSB, then BSB then AB") this
+// was meant to solve. A row missing one side (unpaired, or the item is
+// untagged) just leaves that cell blank rather than misaligning everything
+// after it.
+function BilingualGrid<T extends { id: string }>({
+  cells,
+  renderItem,
+}: {
+  cells: (T | null)[];
+  renderItem: (item: T) => React.ReactNode;
+}): React.ReactElement {
+  return (
+    <div className="bg-surface border border-border rounded-lg grid grid-cols-2 divide-x divide-border">
+      {cells.map((item, i) => (
+        <div key={item?.id ?? `blank-${i}`} className="px-6 empty:py-0">
+          {item ? renderItem(item) : <div className="border-b border-border-light py-4" />}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default async function LibraryPage(): Promise<React.ReactElement> {
   const [formulas, allPrayers, scriptureSelections, songs, sectionNames] = await Promise.all([
@@ -29,8 +58,22 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
   const prayers = allPrayers.filter((p) => !p.isGuide);
   const guides = allPrayers.filter((p) => p.isGuide);
 
+  const formulaRows = buildBilingualRows<Formula>(formulas);
+  const prayerRows = buildBilingualRows<Prayer>(prayers);
+  const psalmRows = buildBilingualRows<Song>(psalms);
+  const hymnRows = buildBilingualRows<Song>(hymns);
+
+  // Scripture has no stored `pairedId` -- a pair is matched live by
+  // canonical citation (same convention as AddExistingSelectionPanel's own
+  // hover-preview icon), since a Bible reference, unlike a Formula/Prayer/
+  // Song, is a canonical key both languages can be matched against.
+  const canonicalKey = (citation: string): string => toEnglishCitation(formatCitation(citation));
+  const scriptureRows = buildBilingualRows<ScriptureSelection>(scriptureSelections, (item, items) =>
+    items.find((other) => other.translation !== item.translation && canonicalKey(other.citation) === canonicalKey(item.citation))
+  );
+
   return (
-    <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-8">
+    <div className="max-w-[1120px] mx-auto p-8 flex flex-col gap-8">
       <h1 className="text-[28px] font-bold leading-9 text-text-primary">Browse Library</h1>
 
       <div className="flex flex-col gap-3">
@@ -46,11 +89,12 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         {formulas.length === 0 ? (
           <p className="text-sm text-text-muted">No formulas yet.</p>
         ) : (
-          <div className="bg-surface border border-border rounded-lg px-6">
-            {formulas.map((formula) => (
-              <FormulaListRow key={formula.id} formula={formula} sectionNames={sectionNames} allFormulas={formulas} />
-            ))}
-          </div>
+          <BilingualGrid
+            cells={formulaRows}
+            renderItem={(formula) => (
+              <FormulaListRow formula={formula} sectionNames={sectionNames} allFormulas={formulas} />
+            )}
+          />
         )}
       </div>
 
@@ -67,11 +111,12 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         {prayers.length === 0 ? (
           <p className="text-sm text-text-muted">No prayers yet.</p>
         ) : (
-          <div className="bg-surface border border-border rounded-lg px-6">
-            {prayers.map((prayer) => (
-              <PrayerListRow key={prayer.id} prayer={prayer} sectionNames={sectionNames} allPrayers={allPrayers} />
-            ))}
-          </div>
+          <BilingualGrid
+            cells={prayerRows}
+            renderItem={(prayer) => (
+              <PrayerListRow prayer={prayer} sectionNames={sectionNames} allPrayers={allPrayers} />
+            )}
+          />
         )}
       </div>
 
@@ -110,11 +155,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         {scriptureSelections.length === 0 ? (
           <p className="text-sm text-text-muted">No Scripture items added yet.</p>
         ) : (
-          <div className="bg-surface border border-border rounded-lg px-6">
-            {scriptureSelections.map((selection) => (
-              <ScriptureSelectionRow key={selection.id} selection={selection} />
-            ))}
-          </div>
+          <BilingualGrid cells={scriptureRows} renderItem={(selection) => <ScriptureSelectionRow selection={selection} />} />
         )}
       </div>
 
@@ -131,11 +172,10 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         {psalms.length === 0 ? (
           <p className="text-sm text-text-muted">No Psalms yet.</p>
         ) : (
-          <div className="bg-surface border border-border rounded-lg px-6">
-            {psalms.map((song) => (
-              <SongListRow key={song.id} song={song} sectionNames={sectionNames} allSongs={songs} />
-            ))}
-          </div>
+          <BilingualGrid
+            cells={psalmRows}
+            renderItem={(song) => <SongListRow song={song} sectionNames={sectionNames} allSongs={songs} />}
+          />
         )}
       </div>
 
@@ -144,11 +184,10 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         {hymns.length === 0 ? (
           <p className="text-sm text-text-muted">No Hymns yet.</p>
         ) : (
-          <div className="bg-surface border border-border rounded-lg px-6">
-            {hymns.map((song) => (
-              <SongListRow key={song.id} song={song} sectionNames={sectionNames} allSongs={songs} />
-            ))}
-          </div>
+          <BilingualGrid
+            cells={hymnRows}
+            renderItem={(song) => <SongListRow song={song} sectionNames={sectionNames} allSongs={songs} />}
+          />
         )}
       </div>
     </div>
