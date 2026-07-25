@@ -292,7 +292,9 @@ No file storage — `.docx` files (and the legacy PDF, still served at `?format=
 
 ## Authentication
 
-None in v1 — single user, no login screen. Supabase Auth is the planned provider whenever v3's role-based access control is built (Formula edits gated, Verbal Cues/Prayers remain open).
+**v3, in progress (2026-07-25) — supersedes the v1 "no auth" note below.** Supabase Auth via `@supabase/ssr` (`lib/auth/`); `middleware.ts` refreshes the session on every request. Two roles only, `user_roles` table — **Curator** and **Compiler**, not the three liturgical roles (presider/deacon/preacher are all "Compiler" here; this is about who's trusted not to accidentally destroy curated Library work, not liturgical seniority). `owner_id` on `formulas`/`prayers`/`songs` (`NULL` = shared/canonical, Curator-controlled; a real user id = a Compiler's own fork/proposal) is the actual enforcement mechanism, checked in the Server Actions themselves — **every existing write path uses `lib/db/supabase.ts`'s service-role client, which bypasses RLS entirely by design**, so the RLS policies on these tables are defense-in-depth against someone bypassing the app, not the primary gate. Formula is locked down completely: a Compiler can propose a brand-new Formula (their own `owner_id`) but can never edit an existing shared one — verified live. Anonymous/no-account visitors remain fully read-only (public liturgies, Bible Reader, Library browsing) — not yet wired up (see `progress-tracker.md`).
+
+~~None in v1 — single user, no login screen.~~ Superseded by the above.
 
 ---
 

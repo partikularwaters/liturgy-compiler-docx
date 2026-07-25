@@ -281,7 +281,8 @@
       "Bash(grep -n \"### \\\\`formulas\\\\`\\\\|### \\\\`prayers\\\\`\\\\|### \\\\`songs\\\\`\" context/architecture.md)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/reader --max-time 5)",
       "Bash(npm uninstall *)",
-      "Bash(curl -s \"https://www.biblegateway.com/public/link-to-us/tooltips/bglinks.js\")"
+      "Bash(curl -s \"https://www.biblegateway.com/public/link-to-us/tooltips/bglinks.js\")",
+      "Bash(grep -o \"^NEXT_PUBLIC_SUPABASE_ANON_KEY=.\\\\{0,10\\\\}\" .env.local)"
     ],
     "defaultMode": "default"
   }

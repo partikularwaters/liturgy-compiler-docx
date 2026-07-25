@@ -28,8 +28,20 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
   if (!user) return null;
 
-  const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", user.id).single();
+  const { data: roleRow, error: roleError } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
 
+  // A genuinely missing row (no role granted yet) is expected and silent --
+  // any other error (RLS misconfiguration, connectivity) is not, and was
+  // previously swallowed here entirely, which is exactly what made the
+  // 2026-07-25 infinite-recursion RLS bug silently degrade to "looks signed
+  // out" instead of surfacing anything actionable.
+  if (roleError && roleError.code !== "PGRST116") {
+    console.error("[lib/auth/getCurrentUser]", roleError.message);
+  }
   if (!roleRow) return null;
 
   return { id: user.id, email: user.email ?? null, role: roleRow.role as Role };
