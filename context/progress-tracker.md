@@ -1,6 +1,55 @@
 # Progress Tracker
 
-**Last updated:** 2026-07-25 (fourth pass — v3 Curator/Compiler RBAC: auth, roles, and Formula lockdown fully working and verified live end-to-end, including a real RLS bug found and fixed along the way. In progress overall — see "Still open.")
+**Last updated:** 2026-07-25 (fifth pass — Account Requests/Curator Inbox/Library Submissions fully planned via `/architect` across several rounds with Madrid; task 4 (Personal Library fork-on-edit) shipped as code, migration not yet run. Nothing in this fifth-pass plan is built yet — see below before continuing after any compaction.)
+
+**2026-07-25 (fifth pass) — Account creation + unified Curator Inbox, fully planned, not yet built. ⚠️ Read this whole entry before continuing — a lot of terminology and design decisions were locked in during planning, not yet reflected in any code.**
+
+**Terminology, locked in (replaces earlier "application" language entirely):**
+- The dashboard is called the **Curator Inbox**.
+- A row in it is a **Request** — two kinds: **Account Request** (someone signed up, needs a role) and **Library Submission** (a Compiler wants a Prayer/Song edit or new Formula proposal folded into the shared Library). "Application"/"applies for promotion" language from earlier sessions is retired — Madrid explicitly didn't like it for either case.
+- The **Bin** — a distinct area for Library items whose owning account was deleted, so an orphaned draft can never be confused with an official shared entry (see the `is_binned` design below).
+
+**Why account creation changed from admin-created to self-service:** Madrid's first idea (Curator creates accounts and hands out passwords, like the two placeholder test accounts) was reconsidered in favor of **public self-service signup** — Madrid should never know anyone's password. This is also the more standard Supabase pattern and lines up with an explicitly stated future plan: **Madrid intends to transition to Google Sign-In "soon."** Confirmed this doesn't cost anything built now — Supabase Auth's `auth.users` table is the same regardless of which provider (email/password or Google) a person used, and `user_roles` keys off that same id either way. Nothing here needs to be reworked when that transition happens.
+
+**Locked-in design decisions from the scenario-walkthrough pass** (Madrid asked for "most common scenarios and potential problems" before approving — each was worked through and decided):
+1. **Rejecting a pending Account Request deletes the (unused) auth account outright**, not just a status flag — a pending account owns nothing yet, so there's no data-loss risk, and it avoids leaving someone with valid login credentials stuck in permanent unexplained limbo. If rejected by mistake, they just sign up again.
+2. **Single point of failure, acknowledged**: once live, there will only be one real Curator path at first. Recommendation given and approved: **have at least two real Curator accounts** once this is live, purely for redundancy — not a technical requirement, an operational one.
+3. **A Compiler can never grant themselves Curator** — every role-changing action requires already being a Curator (same closed-loop pattern as the Formula lockdown). Confirmed, not just assumed.
+4. **Two Curators acting on the same pending Request simultaneously** — accepted as harmless (whichever action lands second either no-ops or errors cleanly, never a broken state). No special handling planned.
+5. **A Compiler edits their already-submitted fork again before the Curator reviews it** — the submission just reflects whatever the fork currently contains, live. No separate "resubmit" step.
+6. **A Curator edits the original shared entry directly while a fork of it is still a pending Library Submission** — a real "merge conflict"-shaped problem (the submission was written against text that's since changed). **Decided not to build real conflict detection** (too much complexity for this scale) — instead, the Curator Inbox's review screen must show the *current* live shared entry side by side with the submitted version, so a Curator visually notices any mismatch rather than one-click-amending blind.
+7. **A rejected Library Submission is kept, not deleted** — reverts to the Compiler's own private draft (`status` back to `draft`) since real authored work shouldn't be destroyed just because it wasn't accepted this time. Deliberately asymmetric with account-rejection (#1 above) — accounts own nothing yet when rejected, submissions represent real work.
+8. **A shared entry gets deleted while a fork of it still exists** — the fork's `forked_from_id` just goes empty; the fork itself is unaffected. Approved, no special handling.
+9. **Binned items are never auto-purged** — sit in the Bin indefinitely until a Curator explicitly **Restores** (adopts back into the shared Library) or **permanently deletes**. Matches how a normal Recycle Bin behaves; Madrid's own chosen metaphor.
+
+**Schema plan (not yet migrated):**
+- `formulas`/`prayers`/`songs` each get **`is_binned`** (boolean, default false) — flips true only when the owning account is deleted, set explicitly in the "delete account" action *before* anything happens to `owner_id`, specifically so a deleted-owner's draft can never be confused with `owner_id = null`'s existing meaning ("shared/canonical"). This was a real bug caught during planning, not yet in any migration.
+- Same three tables get **`status`**: `draft` (private, Compiler-only visibility) → `submitted` (appears in the Curator Inbox) → `promoted` | `rejected` (rejected loops back to `draft`, per decision #7 above).
+- `user_roles` gains **`first_name`/`last_name`** (Madrid chose the split over one combined Full Name field) — Supabase's built-in account system has no native name field, and the Inbox needs to show a real name, not just an email address, for an Account Request to be reviewable at a glance.
+
+**Public `/signup` — hurdles identified, none blocking, one needs live-testing:**
+- Spam/bot signups: low real risk, since a signup with no granted role can do nothing — worst case is Inbox clutter to Reject. Not building CAPTCHA preemptively.
+- **Email confirmation depends on Supabase's email sending being properly configured — Madrid has "no idea" if it is.** This is the one real unknown and needs to be caught by actually testing a real signup during live verification, not assumed to work.
+- Password minimum: Supabase defaults to 6 characters (weak) — plan is to enforce 8 in the signup form.
+- Identity isn't verified by the system — same as any small-organization signup, the Curator's own judgment at approval time is the real check.
+
+**Build plan, approved pending two small clarifications:**
+1. `first_name`/`last_name` split — **decided** (not one Full Name field).
+2. Migration (see Schema plan above) — explained in plain language to Madrid, not yet written as an actual `.sql` file.
+3. Public `/signup` page (name, email, password, 8-char minimum).
+4. Password reset flow (forgot-password email → set-new-password) — approved, building regardless of the unresolved email-provider question; a provider swap later is not a rebuild.
+5. **Curator Inbox** — Account Requests tab (grant role / reject-and-delete) + Library Submissions tab (amend existing / create new / reject-and-keep-as-draft) + Bin view (restore / delete permanently).
+6. Nav: public "Sign Up" link, Curator-only "Curator Inbox" link.
+7. **Verify live end to end** (Madrid explicitly approved this step): real signup → appears in Inbox → grant role → log in as that account with the right permissions; submit a Library edit → appears in Inbox → both promotion paths tested; reject both an account and a submission and confirm the different outcomes (delete vs. keep-as-draft). Specifically test whether email confirmation actually arrives.
+8. Bootstrap the real Curator (`reformedlife.dasma@gmail.com`) via the placeholder Curator account, then delete both placeholder test accounts.
+
+**Not yet built at all**: everything in the build plan above. Task 4 (Personal Library fork-on-edit code) is the only piece of this whole fifth-pass arc that's actually shipped as code — see the fourth-pass entry below, and note its own migration (`forked_from_id`) also hasn't been run yet.
+
+---
+
+**New, separate backlog item — homepage nav redesign (not scoped, mentioned once before and never recorded until now):** the current top nav is a full-width bar spanning edge-to-edge, sitting directly over the homepage banner. The redesign Madrid wants: a **floating, pill-shaped nav bar** — horizontal, rounded corners, not full-width — reading as an element sitting on top of the banner rather than a bar clipping across it. Unrelated to the RBAC work above; not scoped or built yet.
+
+---
 
 **2026-07-25 (fourth pass) — v3 Curator/Compiler RBAC, in progress:**
 
