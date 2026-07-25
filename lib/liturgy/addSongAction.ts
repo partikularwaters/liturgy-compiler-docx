@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { SongItem } from "@/types/liturgy";
 
 export async function addSong(
@@ -63,4 +64,84 @@ export async function addSong(
   }
 
   return { success: true };
+}
+
+// Edits an already-placed Song item's OWN snapshot -- Song had no
+// edit-in-place path at all until now (only add/remove). Mirrors
+// updatePrayerItem's shape exactly, including the same v3 Personal Library
+// opt-in fork -- see that function's comment for the full reasoning.
+export async function updateSongItem(
+  liturgyId: string,
+  sectionIndex: number,
+  itemId: string,
+  title: string,
+  attribution: string,
+  yearPublished: string,
+  notes: string,
+  saveToPersonalLibrary: boolean = false
+): Promise<{ success: boolean; error?: string; savedToPersonalLibrary?: boolean }> {
+  const section = await getSectionContext(liturgyId, sectionIndex);
+  if (!section) {
+    return { success: false, error: "Unable to find that Section right now." };
+  }
+
+  const existingItem = section.items.find((item) => item.id === itemId && item.type === "song");
+  const attributionValue = attribution.trim() || null;
+  const yearPublishedValue = yearPublished.trim() || null;
+  const notesValue = notes.trim() || null;
+
+  const items = section.items.map((item) =>
+    item.id === itemId && item.type === "song"
+      ? { ...item, title, attribution: attributionValue, yearPublished: yearPublishedValue, notes: notesValue }
+      : item
+  );
+
+  const { error } = await supabase.from("sections").update({ items }).eq("id", section.id);
+
+  if (error) {
+    console.error("[lib/liturgy/addSongAction/updateSongItem]", error.message);
+    return { success: false, error: "Unable to update this Song right now." };
+  }
+
+  let savedToPersonalLibrary = false;
+  if (saveToPersonalLibrary && existingItem?.type === "song") {
+    const currentUser = await getCurrentUser();
+    if (currentUser && currentUser.role === "compiler") {
+      const { data: existingFork } = await supabase
+        .from("songs")
+        .select("id")
+        .eq("owner_id", currentUser.id)
+        .eq("forked_from_id", existingItem.songId)
+        .maybeSingle();
+
+      if (existingFork) {
+        const { error: forkError } = await supabase
+          .from("songs")
+          .update({ title, attribution: attributionValue, year_published: yearPublishedValue, notes: notesValue })
+          .eq("id", existingFork.id);
+        savedToPersonalLibrary = !forkError;
+      } else {
+        const { data: original } = await supabase
+          .from("songs")
+          .select("section_name, kind")
+          .eq("id", existingItem.songId)
+          .single();
+        if (original) {
+          const { error: forkError } = await supabase.from("songs").insert({
+            section_name: original.section_name,
+            kind: original.kind,
+            title,
+            attribution: attributionValue,
+            year_published: yearPublishedValue,
+            notes: notesValue,
+            owner_id: currentUser.id,
+            forked_from_id: existingItem.songId,
+          });
+          savedToPersonalLibrary = !forkError;
+        }
+      }
+    }
+  }
+
+  return { success: true, savedToPersonalLibrary };
 }

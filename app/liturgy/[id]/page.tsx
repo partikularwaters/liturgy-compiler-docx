@@ -9,6 +9,7 @@ import { getSongs } from "@/lib/songs/getSongs";
 import { getScriptureSelections } from "@/lib/selections/getScriptureSelections";
 import { groupSectionsByPageColumn } from "@/lib/liturgy/groupSectionsByPageColumn";
 import { isSunday, parseLocalDate } from "@/lib/liturgy/lordsDay";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
 // Always reads live data -- otherwise a just-saved toggle (End Note, Prayer
 // Guide, column break) or library edit can look reverted after
@@ -22,12 +23,13 @@ interface CompileViewPageProps {
 
 export default async function CompileViewPage({ params }: CompileViewPageProps): Promise<React.ReactElement> {
   const { id } = await params;
-  const [liturgy, formulas, prayers, songs, scriptureSelections] = await Promise.all([
+  const [liturgy, formulas, prayers, songs, scriptureSelections, currentUser] = await Promise.all([
     getLiturgy(id),
     getFormulas(),
     getPrayers(),
     getSongs(),
     getScriptureSelections(),
+    getCurrentUser(),
   ]);
 
   if (!liturgy) {
@@ -119,6 +121,7 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
               prayers={prayers}
               songs={songs}
               scriptureSelections={scriptureSelections}
+              currentUser={currentUser}
             />
           ))}
         </div>
@@ -153,6 +156,7 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
                     prayers={prayers}
                     songs={songs}
                     scriptureSelections={scriptureSelections}
+                    currentUser={currentUser}
                   />
                 ))}
               </div>

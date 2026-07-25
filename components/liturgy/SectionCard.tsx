@@ -32,9 +32,11 @@ import { TRINITARIAN_SEAL_SECTIONS } from "@/lib/liturgy/trinitarianSeal";
 import { SILENT_CONFESSION_SECTION, SILENT_CONFESSION_RUBRIC_TEXT } from "@/lib/liturgy/silentConfessionRubric";
 import { applyMarks, shiftMarksForEdit } from "@/lib/text/marks";
 import { updatePrayerItem } from "@/lib/liturgy/addPrayerAction";
+import { updateSongItem } from "@/lib/liturgy/addSongAction";
 import { removeItem } from "@/lib/liturgy/removeItemAction";
 import { PencilIcon, TrashIcon, PlusIcon, XIcon } from "@/components/liturgy/icons";
 import type { VerbalCueRun } from "@/lib/liturgy/resolveVerbalCueTemplate";
+import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 import type { CompiledSection, Formula, Item, Prayer, ScriptureSelection, Song, TextMark } from "@/types/liturgy";
 
 const ALL_ITEM_TYPES: Item["type"][] = ["selection", "formula", "verbal_cue", "prayer", "sermon", "song"];
@@ -85,6 +87,12 @@ interface SectionCardProps {
   prayers: Prayer[];
   songs: Song[];
   scriptureSelections: ScriptureSelection[];
+  // v3: null for an anonymous visitor. Only used so far to decide whether
+  // to offer the Personal Library "save to my Library" checkbox on a
+  // placed Prayer/Song edit -- Compiler-only, see updatePrayerItem's
+  // comment for why a Curator never needs this (they edit the shared
+  // master directly instead).
+  currentUser: CurrentUser | null;
 }
 
 // Feature 21: title-only display for a Song item -- Title Case + italic
@@ -183,7 +191,10 @@ interface PrayerEditFormProps {
   initialMarks: TextMark[];
   isSaving: boolean;
   error: string | null;
-  onSubmit: (text: string, marks: TextMark[]) => void;
+  // v3: only a Compiler ever sees the "save to my Library" checkbox -- a
+  // Curator edits the shared master directly via the Library page instead.
+  offerPersonalLibrarySave: boolean;
+  onSubmit: (text: string, marks: TextMark[], saveToPersonalLibrary: boolean) => void;
   onCancel: () => void;
 }
 
@@ -192,11 +203,13 @@ function PrayerEditForm({
   initialMarks,
   isSaving,
   error,
+  offerPersonalLibrarySave,
   onSubmit,
   onCancel,
 }: PrayerEditFormProps): React.ReactElement {
   const [text, setText] = useState(initialText);
   const [marks, setMarks] = useState<TextMark[]>(initialMarks);
+  const [saveToPersonalLibrary, setSaveToPersonalLibrary] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   return (
@@ -219,13 +232,144 @@ function PrayerEditForm({
         textareaRef={textareaRef}
       />
       <p className="text-[13px] text-text-muted">
-        Editing here updates this Prayer in the library for future use.
+        Editing here only changes this one placement -- the shared Library entry is never touched.
       </p>
+      {offerPersonalLibrarySave && (
+        <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">
+          <input
+            type="checkbox"
+            checked={saveToPersonalLibrary}
+            onChange={(e) => setSaveToPersonalLibrary(e.target.checked)}
+          />
+          Also save this version to My Library, for reuse elsewhere
+        </label>
+      )}
       {error && <p className="text-sm text-error">{error}</p>}
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(text, marks)}
+          onClick={() => onSubmit(text, marks, saveToPersonalLibrary)}
+          disabled={isSaving}
+          className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+        >
+          {isSaving ? "Saving…" : "Save"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+        >
+          <XIcon size={15} /> Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface SongEditFormProps {
+  initialTitle: string;
+  initialAttribution: string;
+  initialYearPublished: string;
+  initialNotes: string;
+  isSaving: boolean;
+  error: string | null;
+  offerPersonalLibrarySave: boolean;
+  onSubmit: (
+    title: string,
+    attribution: string,
+    yearPublished: string,
+    notes: string,
+    saveToPersonalLibrary: boolean
+  ) => void;
+  onCancel: () => void;
+}
+
+// v3: Song had no edit-in-place path at all until now (only add/remove) --
+// a lightweight form (title/attribution/year/notes only, no Section/kind/
+// translation-pairing -- those don't make sense mid-liturgy) mirroring
+// PrayerEditForm's shape, including the same Personal Library checkbox.
+function SongEditForm({
+  initialTitle,
+  initialAttribution,
+  initialYearPublished,
+  initialNotes,
+  isSaving,
+  error,
+  offerPersonalLibrarySave,
+  onSubmit,
+  onCancel,
+}: SongEditFormProps): React.ReactElement {
+  const [title, setTitle] = useState(initialTitle);
+  const [attribution, setAttribution] = useState(initialAttribution);
+  const [yearPublished, setYearPublished] = useState(initialYearPublished);
+  const [notes, setNotes] = useState(initialNotes);
+  const [saveToPersonalLibrary, setSaveToPersonalLibrary] = useState(false);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
+        <label className="text-[13px] font-medium text-text-secondary" htmlFor="song-item-title">
+          Title
+        </label>
+        <input
+          id="song-item-title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-[13px] font-medium text-text-secondary" htmlFor="song-item-attribution">
+          Versification/Author
+        </label>
+        <input
+          id="song-item-attribution"
+          value={attribution}
+          onChange={(e) => setAttribution(e.target.value)}
+          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-[13px] font-medium text-text-secondary" htmlFor="song-item-year">
+          Year published (optional)
+        </label>
+        <input
+          id="song-item-year"
+          value={yearPublished}
+          onChange={(e) => setYearPublished(e.target.value)}
+          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-[13px] font-medium text-text-secondary" htmlFor="song-item-notes">
+          Notes (optional, Leader Guide only)
+        </label>
+        <textarea
+          id="song-item-notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={2}
+          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
+        />
+      </div>
+      <p className="text-[13px] text-text-muted">
+        Editing here only changes this one placement -- the shared Library entry is never touched.
+      </p>
+      {offerPersonalLibrarySave && (
+        <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">
+          <input
+            type="checkbox"
+            checked={saveToPersonalLibrary}
+            onChange={(e) => setSaveToPersonalLibrary(e.target.checked)}
+          />
+          Also save this version to My Library, for reuse elsewhere
+        </label>
+      )}
+      {error && <p className="text-sm text-error">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => onSubmit(title, attribution, yearPublished, notes, saveToPersonalLibrary)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
@@ -251,6 +395,7 @@ export default function SectionCard({
   prayers,
   songs,
   scriptureSelections,
+  currentUser,
 }: SectionCardProps): React.ReactElement {
   const router = useRouter();
   const sectionFormulas = formulas.filter((f) => f.sectionName === section.name);
@@ -455,10 +600,15 @@ export default function SectionCard({
     });
   };
 
-  const handleSavePrayerEdit = (itemId: string, text: string, marks: TextMark[]): void => {
+  const handleSavePrayerEdit = (
+    itemId: string,
+    text: string,
+    marks: TextMark[],
+    saveToPersonalLibrary: boolean
+  ): void => {
     setIsSaving(true);
     setError(null);
-    updatePrayerItem(liturgyId, sectionIndex, itemId, text, marks).then((result) => {
+    updatePrayerItem(liturgyId, sectionIndex, itemId, text, marks, saveToPersonalLibrary).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setEditingItemId(null);
@@ -467,6 +617,29 @@ export default function SectionCard({
         setError(result.error ?? "Unable to update this Prayer right now.");
       }
     });
+  };
+
+  const handleSaveSongEdit = (
+    itemId: string,
+    title: string,
+    attribution: string,
+    yearPublished: string,
+    notes: string,
+    saveToPersonalLibrary: boolean
+  ): void => {
+    setIsSaving(true);
+    setError(null);
+    updateSongItem(liturgyId, sectionIndex, itemId, title, attribution, yearPublished, notes, saveToPersonalLibrary).then(
+      (result) => {
+        setIsSaving(false);
+        if (result.success) {
+          setEditingItemId(null);
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to update this Song right now.");
+        }
+      }
+    );
   };
 
   const handleRemoveItem = (itemId: string): void => {
@@ -844,7 +1017,33 @@ export default function SectionCard({
                     initialMarks={resolved.marks ?? []}
                     isSaving={isSaving}
                     error={error}
-                    onSubmit={(text, marks) => handleSavePrayerEdit(item.id, text, marks)}
+                    offerPersonalLibrarySave={currentUser?.role === "compiler"}
+                    onSubmit={(text, marks, saveToPersonalLibrary) =>
+                      handleSavePrayerEdit(item.id, text, marks, saveToPersonalLibrary)
+                    }
+                    onCancel={() => {
+                      setError(null);
+                      setEditingItemId(null);
+                    }}
+                  />
+                </li>
+              );
+            }
+
+            if (item.type === "song" && editingItemId === item.id) {
+              return (
+                <li key={item.id}>
+                  <SongEditForm
+                    initialTitle={item.title ?? resolved.song?.title ?? ""}
+                    initialAttribution={item.attribution ?? resolved.song?.attribution ?? ""}
+                    initialYearPublished={item.yearPublished ?? resolved.song?.yearPublished ?? ""}
+                    initialNotes={item.notes ?? resolved.song?.notes ?? ""}
+                    isSaving={isSaving}
+                    error={error}
+                    offerPersonalLibrarySave={currentUser?.role === "compiler"}
+                    onSubmit={(title, attribution, yearPublished, notes, saveToPersonalLibrary) =>
+                      handleSaveSongEdit(item.id, title, attribution, yearPublished, notes, saveToPersonalLibrary)
+                    }
                     onCancel={() => {
                       setError(null);
                       setEditingItemId(null);
@@ -901,7 +1100,8 @@ export default function SectionCard({
               item.type === "prayer" ||
               item.type === "sermon" ||
               item.type === "formula" ||
-              item.type === "selection";
+              item.type === "selection" ||
+              item.type === "song";
 
             const labelAlreadyShownInHeader =
               (item.type === "selection" && headerReference !== null) ||

@@ -3,6 +3,7 @@
 import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
 import { normalizeTypography } from "@/lib/text/typographic";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { PrayerItem, TextMark } from "@/types/liturgy";
 
 export async function addPrayer(
@@ -71,20 +72,33 @@ export async function addPrayer(
 // above shipped, wouldn't even affect this placement's own display anymore
 // (resolveItemText.ts now prefers item.text over a live lookup). Mirrors
 // updateSelectionItem's shape -- edits the sections.items jsonb array only,
-// never the prayers table.
+// never the prayers table by default.
+//
+// v3 Personal Library (task 4): a Compiler can opt in (saveToPersonalLibrary)
+// to also keep this edit as a reusable entry in their own Library, separate
+// from this one placement's frozen snapshot -- "override per-instance and
+// save to their Personal Library," per Madrid's own framing. Repeat edits of
+// the same original Prayer update the same fork (matched by
+// owner_id + forked_from_id) rather than piling up duplicates. A Curator
+// editing a placement never forks -- they have direct write access to the
+// shared master via the Library's own edit UI when they want a durable
+// change, so this checkbox is Compiler-only (enforced by the caller not
+// showing it, and harmless here even if somehow set for a Curator).
 export async function updatePrayerItem(
   liturgyId: string,
   sectionIndex: number,
   itemId: string,
   text: string,
-  marks: TextMark[]
-): Promise<{ success: boolean; error?: string }> {
+  marks: TextMark[],
+  saveToPersonalLibrary: boolean = false
+): Promise<{ success: boolean; error?: string; savedToPersonalLibrary?: boolean }> {
   const section = await getSectionContext(liturgyId, sectionIndex);
   if (!section) {
     return { success: false, error: "Unable to find that Section right now." };
   }
 
   const normalizedText = normalizeTypography(text);
+  const existingItem = section.items.find((item) => item.id === itemId && item.type === "prayer");
   const items = section.items.map((item) =>
     item.id === itemId && item.type === "prayer" ? { ...item, text: normalizedText, marks } : item
   );
@@ -96,5 +110,43 @@ export async function updatePrayerItem(
     return { success: false, error: "Unable to update this Prayer right now." };
   }
 
-  return { success: true };
+  let savedToPersonalLibrary = false;
+  if (saveToPersonalLibrary && existingItem?.type === "prayer") {
+    const currentUser = await getCurrentUser();
+    if (currentUser && currentUser.role === "compiler") {
+      const { data: existingFork } = await supabase
+        .from("prayers")
+        .select("id")
+        .eq("owner_id", currentUser.id)
+        .eq("forked_from_id", existingItem.prayerId)
+        .maybeSingle();
+
+      if (existingFork) {
+        const { error: forkError } = await supabase
+          .from("prayers")
+          .update({ text: normalizedText, marks })
+          .eq("id", existingFork.id);
+        savedToPersonalLibrary = !forkError;
+      } else {
+        const { data: original } = await supabase
+          .from("prayers")
+          .select("section_name, kind")
+          .eq("id", existingItem.prayerId)
+          .single();
+        if (original) {
+          const { error: forkError } = await supabase.from("prayers").insert({
+            section_name: original.section_name,
+            kind: original.kind,
+            text: normalizedText,
+            marks,
+            owner_id: currentUser.id,
+            forked_from_id: existingItem.prayerId,
+          });
+          savedToPersonalLibrary = !forkError;
+        }
+      }
+    }
+  }
+
+  return { success: true, savedToPersonalLibrary };
 }
