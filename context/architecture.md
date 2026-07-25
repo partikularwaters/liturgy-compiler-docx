@@ -174,14 +174,19 @@ All tables below are live and shipped. The hybrid relational/jsonb split (decide
   "citation": "Ps 95:1-3 (selection only, en-dash-normalized via lib/liturgy/formatCitation.ts)",
   "amenExpected": "boolean, optional (selection only, song-slot Sections)",
   "trinitarianSeal": "'en' | 'fil', optional (selection only, Benediction) — appended as plain text after `text` at display time (never folded into the stored string), with an accompanying `bold` mark over the appended range",
-  "marks": "TextMark[], optional (selection and formula only — see Invariants)",
+  "marks": "TextMark[], optional (selection, formula, and prayer — see Invariants)",
   "translation": "'fil' | 'en', optional (selection only, v2 — BSB support; absent means 'fil')",
   "formulaId": "uuid (formula only, references formulas table)",
   "overrideText": "markdown string or null (formula only, optional per-instance override)",
   "visibility": "'both' | 'leader_only' (formula and verbal_cue only)",
-  "prayerId": "uuid (prayer only, references prayers table)",
+  "prayerId": "uuid (prayer only, references prayers table — provenance only, not for display, see Invariants)",
+  "text (prayer)": "string, optional (prayer only, v2 — snapshot taken at placement time; absent means placed before this fix, see Invariants)",
+  "leaderOnly": "boolean, optional (prayer only, v2 — snapshot of the library Prayer's kind at placement time)",
   "passage": "string (sermon only)",
-  "songId": "uuid (song only, references songs table)",
+  "songId": "uuid (song only, references songs table — provenance only, not for display, see Invariants)",
+  "title (song)": "string, optional (song only, v2 — snapshot of the library Song's metadata at placement time; absent means placed before this fix)",
+  "kind (song)": "'psalm' | 'hymn', optional (song only, v2 snapshot)",
+  "attribution / yearPublished / notes (song)": "optional (song only, v2 snapshot, same shape as the library Song row)",
   "rubric": "boolean, optional (verbal_cue only)",
   "textAlternate": "string, optional (verbal_cue only, v2 — a second-language variant of this cue)",
   "showAlternate": "boolean, optional (verbal_cue only, v2 — show textAlternate instead of text)"
@@ -321,6 +326,7 @@ Rules the AI agent must never violate:
 - AB2001 or MBB text is never fetched, stored, or persisted anywhere in this codebase — display only, via the licensed BibleGateway widget, until Philippine Bible Society grants adaptation rights.
 - Selection dedup (exact citation match within a Section) is enforced at the `lib/liturgy` layer, not left to UI validation alone.
 - Editing a Formula's `default_text` must never retroactively change a Liturgy that used an `override_text` for that instance.
+- **A placed Prayer or Song item's displayed content is always its own snapshot, never a live lookup against the library row.** Before 2026-07-25, Prayer/Song were resolved via `prayers.find()`/`songs.find()` by ID on every render/export (`resolveItemText.ts`, plus duplicated header-building logic in `SectionCard.tsx`, `prepareSectionRender.ts`, `sectionTitle.ts`, `resolveVerbalCueTemplate.ts`) — editing an existing Prayer/Song's text in the Library silently rewrote every past liturgy that ever used it, with no warning, unlike Selection (own text/marks) and Formula (`overrideText`). Fixed by snapshotting `text`/`marks`/`leaderOnly` (Prayer) or `title`/`kind`/`attribution`/`yearPublished`/`notes` (Song) onto the item itself at placement time (`addPrayerAction.ts`/`addSongAction.ts`); `prayerId`/`songId` are kept for provenance only, never for display. A liturgy placed before this fix has no snapshot fields and falls back to the old live-lookup behavior until the item is next edited (`updatePrayerItem`, new — editing a placed Prayer no longer touches the shared Library row at all, mirroring `updateSelectionItem`'s existing shape).
 - All liturgical text content (Selection, Formula, Prayer, Verbal Cue) is normalized to typographic quotation marks and apostrophes (' ' " ") at write-time, in `lib/text/typographic.ts` — never left as straight marks (' ") in storage. This runs once, on save, so the Compile View, Leader Guide, and Congregation Bulletin all inherit correct typography automatically rather than each needing to re-apply it. **Implemented 2026-07-14** — `normalizeTypography()` is wired into all six write paths (`addSelectionAction`, `addFormulaAction`'s override text, `formulaActions.createFormula`/`updateFormula`, `prayerActions.createPrayer`/`updatePrayer`, `verbalCueActions.addVerbalCue`/`updateVerbalCue`). This invariant was documented since the CTP planning stage but had zero implementation until a `/review` audit caught it.
 - A Formula or Prayer placed into a Section must belong to that Section (`section_name` match) — enforced server-side in `addFormulaAction`/`addPrayerAction` via `lib/liturgy/getSectionContext.ts`, not just by the Add panel filtering which entries it shows. Added 2026-07-14 after a `/review` audit found the 2026-07-13 Section-scoping retrofit was only enforced in the UI — a Server Action called directly (bypassing the filtered picker) would have silently written a mismatched pair. **This pattern extends to Songs and Existing Selections (v1.1) — apply the same server-side check when those write actions are built, not just UI filtering.**
 - No hardcoded hex values or raw Tailwind color classes in components — use tokens from ui-tokens.md.

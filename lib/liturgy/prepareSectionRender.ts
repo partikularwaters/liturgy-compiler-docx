@@ -85,7 +85,15 @@ export function prepareSectionRender(
     const label = resolveItemText(creedFormulaItem, formulas, prayers, songs).label;
     if (label) header = { text: label, citationColor: false, smallCaps: false };
   } else if (songItems.length === 1) {
-    const song = songs.find((s) => s.id === songItems[0].songId);
+    // Prefer the item's own snapshot (see SongItem's comment) over a live
+    // lookup -- matches SectionCard.tsx's identical fix for this same
+    // header-song case (this file has its own parallel logic per this
+    // module's own header comment, so both must change together).
+    const item = songItems[0];
+    const song =
+      item.title !== undefined && item.kind !== undefined
+        ? { title: item.title, kind: item.kind }
+        : songs.find((s) => s.id === item.songId);
     if (song) {
       header = {
         text: formatCitation(song.title),

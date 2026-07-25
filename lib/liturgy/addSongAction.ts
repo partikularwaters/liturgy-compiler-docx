@@ -20,7 +20,7 @@ export async function addSong(
 
   const { data: song, error: songError } = await supabase
     .from("songs")
-    .select("section_name")
+    .select("section_name, title, kind, attribution, year_published, notes")
     .eq("id", songId)
     .single();
 
@@ -39,7 +39,18 @@ export async function addSong(
     return { success: false, error: "That Song does not belong to this Section." };
   }
 
-  const newItem: SongItem = { id: crypto.randomUUID(), type: "song", songId };
+  // Snapshot the Song's metadata now -- see SongItem's own comment for why
+  // this can no longer be a live lookup at render/export time.
+  const newItem: SongItem = {
+    id: crypto.randomUUID(),
+    type: "song",
+    songId,
+    title: song.title,
+    kind: song.kind,
+    attribution: song.attribution,
+    yearPublished: song.year_published,
+    notes: song.notes,
+  };
 
   const { error: updateError } = await supabase
     .from("sections")

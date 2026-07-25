@@ -11,12 +11,14 @@ export function sectionTitle(section: CompiledSection, songs: Song[] = []): stri
     // ambiguous label is a placeholder for "nothing placed yet," not a
     // permanent name. A mixed Section (both a Psalm and a Hymn placed)
     // falls back to the ambiguous form since neither alone is accurate.
-    // SongItem only carries `songId`, so the kind has to come from a lookup
-    // against the full songs list rather than the item itself.
+    // Prefers each item's own snapshotted `kind` (see SongItem's comment)
+    // over a live lookup, so this title can't drift from what the actually
+    // placed Song item displays -- falls back to a live lookup only for a
+    // liturgy placed before the snapshot fix shipped.
     const songKinds = new Set(
       section.items
         .filter((i) => i.type === "song")
-        .map((i) => songs.find((s) => s.id === i.songId)?.kind)
+        .map((i) => i.kind ?? songs.find((s) => s.id === i.songId)?.kind)
         .filter((kind): kind is "psalm" | "hymn" => kind !== undefined)
     );
     if (songKinds.size === 1) {

@@ -37,7 +37,17 @@ export function resolveVerbalCueTemplate(
   const selectionItem = siblingItems.find((item) => item.type === "selection");
   const songItem = siblingItems.find((item) => item.type === "song");
   const formulaItem = siblingItems.find((item) => item.type === "formula");
-  const song = songItem?.type === "song" ? songs.find((s) => s.id === songItem.songId) : undefined;
+  // Prefers the sibling SongItem's own snapshot (see SongItem's comment)
+  // over a live lookup -- otherwise this cue's mentioned title could drift
+  // from what the actually placed Song item displays elsewhere in the same
+  // Section. Falls back to a live lookup only for a liturgy placed before
+  // the snapshot fix shipped.
+  const song =
+    songItem?.type === "song"
+      ? songItem.title !== undefined
+        ? { title: songItem.title, kind: songItem.kind }
+        : songs.find((s) => s.id === songItem.songId)
+      : undefined;
   const formula = formulaItem?.type === "formula" ? formulas.find((f) => f.id === formulaItem.formulaId) : undefined;
 
   const tokenValues: Record<string, { value: string; citation: boolean }> = {

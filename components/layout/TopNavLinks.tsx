@@ -3,8 +3,14 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { HomeIcon } from "@/components/liturgy/icons";
+import { logout } from "@/lib/auth/authActions";
+import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
-export default function TopNavLinks(): React.ReactElement | null {
+interface TopNavLinksProps {
+  currentUser: CurrentUser | null;
+}
+
+export default function TopNavLinks({ currentUser }: TopNavLinksProps): React.ReactElement | null {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -66,6 +72,27 @@ export default function TopNavLinks(): React.ReactElement | null {
           >
             {ctaLabel}
           </Link>
+          {currentUser ? (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-medium uppercase text-accent-foreground/70">
+                {currentUser.role === "curator" ? "Curator" : "Compiler"}
+              </span>
+              <button
+                type="button"
+                onClick={() => logout()}
+                className="text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+            >
+              Sign In
+            </Link>
+          )}
         </div>
       </div>
     </nav>

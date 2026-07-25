@@ -11,9 +11,16 @@ interface SongListRowProps {
   song: Song;
   sectionNames: string[];
   allSongs: Song[];
+  // False inside the Library's bilingual grid -- see FormulaListRow's same prop.
+  bordered?: boolean;
 }
 
-export default function SongListRow({ song, sectionNames, allSongs }: SongListRowProps): React.ReactElement {
+export default function SongListRow({
+  song,
+  sectionNames,
+  allSongs,
+  bordered = true,
+}: SongListRowProps): React.ReactElement {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -83,7 +90,7 @@ export default function SongListRow({ song, sectionNames, allSongs }: SongListRo
   }
 
   return (
-    <div className="border-b border-border py-4 flex items-start justify-between gap-4">
+    <div className={`py-4 flex items-start justify-between gap-4 ${bordered ? "border-b border-border" : ""}`}>
       <div>
         <p className="text-[13px] text-text-secondary">
           {song.sectionName}

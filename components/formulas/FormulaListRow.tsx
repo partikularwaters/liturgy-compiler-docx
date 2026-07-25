@@ -12,12 +12,18 @@ interface FormulaListRowProps {
   formula: Formula;
   sectionNames: string[];
   allFormulas: Formula[];
+  // False inside the Library's bilingual grid -- BilingualGrid draws one
+  // shared separator per FIL/ENG pair instead, since each row's own
+  // border-bottom used to land at that row's own content height, which
+  // rarely matched its companion's, producing two misaligned lines.
+  bordered?: boolean;
 }
 
 export default function FormulaListRow({
   formula,
   sectionNames,
   allFormulas,
+  bordered = true,
 }: FormulaListRowProps): React.ReactElement {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -82,7 +88,7 @@ export default function FormulaListRow({
   }
 
   return (
-    <div className="border-b border-border py-4 flex items-start justify-between gap-4">
+    <div className={`py-4 flex items-start justify-between gap-4 ${bordered ? "border-b border-border" : ""}`}>
       <div>
         <p className="text-[13px] text-text-secondary">
           {formula.sectionName}

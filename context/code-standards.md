@@ -122,6 +122,7 @@ Approved dependencies for this project:
 - `docx` — .docx generation (v2 item 1), replacing `@react-pdf/renderer` as the export mechanism going forward
 - `tailwindcss` (v4) — styling
 - `@tabler/icons-react` — shared icon set (2026-07-25: replaced the hand-rolled SVGs in `components/liturgy/icons.tsx`; that file still owns the exported names/props every call site uses, just backed by Tabler now)
+- `@supabase/ssr` — v3 Curator/Compiler auth (2026-07-25), cookie-backed session handling for Server Components/Actions and middleware. Distinct from `lib/db/supabase.ts`'s existing service-role client (bypasses RLS by design, used for every trusted server-side write) -- `lib/auth/supabaseServer.ts`/`supabaseBrowser.ts` carry the actual signed-in user's session so `auth.uid()` resolves inside RLS policies.
 
 Do not install any other packages without updating this list first.
 

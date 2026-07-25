@@ -19,8 +19,11 @@ export interface ResolvedItem {
   verbalCueRuns?: VerbalCueRun[];
   // Feature 21: set only for Song items -- `text` above already holds the
   // title (what every audience sees), `song` carries the rest of the
-  // metadata for surfaces that show it (Leader Guide only, per §L).
-  song?: Song;
+  // metadata for surfaces that show it (Leader Guide only, per §L). Only
+  // the display-relevant fields, not a full library Song row (a placed
+  // SongItem's snapshot has no `id`/`sectionName`/`translation`/`pairedId`
+  // of its own -- see resolveBase's "song" case).
+  song?: Pick<Song, "title" | "kind" | "attribution" | "yearPublished" | "notes">;
   // Set for Selection/Formula (the two TrinitarianSealable item types) --
   // callers must render marks from here, not item.marks directly, once a
   // seal has been appended (see resolveItemText's own comment below).
@@ -76,6 +79,18 @@ export function resolveBase(
       };
     }
     case "prayer": {
+      // Snapshot taken at placement time (see PrayerItem's own comment) --
+      // falls back to a live library lookup only for a liturgy placed
+      // before this fix shipped, which has no snapshot fields at all.
+      if (item.text !== undefined) {
+        return {
+          label: "Prayer",
+          text: item.text,
+          leaderOnly: item.leaderOnly ?? false,
+          rubric: false,
+          marks: item.marks ?? [],
+        };
+      }
       const prayer = prayers.find((p) => p.id === item.prayerId);
       return {
         label: "Prayer",
@@ -88,6 +103,23 @@ export function resolveBase(
     case "sermon":
       return { label: "Sermon", text: item.passage, leaderOnly: false, rubric: false };
     case "song": {
+      // Snapshot taken at placement time (see SongItem's own comment) --
+      // same pre-fix fallback as Prayer above.
+      if (item.title !== undefined && item.kind !== undefined) {
+        return {
+          label: null,
+          text: formatCitation(item.title),
+          leaderOnly: false,
+          rubric: false,
+          song: {
+            title: item.title,
+            kind: item.kind,
+            attribution: item.attribution ?? null,
+            yearPublished: item.yearPublished ?? null,
+            notes: item.notes ?? null,
+          },
+        };
+      }
       const song = songs.find((s) => s.id === item.songId);
       return {
         label: null,

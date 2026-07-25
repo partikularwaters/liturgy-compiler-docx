@@ -12,9 +12,18 @@ interface PrayerListRowProps {
   prayer: Prayer;
   sectionNames: string[];
   allPrayers: Prayer[];
+  // False inside the Library's bilingual grid -- BilingualGrid draws one
+  // shared separator per FIL/ENG pair instead. Stays true (default) for the
+  // Guides list, which isn't paired/gridded and still needs its own line.
+  bordered?: boolean;
 }
 
-export default function PrayerListRow({ prayer, sectionNames, allPrayers }: PrayerListRowProps): React.ReactElement {
+export default function PrayerListRow({
+  prayer,
+  sectionNames,
+  allPrayers,
+  bordered = true,
+}: PrayerListRowProps): React.ReactElement {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -81,7 +90,7 @@ export default function PrayerListRow({ prayer, sectionNames, allPrayers }: Pray
   }
 
   return (
-    <div className="border-b border-border py-4 flex items-start justify-between gap-4">
+    <div className={`py-4 flex items-start justify-between gap-4 ${bordered ? "border-b border-border" : ""}`}>
       <div>
         <p className="text-[13px] text-text-secondary">
           {prayer.sectionName}

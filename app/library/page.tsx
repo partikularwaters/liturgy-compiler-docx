@@ -25,6 +25,15 @@ export const dynamic = "force-dynamic";
 // was meant to solve. A row missing one side (unpaired, or the item is
 // untagged) just leaves that cell blank rather than misaligning everything
 // after it.
+//
+// Each pair gets its OWN 2-column grid, wrapped by ONE shared separator
+// line on the pair itself (divide-y on the outer container), instead of
+// each row component drawing its own border-bottom. That used to put the
+// line at each column's own content height -- a 4-line Filipino entry and
+// its 3-line English pair landed their lines at different heights. Since
+// both cells in a single 2-column grid always stretch to match whichever
+// is taller, one shared line on the pair is guaranteed to land at the true
+// bottom of both, every time.
 function BilingualGrid<T extends { id: string }>({
   cells,
   renderItem,
@@ -32,11 +41,19 @@ function BilingualGrid<T extends { id: string }>({
   cells: (T | null)[];
   renderItem: (item: T) => React.ReactNode;
 }): React.ReactElement {
+  const pairs: (T | null)[][] = [];
+  for (let i = 0; i < cells.length; i += 2) {
+    pairs.push([cells[i], cells[i + 1] ?? null]);
+  }
   return (
-    <div className="bg-surface border border-border rounded-lg grid grid-cols-2 divide-x divide-border">
-      {cells.map((item, i) => (
-        <div key={item?.id ?? `blank-${i}`} className="px-6 empty:py-0">
-          {item ? renderItem(item) : <div className="border-b border-border-light py-4" />}
+    <div className="bg-surface border border-border rounded-lg divide-y divide-border">
+      {pairs.map((pair, i) => (
+        <div key={pair[0]?.id ?? pair[1]?.id ?? `row-${i}`} className="grid grid-cols-2 divide-x divide-border">
+          {pair.map((item, j) => (
+            <div key={item?.id ?? `blank-${i}-${j}`} className="px-6">
+              {item ? renderItem(item) : null}
+            </div>
+          ))}
         </div>
       ))}
     </div>
@@ -78,21 +95,60 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
 
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Formulas</h2>
+          <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">
+            Existing Scripture
+          </h2>
           <Link
-            href="/formulas/new"
+            href="/selections/new"
             className="bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
           >
-            New Formula
+            New Scripture
           </Link>
         </div>
-        {formulas.length === 0 ? (
-          <p className="text-sm text-text-muted">No formulas yet.</p>
+        <p className="text-[13px] text-text-muted">
+          Auto-saved from every Scripture item added via the Reader, or added directly here.
+        </p>
+        {scriptureSelections.length === 0 ? (
+          <p className="text-sm text-text-muted">No Scripture items added yet.</p>
         ) : (
           <BilingualGrid
-            cells={formulaRows}
-            renderItem={(formula) => (
-              <FormulaListRow formula={formula} sectionNames={sectionNames} allFormulas={formulas} />
+            cells={scriptureRows}
+            renderItem={(selection) => <ScriptureSelectionRow selection={selection} bordered={false} />}
+          />
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Psalms</h2>
+          <Link
+            href="/songs/new"
+            className="bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+          >
+            New Song
+          </Link>
+        </div>
+        {psalms.length === 0 ? (
+          <p className="text-sm text-text-muted">No Psalms yet.</p>
+        ) : (
+          <BilingualGrid
+            cells={psalmRows}
+            renderItem={(song) => (
+              <SongListRow song={song} sectionNames={sectionNames} allSongs={songs} bordered={false} />
+            )}
+          />
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Hymns</h2>
+        {hymns.length === 0 ? (
+          <p className="text-sm text-text-muted">No Hymns yet.</p>
+        ) : (
+          <BilingualGrid
+            cells={hymnRows}
+            renderItem={(song) => (
+              <SongListRow song={song} sectionNames={sectionNames} allSongs={songs} bordered={false} />
             )}
           />
         )}
@@ -114,7 +170,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <BilingualGrid
             cells={prayerRows}
             renderItem={(prayer) => (
-              <PrayerListRow prayer={prayer} sectionNames={sectionNames} allPrayers={allPrayers} />
+              <PrayerListRow prayer={prayer} sectionNames={sectionNames} allPrayers={allPrayers} bordered={false} />
             )}
           />
         )}
@@ -139,54 +195,22 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
 
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">
-            Existing Scripture
-          </h2>
+          <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Formulas</h2>
           <Link
-            href="/selections/new"
+            href="/formulas/new"
             className="bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
           >
-            New Scripture
+            New Formula
           </Link>
         </div>
-        <p className="text-[13px] text-text-muted">
-          Auto-saved from every Scripture item added via the Reader, or added directly here.
-        </p>
-        {scriptureSelections.length === 0 ? (
-          <p className="text-sm text-text-muted">No Scripture items added yet.</p>
-        ) : (
-          <BilingualGrid cells={scriptureRows} renderItem={(selection) => <ScriptureSelectionRow selection={selection} />} />
-        )}
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Psalms</h2>
-          <Link
-            href="/songs/new"
-            className="bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
-          >
-            New Song
-          </Link>
-        </div>
-        {psalms.length === 0 ? (
-          <p className="text-sm text-text-muted">No Psalms yet.</p>
+        {formulas.length === 0 ? (
+          <p className="text-sm text-text-muted">No formulas yet.</p>
         ) : (
           <BilingualGrid
-            cells={psalmRows}
-            renderItem={(song) => <SongListRow song={song} sectionNames={sectionNames} allSongs={songs} />}
-          />
-        )}
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Hymns</h2>
-        {hymns.length === 0 ? (
-          <p className="text-sm text-text-muted">No Hymns yet.</p>
-        ) : (
-          <BilingualGrid
-            cells={hymnRows}
-            renderItem={(song) => <SongListRow song={song} sectionNames={sectionNames} allSongs={songs} />}
+            cells={formulaRows}
+            renderItem={(formula) => (
+              <FormulaListRow formula={formula} sectionNames={sectionNames} allFormulas={formulas} bordered={false} />
+            )}
           />
         )}
       </div>

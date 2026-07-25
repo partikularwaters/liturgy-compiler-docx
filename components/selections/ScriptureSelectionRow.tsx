@@ -14,6 +14,8 @@ import type { ScriptureSelection, TextMark } from "@/types/liturgy";
 
 interface ScriptureSelectionRowProps {
   selection: ScriptureSelection;
+  // False inside the Library's bilingual grid -- see FormulaListRow's same prop.
+  bordered?: boolean;
 }
 
 // v2 Phase A: edit-in-place, closing the "browse only" gap this component's
@@ -25,6 +27,7 @@ interface ScriptureSelectionRowProps {
 // dedup boundaries in a way that's easy to get wrong silently).
 export default function ScriptureSelectionRow({
   selection,
+  bordered = true,
 }: ScriptureSelectionRowProps): React.ReactElement {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -132,7 +135,7 @@ export default function ScriptureSelectionRow({
   }
 
   return (
-    <div className="border-b border-border py-4 flex items-start justify-between gap-4">
+    <div className={`py-4 flex items-start justify-between gap-4 ${bordered ? "border-b border-border" : ""}`}>
       <div>
         <p className="text-[13px] text-text-secondary">
           {selection.sectionName} · {selection.translation === "en" ? "BSB" : "AB"}

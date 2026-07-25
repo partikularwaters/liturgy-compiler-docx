@@ -187,6 +187,21 @@ export interface PrayerItem {
   id: string;
   type: "prayer";
   prayerId: string;
+  // Snapshot of the library Prayer's text/marks/leaderOnly-derivation,
+  // taken at the moment this was placed -- frozen so a later edit to the
+  // shared Library entry never silently rewrites an already-compiled
+  // liturgy. Before this, Prayer/Song were the only item types resolved via
+  // a *live* lookup on every render/export (resolveItemText.ts), unlike
+  // Selection (own text/marks) and Formula (own overrideText) -- editing an
+  // existing Prayer's wording in the Library retroactively changed every
+  // past liturgy that ever used it, with no warning. `prayerId` is kept for
+  // provenance only (e.g. dedup, future "update to latest" tooling), never
+  // for display. Optional because liturgies placed before this fix won't
+  // have these fields -- resolveItemText.ts falls back to the old live
+  // lookup when absent.
+  text?: string;
+  marks?: TextMark[];
+  leaderOnly?: boolean;
 }
 
 export interface SermonItem {
@@ -218,6 +233,14 @@ export interface SongItem {
   id: string;
   type: "song";
   songId: string;
+  // Snapshot of the library Song's metadata at placement time -- same
+  // reasoning as PrayerItem.text above. `songId` kept for provenance only.
+  // Optional for the same pre-fix-liturgy fallback reason.
+  title?: string;
+  kind?: "psalm" | "hymn";
+  attribution?: string | null;
+  yearPublished?: string | null;
+  notes?: string | null;
 }
 
 // Feature 20: "Existing Selections" library -- auto-populated by

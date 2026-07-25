@@ -31,7 +31,7 @@ import { toEnglishCitation } from "@/lib/bible/bookNamesTagalog";
 import { TRINITARIAN_SEAL_SECTIONS } from "@/lib/liturgy/trinitarianSeal";
 import { SILENT_CONFESSION_SECTION, SILENT_CONFESSION_RUBRIC_TEXT } from "@/lib/liturgy/silentConfessionRubric";
 import { applyMarks, shiftMarksForEdit } from "@/lib/text/marks";
-import { updatePrayer } from "@/lib/prayers/prayerActions";
+import { updatePrayerItem } from "@/lib/liturgy/addPrayerAction";
 import { removeItem } from "@/lib/liturgy/removeItemAction";
 import { PencilIcon, TrashIcon, PlusIcon, XIcon } from "@/components/liturgy/icons";
 import type { VerbalCueRun } from "@/lib/liturgy/resolveVerbalCueTemplate";
@@ -90,7 +90,11 @@ interface SectionCardProps {
 // Feature 21: title-only display for a Song item -- Title Case + italic
 // always; Psalm additionally gets the citation-red treatment since it's
 // still Scripture-adjacent (redesign-plan-v1.1.md L), Hymn doesn't.
-function SongTitle({ song }: { song?: Song }): React.ReactElement {
+function SongTitle({
+  song,
+}: {
+  song?: Pick<Song, "title" | "kind" | "attribution" | "yearPublished" | "notes">;
+}): React.ReactElement {
   return (
     <p
       className={
@@ -291,7 +295,16 @@ export default function SectionCard({
   const songItems = section.items.filter((item) => item.type === "song");
   const headerSongItem =
     selectionItems.length === 0 && !showCreedTitleInHeader && songItems.length === 1 ? songItems[0] : null;
-  const headerSong = headerSongItem ? songs.find((s) => s.id === headerSongItem.songId) : null;
+  // Prefer the item's own snapshot (see SongItem's comment) over a live
+  // lookup, so an already-compiled liturgy's header doesn't silently
+  // change if the Library's Song entry is edited later. Falls back to a
+  // live lookup only for a liturgy placed before this fix shipped.
+  const headerSong =
+    headerSongItem?.title !== undefined && headerSongItem?.kind !== undefined
+      ? { title: headerSongItem.title, kind: headerSongItem.kind }
+      : headerSongItem
+        ? songs.find((s) => s.id === headerSongItem.songId)
+        : null;
   const selectionCitations = selectionItems.map((item) => ({
     text: displayCitation(formatCitation(item.citation), item.translation),
     translation: item.translation ?? "fil",
@@ -442,10 +455,10 @@ export default function SectionCard({
     });
   };
 
-  const handleSavePrayerEdit = (itemId: string, prayerId: string, text: string, marks: TextMark[]): void => {
+  const handleSavePrayerEdit = (itemId: string, text: string, marks: TextMark[]): void => {
     setIsSaving(true);
     setError(null);
-    updatePrayer(prayerId, section.name, text, undefined, marks).then((result) => {
+    updatePrayerItem(liturgyId, sectionIndex, itemId, text, marks).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setEditingItemId(null);
@@ -831,7 +844,7 @@ export default function SectionCard({
                     initialMarks={resolved.marks ?? []}
                     isSaving={isSaving}
                     error={error}
-                    onSubmit={(text, marks) => handleSavePrayerEdit(item.id, item.prayerId, text, marks)}
+                    onSubmit={(text, marks) => handleSavePrayerEdit(item.id, text, marks)}
                     onCancel={() => {
                       setError(null);
                       setEditingItemId(null);
