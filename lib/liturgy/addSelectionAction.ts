@@ -75,7 +75,7 @@ export async function addSelection(
   const { error: libraryError } = await supabase
     .from("scripture_selections")
     .upsert(
-      { section_name: section.sectionName, citation: formattedCitation, text: newItem.text, translation },
+      { section_name: section.sectionName, citation: formattedCitation, text: newItem.text, translation, marks },
       { onConflict: "section_name,citation", ignoreDuplicates: true }
     );
   if (libraryError) {
@@ -146,11 +146,20 @@ export async function updateSelectionItem(
     return { success: false, error: "Unable to update this Scripture item right now." };
   }
 
+  // task 10: this MUST actually overwrite on conflict (ignoreDuplicates was
+  // a silent no-op for every citation that already existed in the Library --
+  // which is the common case, since you're usually editing something
+  // already placed) and MUST include marks -- the previous version omitted
+  // marks entirely, so even a brand-new citation lost its marks on the way
+  // into the Library. Unlike Prayer/Song, Scripture has no owner_id/fork
+  // model (its FIL/ENG pairing is keyed by citation itself, per the v3 RBAC
+  // decisions), so writing straight into the shared row here is correct,
+  // not a lockdown violation.
   const { error: libraryError } = await supabase
     .from("scripture_selections")
     .upsert(
-      { section_name: section.sectionName, citation: formattedCitation, text: normalizedText, translation },
-      { onConflict: "section_name,citation", ignoreDuplicates: true }
+      { section_name: section.sectionName, citation: formattedCitation, text: normalizedText, translation, marks },
+      { onConflict: "section_name,citation" }
     );
   if (libraryError) {
     console.error("[lib/liturgy/addSelectionAction/updateSelectionItem] scripture_selections upsert", libraryError.message);

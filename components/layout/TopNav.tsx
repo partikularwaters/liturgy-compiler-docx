@@ -6,7 +6,11 @@ export default async function TopNav(): Promise<React.ReactElement> {
   const currentUser = await getCurrentUser();
 
   return (
-    <Suspense fallback={<div className="w-full bg-accent h-14" />}>
+    <Suspense
+      fallback={
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-[900px] bg-accent rounded-full shadow-lg h-14" />
+      }
+    >
       <TopNavLinks currentUser={currentUser} />
     </Suspense>
   );

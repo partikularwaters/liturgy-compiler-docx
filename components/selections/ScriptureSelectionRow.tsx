@@ -2,12 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { deleteScriptureSelection, updateScriptureSelection } from "@/lib/selections/scriptureSelectionActions";
+import { updateScriptureSelection } from "@/lib/selections/scriptureSelectionActions";
 import { autosizeTextarea } from "@/lib/text/autosize";
 import { shiftMarksForEdit } from "@/lib/text/marks";
 import { getSelectionMarks } from "@/lib/liturgy/markableSections";
 import MarkEditor from "@/components/liturgy/MarkEditor";
-import { PencilIcon, TrashIcon, XIcon } from "@/components/liturgy/icons";
+import { PencilIcon, XIcon } from "@/components/liturgy/icons";
 import LibraryTextPreview from "@/components/library/LibraryTextPreview";
 import ScriptureCitationLink from "@/components/liturgy/ScriptureCitationLink";
 import type { ScriptureSelection, TextMark } from "@/types/liturgy";
@@ -47,20 +47,6 @@ export default function ScriptureSelectionRow({
   useEffect(() => {
     if (isEditing) autosizeTextarea(textareaRef.current);
   }, [text, isEditing]);
-
-  const handleDelete = (): void => {
-    if (!window.confirm(`Delete "${selection.citation}"? This cannot be undone.`)) return;
-    setIsSaving(true);
-    setError(null);
-    deleteScriptureSelection(selection.id).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to delete this Scripture item right now.");
-      }
-    });
-  };
 
   const handleSave = (): void => {
     setIsSaving(true);
@@ -154,15 +140,6 @@ export default function ScriptureSelectionRow({
           className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
         >
           <PencilIcon size={15} /> Edit
-        </button>
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={isSaving}
-          title="Delete"
-          className="text-text-muted hover:text-error disabled:opacity-50"
-        >
-          <TrashIcon size={17} />
         </button>
       </div>
       {error && !isEditing && <p className="text-[12px] text-error">{error}</p>}

@@ -3,7 +3,11 @@
 import { supabase } from "@/lib/db/supabase";
 import { normalizeTypography } from "@/lib/text/typographic";
 import { setTranslationPair } from "@/lib/liturgy/translationPairing";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
+// Same v3 RBAC gate as lib/prayers/prayerActions.ts -- see that file's
+// comment for the full reasoning (this direct Library CRUD path had no auth
+// check at all until the task 8 anonymous-read-only audit).
 export async function createSong(
   sectionName: string,
   kind: "psalm" | "hymn",
@@ -18,6 +22,13 @@ export async function createSong(
     return { success: false, error: "Section and title are required." };
   }
 
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to create a Song." };
+  }
+
+  const ownerId = currentUser.role === "curator" ? null : currentUser.id;
+
   const { data, error } = await supabase
     .from("songs")
     .insert({
@@ -28,6 +39,7 @@ export async function createSong(
       year_published: yearPublished.trim() || null,
       notes: notes.trim() ? normalizeTypography(notes) : null,
       translation,
+      owner_id: ownerId,
     })
     .select("id")
     .single();
@@ -57,6 +69,21 @@ export async function updateSong(
 ): Promise<{ success: boolean; error?: string }> {
   if (!sectionName.trim() || !title.trim()) {
     return { success: false, error: "Section and title are required." };
+  }
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to edit a Song." };
+  }
+
+  const { data: existing, error: fetchError } = await supabase.from("songs").select("owner_id").eq("id", id).single();
+  if (fetchError || !existing) {
+    return { success: false, error: "That Song could not be found." };
+  }
+
+  const canEdit = existing.owner_id === null ? currentUser.role === "curator" : existing.owner_id === currentUser.id;
+  if (!canEdit) {
+    return { success: false, error: "Only a Curator can edit this Song." };
   }
 
   const { error } = await supabase
@@ -92,6 +119,21 @@ export async function updateSong(
 // "(Song not found)" for a dangling songId, the same defensive pattern
 // Formula/Prayer's lookups rely on.
 export async function deleteSong(id: string): Promise<{ success: boolean; error?: string }> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to delete a Song." };
+  }
+
+  const { data: existing, error: fetchError } = await supabase.from("songs").select("owner_id").eq("id", id).single();
+  if (fetchError || !existing) {
+    return { success: false, error: "That Song could not be found." };
+  }
+
+  const canDelete = existing.owner_id === null ? currentUser.role === "curator" : existing.owner_id === currentUser.id;
+  if (!canDelete) {
+    return { success: false, error: "Only a Curator can delete this Song." };
+  }
+
   const { error } = await supabase.from("songs").delete().eq("id", id);
 
   if (error) {

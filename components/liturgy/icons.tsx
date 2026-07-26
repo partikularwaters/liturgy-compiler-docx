@@ -20,6 +20,9 @@ import {
   IconArrowLeft,
   IconExternalLink,
   IconX,
+  IconUserCircle,
+  IconChevronDown,
+  IconLogout,
 } from "@tabler/icons-react";
 
 interface IconProps {
@@ -58,3 +61,8 @@ export const ExternalLinkIcon = wrap(IconExternalLink);
 // -- this one's for inline Cancel buttons, which sit right beside a Save/Add
 // button and shouldn't be mistaken for a circular dismiss/remove control.
 export const XIcon = wrap(IconX);
+// Nav account menu (task: sign-in/out UI redesign) -- standard "account"
+// affordance icon, replacing the previous inline role-badge+links sprawl.
+export const UserCircleIcon = wrap(IconUserCircle);
+export const ChevronDownIcon = wrap(IconChevronDown);
+export const LogoutIcon = wrap(IconLogout);

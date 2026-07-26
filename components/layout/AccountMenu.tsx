@@ -1,0 +1,99 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { logout } from "@/lib/auth/authActions";
+import { UserCircleIcon, ChevronDownIcon, LogoutIcon } from "@/components/liturgy/icons";
+import type { CurrentUser } from "@/lib/auth/getCurrentUser";
+
+interface AccountMenuProps {
+  currentUser: CurrentUser | null;
+}
+
+// Replaces the previous inline "role badge + context link + Sign Out" (or
+// "Sign Up + Sign In") sprawl in the nav with a single standard account
+// affordance -- one icon button, same footprint whether signed in or out,
+// opening a small dropdown for the actual choices. Matches how most apps
+// (GitHub, Google, etc.) keep the nav's account surface to one control.
+export default function AccountMenu({ currentUser }: AccountMenuProps): React.ReactElement {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e: MouseEvent): void => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  const contextHref = currentUser?.role === "curator" ? "/curator-inbox" : "/my-library";
+  const contextLabel = currentUser?.role === "curator" ? "Curator Inbox" : "My Library";
+
+  return (
+    <div ref={menuRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="flex items-center gap-1 text-accent-foreground/70 hover:text-accent-foreground"
+        aria-label="Account menu"
+        aria-expanded={isOpen}
+      >
+        <UserCircleIcon size={22} />
+        <ChevronDownIcon size={14} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-border rounded-md shadow-lg py-1 z-50">
+          {currentUser ? (
+            <>
+              <div className="px-4 py-2 border-b border-border">
+                <p className="text-[11px] font-medium uppercase text-text-muted">
+                  {currentUser.role === "curator" ? "Curator" : "Compiler"}
+                </p>
+                {currentUser.email && <p className="text-[13px] text-text-secondary truncate">{currentUser.email}</p>}
+              </div>
+              <Link
+                href={contextHref}
+                onClick={() => setIsOpen(false)}
+                className="block px-4 py-2 text-sm text-text-primary hover:bg-surface-secondary"
+              >
+                {contextLabel}
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  logout();
+                }}
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-text-primary hover:bg-surface-secondary text-left"
+              >
+                <LogoutIcon size={15} /> Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                onClick={() => setIsOpen(false)}
+                className="block px-4 py-2 text-sm text-text-primary hover:bg-surface-secondary"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/signup"
+                onClick={() => setIsOpen(false)}
+                className="block px-4 py-2 text-sm text-text-primary hover:bg-surface-secondary"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

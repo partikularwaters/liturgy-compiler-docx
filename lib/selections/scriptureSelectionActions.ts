@@ -5,6 +5,7 @@ import { formatCitation } from "@/lib/liturgy/formatCitation";
 import { normalizeCitationForTranslation } from "@/lib/bible/bookNamesTagalog";
 import { normalizeTypography } from "@/lib/text/typographic";
 import { saveCompanionTranslation } from "@/lib/selections/companionTranslation";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { TextMark } from "@/types/liturgy";
 
 // v2 Phase A: the Scripture Text Library (scripture_selections) was
@@ -23,6 +24,11 @@ export async function createScriptureSelection(
 ): Promise<{ success: boolean; error?: string; companionSaved?: boolean }> {
   if (!sectionName.trim() || !citation.trim()) {
     return { success: false, error: "Section and citation are required." };
+  }
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to add a Scripture item." };
   }
 
   const formattedCitation = normalizeCitationForTranslation(formatCitation(citation), translation);
@@ -61,6 +67,11 @@ export async function updateScriptureSelection(
     return { success: false, error: "Citation is required." };
   }
 
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to edit a Scripture item." };
+  }
+
   const formattedCitation = normalizeCitationForTranslation(formatCitation(citation), translation);
 
   const { error } = await supabase
@@ -81,14 +92,15 @@ export async function updateScriptureSelection(
   return { success: true, companionSaved };
 }
 
-// The Scripture Library had no delete path at
-// all, unlike every other library type (Formula/Prayer/Song).
-export async function deleteScriptureSelection(id: string): Promise<{ success: boolean; error?: string }> {
-  const { error } = await supabase.from("scripture_selections").delete().eq("id", id);
-
-  if (error) {
-    console.error("[lib/selections/scriptureSelectionActions/deleteScriptureSelection]", error.message);
-    return { success: false, error: "Unable to delete this Scripture item right now." };
-  }
-  return { success: true };
+// Deliberately always fails -- Madrid's own call: "they can't delete from
+// the Library" for Scripture specifically, since its FIL/ENG pairing has an
+// independent canonical key and no owner_id/Curator-lockdown escape hatch
+// the way Formula/Prayer/Song have. The RLS policy already has no delete
+// rule for this table (20260725040000_curator_compiler_ownership.sql), but
+// that alone doesn't stop this app's own service-role client, which
+// bypasses RLS entirely -- so the block has to live here too. Kept as a
+// real function (rather than deleted outright) so a defensive caller still
+// gets a clear error instead of a missing-import build failure.
+export async function deleteScriptureSelection(_id: string): Promise<{ success: boolean; error?: string }> {
+  return { success: false, error: "Scripture Library items cannot be deleted." };
 }

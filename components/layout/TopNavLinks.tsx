@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { HomeIcon } from "@/components/liturgy/icons";
-import { logout } from "@/lib/auth/authActions";
+import AccountMenu from "@/components/layout/AccountMenu";
 import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
 interface TopNavLinksProps {
@@ -26,14 +26,22 @@ export default function TopNavLinks({ currentUser }: TopNavLinksProps): React.Re
     pathname === "/liturgies" ||
     pathname.startsWith("/liturgy/");
   const isReaderActive = pathname === "/reader" && !isCompilingInReader;
+  const isLibraryActive = pathname === "/library";
 
   const isHomepage = pathname === "/";
-  const ctaLabel = isHomepage ? "Create Liturgy" : "Browse Library";
-  const ctaHref = isHomepage ? "/liturgy/new" : "/library";
 
   return (
-    <nav className="w-full bg-accent">
-      <div className="max-w-[960px] mx-auto px-8 h-14 flex items-center justify-between gap-6">
+    <>
+      {/* Floating pill nav (task 24): fixed and rounded, not full-bleed, so it
+          reads as an element sitting on top of the page rather than a bar
+          clipping across it -- Madrid's own framing, specifically about the
+          homepage banner. Since this is fixed (out of document flow), the
+          spacer below reserves its height on every OTHER page so the pill
+          doesn't overlap that page's own content -- the homepage's banner is
+          deliberately left to run underneath it uncompensated, since floating
+          over the banner is the whole point here. */}
+      <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-[900px] bg-accent rounded-full shadow-lg">
+        <div className="px-6 h-14 flex items-center justify-between gap-6">
         <Link
           href="/"
           title="Home"
@@ -66,66 +74,33 @@ export default function TopNavLinks({ currentUser }: TopNavLinksProps): React.Re
           >
             Bible Reader
           </Link>
+          {/* Library is now a persistent link like the two above, instead of
+              borrowing the CTA button's slot (that button used to relabel
+              itself to "Browse Library" on every non-home page, which read
+              as two different actions rather than one consistent nav). */}
           <Link
-            href={ctaHref}
+            href="/library"
+            className={
+              isLibraryActive
+                ? "text-sm font-semibold text-accent-foreground"
+                : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+            }
+          >
+            Library
+          </Link>
+          {/* CTA is always "Create Liturgy" now -- same primary action on
+              every page, not context-dependent. */}
+          <Link
+            href="/liturgy/new"
             className="bg-cta-yellow text-cta-yellow-foreground rounded-md px-4 py-2 text-sm font-medium"
           >
-            {ctaLabel}
+            Create Liturgy
           </Link>
-          {currentUser ? (
-            <div className="flex items-center gap-2">
-              {currentUser.role === "curator" ? (
-                <Link
-                  href="/curator-inbox"
-                  className={
-                    pathname === "/curator-inbox"
-                      ? "text-sm font-semibold text-accent-foreground"
-                      : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
-                  }
-                >
-                  Curator Inbox
-                </Link>
-              ) : (
-                <Link
-                  href="/my-library"
-                  className={
-                    pathname === "/my-library"
-                      ? "text-sm font-semibold text-accent-foreground"
-                      : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
-                  }
-                >
-                  My Library
-                </Link>
-              )}
-              <span className="text-[11px] font-medium uppercase text-accent-foreground/70">
-                {currentUser.role === "curator" ? "Curator" : "Compiler"}
-              </span>
-              <button
-                type="button"
-                onClick={() => logout()}
-                className="text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
-              >
-                Sign Out
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Link
-                href="/signup"
-                className="text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
-              >
-                Sign Up
-              </Link>
-              <Link
-                href="/login"
-                className="text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
-              >
-                Sign In
-              </Link>
-            </div>
-          )}
+          <AccountMenu currentUser={currentUser} />
         </div>
-      </div>
-    </nav>
+        </div>
+      </nav>
+      {!isHomepage && <div className="h-[72px]" aria-hidden="true" />}
+    </>
   );
 }

@@ -3,8 +3,21 @@
 import { supabase } from "@/lib/db/supabase";
 import { normalizeTypography } from "@/lib/text/typographic";
 import { setTranslationPair } from "@/lib/liturgy/translationPairing";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { TextMark } from "@/types/liturgy";
 
+// v3 Curator/Compiler RBAC gate, added alongside the anonymous-read-only
+// audit (task 8) -- these three actions had NO auth check at all until now,
+// even though prayers already got an `owner_id` column and matching RLS
+// policies back when Formula was locked down (20260725040000). RLS alone
+// doesn't help here: every write in this app goes through the service-role
+// client (lib/db/supabase.ts), which bypasses RLS entirely, so the real gate
+// has to live here -- same pattern as lib/formulas/formulaActions.ts. A
+// Compiler creating a brand-new Prayer starts an unpromoted proposal
+// (owner_id = themself); editing/deleting a shared (owner_id null) row
+// stays Curator-only. This is the DIRECT Library CRUD path -- editing an
+// already-placed Prayer instead forks into the Compiler's Personal Library
+// (see lib/liturgy/addPrayerAction.ts's updatePrayerItem), a separate flow.
 export async function createPrayer(
   sectionName: string,
   text: string,
@@ -18,9 +31,24 @@ export async function createPrayer(
     return { success: false, error: "Prayer text is required." };
   }
 
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to create a Prayer." };
+  }
+
+  const ownerId = currentUser.role === "curator" ? null : currentUser.id;
+
   const { data, error } = await supabase
     .from("prayers")
-    .insert({ section_name: sectionName, text: normalizeTypography(text), kind, marks, is_guide: isGuide, translation })
+    .insert({
+      section_name: sectionName,
+      text: normalizeTypography(text),
+      kind,
+      marks,
+      is_guide: isGuide,
+      translation,
+      owner_id: ownerId,
+    })
     .select("id")
     .single();
 
@@ -48,6 +76,21 @@ export async function updatePrayer(
 ): Promise<{ success: boolean; error?: string }> {
   if (!sectionName.trim() || !text.trim()) {
     return { success: false, error: "Section and text are required." };
+  }
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to edit a Prayer." };
+  }
+
+  const { data: existing, error: fetchError } = await supabase.from("prayers").select("owner_id").eq("id", id).single();
+  if (fetchError || !existing) {
+    return { success: false, error: "That Prayer could not be found." };
+  }
+
+  const canEdit = existing.owner_id === null ? currentUser.role === "curator" : existing.owner_id === currentUser.id;
+  if (!canEdit) {
+    return { success: false, error: "Only a Curator can edit this Prayer." };
   }
 
   const { error } = await supabase
@@ -81,6 +124,21 @@ export async function updatePrayer(
 // against placed PrayerItem instances, matching the same defensive-fallback
 // pattern as deleteFormula/deleteSong.
 export async function deletePrayer(id: string): Promise<{ success: boolean; error?: string }> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to delete a Prayer." };
+  }
+
+  const { data: existing, error: fetchError } = await supabase.from("prayers").select("owner_id").eq("id", id).single();
+  if (fetchError || !existing) {
+    return { success: false, error: "That Prayer could not be found." };
+  }
+
+  const canDelete = existing.owner_id === null ? currentUser.role === "curator" : existing.owner_id === currentUser.id;
+  if (!canDelete) {
+    return { success: false, error: "Only a Curator can delete this Prayer." };
+  }
+
   const { error } = await supabase.from("prayers").delete().eq("id", id);
 
   if (error) {
