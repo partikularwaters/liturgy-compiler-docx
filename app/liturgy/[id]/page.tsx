@@ -102,9 +102,9 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
     // No page/column data (Vesper, Feature 18 pending) — flat single-column list.
     return (
       <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           {bulletinHeading}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <EndNoteToggle liturgyId={liturgy.id} templateName={liturgy.templateName} showEndNote={liturgy.showEndNote} />
             {viewLink}
             {downloadButtons}
@@ -131,7 +131,7 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
 
   return (
     <div className="max-w-[1400px] mx-auto p-8 flex flex-col gap-8">
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex items-center justify-end gap-3 flex-wrap">
         <EndNoteToggle liturgyId={liturgy.id} templateName={liturgy.templateName} showEndNote={liturgy.showEndNote} />
         {viewLink}
         {downloadButtons}
@@ -142,7 +142,14 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
         // page labels with visually identical content underneath them.
         <div key={pageGroup.page} className="flex flex-col gap-3 border-2 border-border rounded-lg p-6">
           <p className="text-[12px] font-medium uppercase text-text-muted">Page {pageGroup.page}</p>
-          <div className="grid grid-cols-3 gap-6 items-start">
+          {/* This grid mirrors the printed bulletin's real 3-column page
+              layout on desktop -- correct there, but a fixed 3-column grid
+              at a phone's width squeezes each column to ~70px, nowhere near
+              enough room for a Section's own Edit/Delete/Cue controls
+              (task 14). Single column below `md`, the real 3-column layout
+              from `md` up -- this is an editing tool, not the printed
+              bulletin itself, so nothing is lost by stacking on mobile. */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             {pageGroup.columns.map((columnGroup) => (
               <div key={columnGroup.column} className="flex flex-col gap-4">
                 {pageGroup.page === 1 && columnGroup.column === 1 && bulletinHeading}
