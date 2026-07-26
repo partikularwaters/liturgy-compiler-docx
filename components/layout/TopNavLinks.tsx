@@ -74,6 +74,29 @@ export default function TopNavLinks({ currentUser }: TopNavLinksProps): React.Re
           </Link>
           {currentUser ? (
             <div className="flex items-center gap-2">
+              {currentUser.role === "curator" ? (
+                <Link
+                  href="/curator-inbox"
+                  className={
+                    pathname === "/curator-inbox"
+                      ? "text-sm font-semibold text-accent-foreground"
+                      : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+                  }
+                >
+                  Curator Inbox
+                </Link>
+              ) : (
+                <Link
+                  href="/my-library"
+                  className={
+                    pathname === "/my-library"
+                      ? "text-sm font-semibold text-accent-foreground"
+                      : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+                  }
+                >
+                  My Library
+                </Link>
+              )}
               <span className="text-[11px] font-medium uppercase text-accent-foreground/70">
                 {currentUser.role === "curator" ? "Curator" : "Compiler"}
               </span>
@@ -86,12 +109,20 @@ export default function TopNavLinks({ currentUser }: TopNavLinksProps): React.Re
               </button>
             </div>
           ) : (
-            <Link
-              href="/login"
-              className="text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
-            >
-              Sign In
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/signup"
+                className="text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+              >
+                Sign Up
+              </Link>
+              <Link
+                href="/login"
+                className="text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+              >
+                Sign In
+              </Link>
+            </div>
           )}
         </div>
       </div>

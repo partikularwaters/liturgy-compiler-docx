@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/auth/supabaseServer";
 
 export type Role = "curator" | "compiler";
+type StoredRole = Role | "pending";
 
 export interface CurrentUser {
   id: string;
@@ -44,7 +45,13 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   }
   if (!roleRow) return null;
 
-  return { id: user.id, email: user.email ?? null, role: roleRow.role as Role };
+  // A signed-up-but-not-yet-approved user has a row (role: "pending") so
+  // their Account Request can carry their name -- but they have no real
+  // permissions until a Curator grants curator/compiler, same as anonymous.
+  const storedRole = roleRow.role as StoredRole;
+  if (storedRole === "pending") return null;
+
+  return { id: user.id, email: user.email ?? null, role: storedRole };
 }
 
 export async function isCurator(): Promise<boolean> {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import LoginForm from "@/app/login/LoginForm";
 
 export default function LoginPage(): React.ReactElement {
@@ -9,6 +10,14 @@ export default function LoginPage(): React.ReactElement {
         requires signing in.
       </p>
       <LoginForm />
+      <div className="flex flex-col gap-1 text-sm">
+        <Link href="/forgot-password" className="text-accent hover:underline">
+          Forgot your password?
+        </Link>
+        <Link href="/signup" className="text-accent hover:underline">
+          Don't have an account? Sign up
+        </Link>
+      </div>
     </div>
   );
 }
