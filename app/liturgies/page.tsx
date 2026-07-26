@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getLiturgies } from "@/lib/liturgy/getLiturgies";
 import LiturgyListRow from "@/components/liturgy/LiturgyListRow";
+import { PlusIcon } from "@/components/liturgy/icons";
 
 // Same reasoning as app/page.tsx — always reflect the live liturgy list.
 export const dynamic = "force-dynamic";
@@ -14,9 +15,9 @@ export default async function LiturgiesPage(): Promise<React.ReactElement> {
         <h1 className="text-[28px] font-bold leading-9 text-text-primary">Liturgies</h1>
         <Link
           href="/liturgy/new"
-          className="bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+          className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
         >
-          New Liturgy
+          <PlusIcon size={15} /> New Liturgy
         </Link>
       </div>
 

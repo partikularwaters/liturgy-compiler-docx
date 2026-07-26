@@ -12,6 +12,7 @@ import PrayerListRow from "@/components/prayers/PrayerListRow";
 import ScriptureSelectionRow from "@/components/selections/ScriptureSelectionRow";
 import SongListRow from "@/components/songs/SongListRow";
 import BilingualGrid from "@/components/library/BilingualGrid";
+import { PlusIcon } from "@/components/liturgy/icons";
 import type { Formula, Prayer, ScriptureSelection, Song } from "@/types/liturgy";
 
 // Always reads the live library data -- otherwise a just-saved edit can look
@@ -86,9 +87,9 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           </h2>
           <Link
             href="/selections/new"
-            className="bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+            className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
           >
-            New Scripture
+            <PlusIcon size={15} /> New Scripture
           </Link>
         </div>
         <p className="text-[13px] text-text-muted">
@@ -109,9 +110,9 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Psalms</h2>
           <Link
             href="/songs/new"
-            className="bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+            className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
           >
-            New Song
+            <PlusIcon size={15} /> New Song
           </Link>
         </div>
         {psalms.length === 0 ? (
@@ -145,9 +146,9 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Prayers</h2>
           <Link
             href="/prayers/new"
-            className="bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+            className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
           >
-            New Prayer
+            <PlusIcon size={15} /> New Prayer
           </Link>
         </div>
         {prayers.length === 0 ? (
@@ -184,9 +185,9 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Formulas</h2>
           <Link
             href="/formulas/new"
-            className="bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+            className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
           >
-            New Formula
+            <PlusIcon size={15} /> New Formula
           </Link>
         </div>
         {formulas.length === 0 ? (
