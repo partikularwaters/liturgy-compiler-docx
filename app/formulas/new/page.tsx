@@ -3,7 +3,7 @@ import { getFormulas } from "@/lib/formulas/getFormulas";
 import NewFormulaClient from "@/app/formulas/new/NewFormulaClient";
 
 export default async function NewFormulaPage(): Promise<React.ReactElement> {
-  const [sectionNames, allFormulas] = await Promise.all([getSectionNames(), getFormulas()]);
+  const [sectionNames, allFormulas] = await Promise.all([getSectionNames("formula"), getFormulas()]);
 
   return (
     <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-6">

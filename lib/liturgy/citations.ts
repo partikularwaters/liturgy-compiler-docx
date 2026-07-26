@@ -3,14 +3,31 @@ import { bookNameTagalog } from "@/lib/bible/bookNamesTagalog";
 // Shared by buildCitation and lib/selections/companionTranslation.ts (which
 // needs the identical verse-range formatting when constructing the other
 // language's citation string).
+// Groups a verse selection into consecutive runs -- e.g. [1,2,3,7] becomes
+// "1–3, 7", not a flat "1,2,3,7". The old version only checked contiguity
+// across the WHOLE set, so a single non-contiguous verse anywhere (the
+// common "vv 1-3, 7" case) disabled range-grouping entirely and also
+// dropped the space after each comma.
 export function formatVerseSpec(verseNumbers: number[]): string {
-  const sorted = [...verseNumbers].sort((a, b) => a - b);
-  const isContiguous = sorted.every((n, i) => i === 0 || n === sorted[i - 1] + 1);
-  if (sorted.length === 1) return `${sorted[0]}`;
-  // En dash for a verse range, not a hyphen -- matches this project's
-  // established typesetting convention (e.g. "Psalm 47:5–9").
-  if (isContiguous) return `${sorted[0]}–${sorted[sorted.length - 1]}`;
-  return sorted.join(",");
+  const sorted = [...new Set(verseNumbers)].sort((a, b) => a - b);
+  if (sorted.length === 0) return "";
+
+  const segments: string[] = [];
+  let start = sorted[0];
+  let end = sorted[0];
+  for (let i = 1; i <= sorted.length; i++) {
+    const n = sorted[i];
+    if (n === end + 1) {
+      end = n;
+      continue;
+    }
+    // En dash for a verse range, not a hyphen -- matches this project's
+    // established typesetting convention (e.g. "Psalm 47:5–9").
+    segments.push(start === end ? `${start}` : `${start}–${end}`);
+    start = n;
+    end = n;
+  }
+  return segments.join(", ");
 }
 
 // v2 (BSB): translation defaults to "fil" so every pre-BSB call site (the
@@ -46,14 +63,24 @@ export function parseCitationVerses(
   if (!citation.startsWith(prefix)) return null;
 
   const versesPart = citation.slice(prefix.length);
-  // Accept both the en dash buildCitation now writes and a plain hyphen, so
-  // citations saved before that change (or typed manually) still parse.
-  if (versesPart.includes("–") || versesPart.includes("-")) {
-    const [start, end] = versesPart.split(/[–-]/).map(Number);
-    if (Number.isNaN(start) || Number.isNaN(end)) return null;
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  // Parses per comma-separated segment now, since formatVerseSpec can mix
+  // ranges and singles in one citation ("1–3, 7") -- the old version only
+  // handled a citation that was ENTIRELY one dash-range or ENTIRELY
+  // comma-separated singles, never both. Still accepts a plain hyphen
+  // alongside the en dash, so citations typed by hand or saved before that
+  // change still parse.
+  const verses: number[] = [];
+  for (const rawSegment of versesPart.split(",")) {
+    const segment = rawSegment.trim();
+    if (segment.includes("–") || segment.includes("-")) {
+      const [start, end] = segment.split(/[–-]/).map(Number);
+      if (Number.isNaN(start) || Number.isNaN(end)) return null;
+      for (let n = start; n <= end; n++) verses.push(n);
+    } else {
+      const n = Number(segment);
+      if (Number.isNaN(n)) return null;
+      verses.push(n);
+    }
   }
-
-  const verses = versesPart.split(",").map(Number);
-  return verses.some(Number.isNaN) ? null : verses;
+  return verses;
 }

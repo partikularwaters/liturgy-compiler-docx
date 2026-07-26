@@ -2,7 +2,7 @@ import { getSectionNames } from "@/lib/liturgy/getSectionNames";
 import NewScriptureClient from "@/app/selections/new/NewScriptureClient";
 
 export default async function NewScripturePage(): Promise<React.ReactElement> {
-  const sectionNames = await getSectionNames();
+  const sectionNames = await getSectionNames("selection");
 
   return (
     <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-6">

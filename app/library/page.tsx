@@ -61,13 +61,16 @@ function BilingualGrid<T extends { id: string }>({
 }
 
 export default async function LibraryPage(): Promise<React.ReactElement> {
-  const [allFormulas, allPrayers, scriptureSelections, allSongs, sectionNames] = await Promise.all([
-    getFormulas(),
-    getPrayers(),
-    getScriptureSelections(),
-    getSongs(),
-    getSectionNames(),
-  ]);
+  const [allFormulas, allPrayers, scriptureSelections, allSongs, formulaSectionNames, prayerSectionNames, songSectionNames] =
+    await Promise.all([
+      getFormulas(),
+      getPrayers(),
+      getScriptureSelections(),
+      getSongs(),
+      getSectionNames("formula"),
+      getSectionNames("prayer"),
+      getSectionNames("song"),
+    ]);
 
   // This page is the public, browse-anywhere Shared Library -- everyone's
   // own unpromoted drafts/forks (ownerId set) belong in /my-library instead,
@@ -142,7 +145,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <BilingualGrid
             cells={psalmRows}
             renderItem={(song) => (
-              <SongListRow song={song} sectionNames={sectionNames} allSongs={songs} bordered={false} />
+              <SongListRow song={song} sectionNames={songSectionNames} allSongs={songs} bordered={false} />
             )}
           />
         )}
@@ -156,7 +159,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <BilingualGrid
             cells={hymnRows}
             renderItem={(song) => (
-              <SongListRow song={song} sectionNames={sectionNames} allSongs={songs} bordered={false} />
+              <SongListRow song={song} sectionNames={songSectionNames} allSongs={songs} bordered={false} />
             )}
           />
         )}
@@ -178,7 +181,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <BilingualGrid
             cells={prayerRows}
             renderItem={(prayer) => (
-              <PrayerListRow prayer={prayer} sectionNames={sectionNames} allPrayers={sharedPrayers} bordered={false} />
+              <PrayerListRow prayer={prayer} sectionNames={prayerSectionNames} allPrayers={sharedPrayers} bordered={false} />
             )}
           />
         )}
@@ -195,7 +198,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         ) : (
           <div className="bg-surface border border-border rounded-lg px-6">
             {guides.map((guide) => (
-              <PrayerListRow key={guide.id} prayer={guide} sectionNames={sectionNames} allPrayers={sharedPrayers} />
+              <PrayerListRow key={guide.id} prayer={guide} sectionNames={prayerSectionNames} allPrayers={sharedPrayers} />
             ))}
           </div>
         )}
@@ -217,7 +220,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <BilingualGrid
             cells={formulaRows}
             renderItem={(formula) => (
-              <FormulaListRow formula={formula} sectionNames={sectionNames} allFormulas={formulas} bordered={false} />
+              <FormulaListRow formula={formula} sectionNames={formulaSectionNames} allFormulas={formulas} bordered={false} />
             )}
           />
         )}
