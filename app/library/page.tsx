@@ -11,54 +11,13 @@ import FormulaListRow from "@/components/formulas/FormulaListRow";
 import PrayerListRow from "@/components/prayers/PrayerListRow";
 import ScriptureSelectionRow from "@/components/selections/ScriptureSelectionRow";
 import SongListRow from "@/components/songs/SongListRow";
+import BilingualGrid from "@/components/library/BilingualGrid";
 import type { Formula, Prayer, ScriptureSelection, Song } from "@/types/liturgy";
 
 // Always reads the live library data -- otherwise a just-saved edit can look
 // reverted after router.refresh() if Next serves a cached fetch response
 // instead of re-querying Supabase (same bug class fixed on the homepage).
 export const dynamic = "force-dynamic";
-
-// The whole point of bilingual tagging: a Filipino/English translation
-// pair renders side by side on the same row (Filipino left, English
-// right), instead of interleaved in whatever order they were created --
-// which was the original problem ("AB then BSB, then BSB then AB") this
-// was meant to solve. A row missing one side (unpaired, or the item is
-// untagged) just leaves that cell blank rather than misaligning everything
-// after it.
-//
-// Each pair gets its OWN 2-column grid, wrapped by ONE shared separator
-// line on the pair itself (divide-y on the outer container), instead of
-// each row component drawing its own border-bottom. That used to put the
-// line at each column's own content height -- a 4-line Filipino entry and
-// its 3-line English pair landed their lines at different heights. Since
-// both cells in a single 2-column grid always stretch to match whichever
-// is taller, one shared line on the pair is guaranteed to land at the true
-// bottom of both, every time.
-function BilingualGrid<T extends { id: string }>({
-  cells,
-  renderItem,
-}: {
-  cells: (T | null)[];
-  renderItem: (item: T) => React.ReactNode;
-}): React.ReactElement {
-  const pairs: (T | null)[][] = [];
-  for (let i = 0; i < cells.length; i += 2) {
-    pairs.push([cells[i], cells[i + 1] ?? null]);
-  }
-  return (
-    <div className="bg-surface border border-border rounded-lg divide-y divide-border">
-      {pairs.map((pair, i) => (
-        <div key={pair[0]?.id ?? pair[1]?.id ?? `row-${i}`} className="grid grid-cols-2 divide-x divide-border">
-          {pair.map((item, j) => (
-            <div key={item?.id ?? `blank-${i}-${j}`} className="px-6">
-              {item ? renderItem(item) : null}
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export default async function LibraryPage(): Promise<React.ReactElement> {
   const [allFormulas, allPrayers, scriptureSelections, allSongs, formulaSectionNames, prayerSectionNames, songSectionNames] =
@@ -104,6 +63,22 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
     <div className="max-w-[1120px] mx-auto p-8 flex flex-col gap-8">
       <h1 className="text-[28px] font-bold leading-9 text-text-primary">Browse Library</h1>
 
+      {/* task 13: pure-CSS AB/BSB toggle for narrow screens -- see the
+          matching [data-translation] rules in app/globals.css. Radio inputs
+          need no JavaScript at all; hidden here, their :checked state
+          reaches into #library-grids below via a sibling selector. */}
+      <input type="radio" id="lib-lang-fil" name="lib-lang" defaultChecked className="sr-only" />
+      <input type="radio" id="lib-lang-en" name="lib-lang" className="sr-only" />
+      <div className="md:hidden flex gap-2 self-start rounded-md border border-border overflow-hidden text-sm font-medium">
+        <label htmlFor="lib-lang-fil" className="lib-lang-label px-3 py-1.5 cursor-pointer bg-surface text-text-secondary hover:bg-surface-secondary">
+          AB / Filipino
+        </label>
+        <label htmlFor="lib-lang-en" className="lib-lang-label px-3 py-1.5 cursor-pointer bg-surface text-text-secondary hover:bg-surface-secondary">
+          BSB / English
+        </label>
+      </div>
+
+      <div id="library-grids" className="flex flex-col gap-8">
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">
@@ -224,6 +199,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
             )}
           />
         )}
+      </div>
       </div>
     </div>
   );

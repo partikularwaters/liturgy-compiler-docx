@@ -203,8 +203,8 @@ export default function ReaderClient({
           controls, so `items-center` centered them against its full height
           instead of its actual select inputs. `items-end` bottom-aligns
           everything to the selects themselves. */}
-      <div className="flex items-end justify-between">
-        <div className="flex items-end gap-4">
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div className="flex items-end gap-4 flex-wrap">
           <BookChapterPicker
             books={books}
             selectedBook={chapter.book}
@@ -259,8 +259,8 @@ export default function ReaderClient({
           so the Reader looked like two different pages depending on how you
           arrived. The sidebar now always renders; its contents are just
           whichever of the three is relevant right now. */}
-      <div className="flex items-start gap-6">
-        <div className="w-[340px] shrink-0 sticky top-8 flex flex-col gap-4">
+      <div className="flex flex-col md:flex-row items-start gap-6">
+        <div className="w-full md:w-[340px] shrink-0 md:sticky md:top-8 flex flex-col gap-4">
           {!targetSection ? (
             <ReaderTargetPicker liturgies={liturgies} />
           ) : candidateCitation ? (

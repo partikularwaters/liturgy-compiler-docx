@@ -55,3 +55,30 @@ body {
   background: var(--color-background);
   color: var(--color-text-primary);
 }
+
+/* Library page (task 13): below `md`, BilingualGrid's side-by-side FIL/ENG
+   columns have no room to breathe, so a page-wide AB/BSB toggle (two radio
+   inputs, see app/library/page.tsx) picks which language's cells show.
+   Pure CSS, no JavaScript -- the checked radio's sibling selector reaches
+   into the later grids container and hides the non-matching
+   `data-translation` cells. Has zero effect at `md` and above, where
+   BilingualGrid's own `md:grid-cols-2` already shows both side by side. */
+@media (max-width: 767px) {
+  #lib-lang-fil:checked ~ #library-grids [data-translation="en"] {
+    display: none;
+  }
+  #lib-lang-en:checked ~ #library-grids [data-translation="fil"] {
+    display: none;
+  }
+}
+
+/* Active-toggle-label styling -- same sibling-selector trick as above.
+   Can't use Tailwind's has-[:checked]/peer-checked here since the labels
+   are associated to the radios via `htmlFor`, not by wrapping them (a
+   `has-*`/`peer-*` selector needs actual DOM nesting, which this
+   accessible label/input pairing deliberately doesn't use). */
+#lib-lang-fil:checked ~ div label[for="lib-lang-fil"],
+#lib-lang-en:checked ~ div label[for="lib-lang-en"] {
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
+}
