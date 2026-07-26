@@ -18,6 +18,7 @@ import type { TargetSection } from "@/lib/liturgy/getTargetSection";
 import { getSelectionMarks } from "@/lib/liturgy/markableSections";
 import { TRINITARIAN_SEAL_SECTIONS } from "@/lib/liturgy/trinitarianSeal";
 import type { LiturgySummary, TextMark } from "@/types/liturgy";
+import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
 // Feature 22: mirrors addSelectionAction.ts's REFERENCE_ONLY_SECTIONS -- kept
 // as a separate constant since the Reader is a client component and can't
@@ -38,6 +39,10 @@ interface ReaderClientProps {
   // still choose a liturgy/Section to add to, without a round trip back to
   // the Compile View first.
   liturgies: LiturgySummary[];
+  // null for an anonymous visitor -- highlighting requires an account
+  // (task 31: highlights are per-account, so there's nothing to show an
+  // anonymous visitor anyway).
+  currentUser: CurrentUser | null;
 }
 
 export default function ReaderClient({
@@ -47,6 +52,7 @@ export default function ReaderClient({
   targetSection,
   language,
   liturgies,
+  currentUser,
 }: ReaderClientProps): React.ReactElement {
   const router = useRouter();
   const [activeColor, setActiveColor] = useState<HighlightColor | null>("accent");
@@ -89,6 +95,16 @@ export default function ReaderClient({
   };
 
   const handleVerseClick = (verseNumber: number): void => {
+    // Never optimistically show a highlight that won't actually save --
+    // an anonymous visitor clicking a verse used to see the color apply
+    // instantly, then silently vanish on the next load once setHighlight's
+    // (now-required) login check rejected it. The color picker is already
+    // hidden for a signed-out visitor (see below), but the verse text
+    // itself is still clickable regardless, so this guard has to live here
+    // too -- a plain no-op, since there's no picker left to show an error
+    // next to.
+    if (!currentUser) return;
+
     const current = highlights[verseNumber];
     const next: HighlightColor | null = !activeColor || current === activeColor ? null : activeColor;
 
@@ -237,7 +253,10 @@ export default function ReaderClient({
             </button>
           </div>
         </div>
-        <HighlightColorPicker activeColor={activeColor} onSelect={setActiveColor} />
+        {/* No account, no highlighting -- hidden entirely rather than
+            shown-and-erroring, matching the "don't offer an affordance
+            that can't work" rule applied everywhere else in the app. */}
+        {currentUser && <HighlightColorPicker activeColor={activeColor} onSelect={setActiveColor} />}
       </div>
 
       {targetSection && (

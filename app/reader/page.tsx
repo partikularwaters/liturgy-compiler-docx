@@ -3,6 +3,7 @@ import { getHighlights } from "@/lib/bible/highlights";
 import { canon } from "@/lib/bible/canon";
 import { getTargetSection } from "@/lib/liturgy/getTargetSection";
 import { getLiturgies } from "@/lib/liturgy/getLiturgies";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import ReaderClient from "@/app/reader/ReaderClient";
 
 // Always reads live data -- same cached-fetch bug class fixed on the
@@ -27,9 +28,11 @@ export default async function ReaderPage({ searchParams }: ReaderPageProps): Pro
   // Feature 02 shipped with no switcher; this is that switcher's data side.
   const language: "fil" | "en" = params.translation === "en" ? "en" : "fil";
 
+  const currentUser = await getCurrentUser();
+
   const [chapterData, highlights, targetSection] = await Promise.all([
     getChapter(language === "en" ? "BSB" : "AB1905", book, chapter),
-    getHighlights(book, chapter),
+    getHighlights(book, chapter, currentUser?.id ?? null),
     params.liturgyId && params.sectionIndex
       ? getTargetSection(params.liturgyId, Number(params.sectionIndex))
       : Promise.resolve(null),
@@ -47,6 +50,7 @@ export default async function ReaderPage({ searchParams }: ReaderPageProps): Pro
       targetSection={targetSection}
       language={language}
       liturgies={liturgies}
+      currentUser={currentUser}
     />
   );
 }
