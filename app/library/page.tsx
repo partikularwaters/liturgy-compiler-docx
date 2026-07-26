@@ -13,6 +13,7 @@ import ScriptureSelectionRow from "@/components/selections/ScriptureSelectionRow
 import SongListRow from "@/components/songs/SongListRow";
 import BilingualGrid from "@/components/library/BilingualGrid";
 import { PlusIcon } from "@/components/liturgy/icons";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { Formula, Prayer, ScriptureSelection, Song } from "@/types/liturgy";
 
 // Always reads the live library data -- otherwise a just-saved edit can look
@@ -21,7 +22,7 @@ import type { Formula, Prayer, ScriptureSelection, Song } from "@/types/liturgy"
 export const dynamic = "force-dynamic";
 
 export default async function LibraryPage(): Promise<React.ReactElement> {
-  const [allFormulas, allPrayers, scriptureSelections, allSongs, formulaSectionNames, prayerSectionNames, songSectionNames] =
+  const [allFormulas, allPrayers, scriptureSelections, allSongs, formulaSectionNames, prayerSectionNames, songSectionNames, currentUser] =
     await Promise.all([
       getFormulas(),
       getPrayers(),
@@ -30,6 +31,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
       getSectionNames("formula"),
       getSectionNames("prayer"),
       getSectionNames("song"),
+      getCurrentUser(),
     ]);
 
   // This page is the public, browse-anywhere Shared Library -- everyone's
@@ -85,12 +87,14 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">
             Existing Scripture
           </h2>
-          <Link
-            href="/selections/new"
-            className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
-          >
-            <PlusIcon size={15} /> New Scripture
-          </Link>
+          {currentUser && (
+            <Link
+              href="/selections/new"
+              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+            >
+              <PlusIcon size={15} /> New Scripture
+            </Link>
+          )}
         </div>
         <p className="text-[13px] text-text-muted">
           Auto-saved from every Scripture item added via the Reader, or added directly here.
@@ -100,7 +104,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         ) : (
           <BilingualGrid
             cells={scriptureRows}
-            renderItem={(selection) => <ScriptureSelectionRow selection={selection} bordered={false} />}
+            renderItem={(selection) => <ScriptureSelectionRow selection={selection} bordered={false} currentUser={currentUser} />}
           />
         )}
       </div>
@@ -108,12 +112,14 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Psalms</h2>
-          <Link
-            href="/songs/new"
-            className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
-          >
-            <PlusIcon size={15} /> New Song
-          </Link>
+          {currentUser && (
+            <Link
+              href="/songs/new"
+              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+            >
+              <PlusIcon size={15} /> New Song
+            </Link>
+          )}
         </div>
         {psalms.length === 0 ? (
           <p className="text-sm text-text-muted">No Psalms yet.</p>
@@ -121,7 +127,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <BilingualGrid
             cells={psalmRows}
             renderItem={(song) => (
-              <SongListRow song={song} sectionNames={songSectionNames} allSongs={songs} bordered={false} />
+              <SongListRow song={song} sectionNames={songSectionNames} allSongs={songs} bordered={false} currentUser={currentUser} />
             )}
           />
         )}
@@ -135,7 +141,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <BilingualGrid
             cells={hymnRows}
             renderItem={(song) => (
-              <SongListRow song={song} sectionNames={songSectionNames} allSongs={songs} bordered={false} />
+              <SongListRow song={song} sectionNames={songSectionNames} allSongs={songs} bordered={false} currentUser={currentUser} />
             )}
           />
         )}
@@ -144,12 +150,14 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Prayers</h2>
-          <Link
-            href="/prayers/new"
-            className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
-          >
-            <PlusIcon size={15} /> New Prayer
-          </Link>
+          {currentUser && (
+            <Link
+              href="/prayers/new"
+              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+            >
+              <PlusIcon size={15} /> New Prayer
+            </Link>
+          )}
         </div>
         {prayers.length === 0 ? (
           <p className="text-sm text-text-muted">No prayers yet.</p>
@@ -157,7 +165,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <BilingualGrid
             cells={prayerRows}
             renderItem={(prayer) => (
-              <PrayerListRow prayer={prayer} sectionNames={prayerSectionNames} allPrayers={sharedPrayers} bordered={false} />
+              <PrayerListRow prayer={prayer} sectionNames={prayerSectionNames} allPrayers={sharedPrayers} bordered={false} currentUser={currentUser} />
             )}
           />
         )}
@@ -174,7 +182,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         ) : (
           <div className="bg-surface border border-border rounded-lg px-6">
             {guides.map((guide) => (
-              <PrayerListRow key={guide.id} prayer={guide} sectionNames={prayerSectionNames} allPrayers={sharedPrayers} />
+              <PrayerListRow key={guide.id} prayer={guide} sectionNames={prayerSectionNames} allPrayers={sharedPrayers} currentUser={currentUser} />
             ))}
           </div>
         )}
@@ -183,12 +191,14 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Formulas</h2>
-          <Link
-            href="/formulas/new"
-            className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
-          >
-            <PlusIcon size={15} /> New Formula
-          </Link>
+          {currentUser && (
+            <Link
+              href="/formulas/new"
+              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+            >
+              <PlusIcon size={15} /> New Formula
+            </Link>
+          )}
         </div>
         {formulas.length === 0 ? (
           <p className="text-sm text-text-muted">No formulas yet.</p>
@@ -196,7 +206,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <BilingualGrid
             cells={formulaRows}
             renderItem={(formula) => (
-              <FormulaListRow formula={formula} sectionNames={formulaSectionNames} allFormulas={formulas} bordered={false} />
+              <FormulaListRow formula={formula} sectionNames={formulaSectionNames} allFormulas={formulas} bordered={false} currentUser={currentUser} />
             )}
           />
         )}

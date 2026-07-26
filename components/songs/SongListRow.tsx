@@ -6,6 +6,7 @@ import SongForm from "@/components/songs/SongForm";
 import { updateSong, deleteSong } from "@/lib/songs/songActions";
 import { PencilIcon, TrashIcon } from "@/components/liturgy/icons";
 import type { Song } from "@/types/liturgy";
+import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
 interface SongListRowProps {
   song: Song;
@@ -13,6 +14,8 @@ interface SongListRowProps {
   allSongs: Song[];
   // False inside the Library's bilingual grid -- see FormulaListRow's same prop.
   bordered?: boolean;
+  // null for an anonymous visitor -- see FormulaListRow's own comment.
+  currentUser: CurrentUser | null;
 }
 
 export default function SongListRow({
@@ -20,6 +23,7 @@ export default function SongListRow({
   sectionNames,
   allSongs,
   bordered = true,
+  currentUser,
 }: SongListRowProps): React.ReactElement {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -102,23 +106,25 @@ export default function SongListRow({
         </p>
         {error && <p className="text-sm text-error mt-1">{error}</p>}
       </div>
-      <div className="flex items-center gap-3 shrink-0">
-        <button
-          type="button"
-          onClick={() => setIsEditing(true)}
-          className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
-        >
-          <PencilIcon size={15} /> Edit
-        </button>
-        <button
-          type="button"
-          title="Delete"
-          onClick={handleDelete}
-          className="text-text-muted hover:text-error"
-        >
-          <TrashIcon size={16} />
-        </button>
-      </div>
+      {currentUser && (
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
+          >
+            <PencilIcon size={15} /> Edit
+          </button>
+          <button
+            type="button"
+            title="Delete"
+            onClick={handleDelete}
+            className="text-text-muted hover:text-error"
+          >
+            <TrashIcon size={16} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,8 +1,18 @@
 import { getSectionNames } from "@/lib/liturgy/getSectionNames";
 import { getSongs } from "@/lib/songs/getSongs";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import NewSongClient from "@/app/songs/new/NewSongClient";
 
 export default async function NewSongPage(): Promise<React.ReactElement> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return (
+      <div className="max-w-[960px] mx-auto p-8">
+        <p className="text-sm text-text-muted">Sign in to create a new Song.</p>
+      </div>
+    );
+  }
+
   const [sectionNames, allSongs] = await Promise.all([getSectionNames("song"), getSongs()]);
 
   return (

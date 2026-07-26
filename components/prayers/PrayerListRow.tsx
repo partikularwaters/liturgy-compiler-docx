@@ -7,6 +7,7 @@ import { updatePrayer, deletePrayer } from "@/lib/prayers/prayerActions";
 import { PencilIcon, TrashIcon } from "@/components/liturgy/icons";
 import LibraryTextPreview from "@/components/library/LibraryTextPreview";
 import type { Prayer, TextMark } from "@/types/liturgy";
+import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
 interface PrayerListRowProps {
   prayer: Prayer;
@@ -16,6 +17,8 @@ interface PrayerListRowProps {
   // shared separator per FIL/ENG pair instead. Stays true (default) for the
   // Guides list, which isn't paired/gridded and still needs its own line.
   bordered?: boolean;
+  // null for an anonymous visitor -- see FormulaListRow's own comment.
+  currentUser: CurrentUser | null;
 }
 
 export default function PrayerListRow({
@@ -23,6 +26,7 @@ export default function PrayerListRow({
   sectionNames,
   allPrayers,
   bordered = true,
+  currentUser,
 }: PrayerListRowProps): React.ReactElement {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -104,23 +108,25 @@ export default function PrayerListRow({
         />
         {error && <p className="text-sm text-error mt-1">{error}</p>}
       </div>
-      <div className="flex items-center gap-3 shrink-0">
-        <button
-          type="button"
-          onClick={() => setIsEditing(true)}
-          className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
-        >
-          <PencilIcon size={15} /> Edit
-        </button>
-        <button
-          type="button"
-          title="Delete"
-          onClick={handleDelete}
-          className="text-text-muted hover:text-error"
-        >
-          <TrashIcon size={16} />
-        </button>
-      </div>
+      {currentUser && (
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
+          >
+            <PencilIcon size={15} /> Edit
+          </button>
+          <button
+            type="button"
+            title="Delete"
+            onClick={handleDelete}
+            className="text-text-muted hover:text-error"
+          >
+            <TrashIcon size={16} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,16 +7,17 @@ import { deleteLiturgy } from "@/lib/liturgy/deleteLiturgyAction";
 import { TrashIcon } from "@/components/liturgy/icons";
 import type { LiturgySummary } from "@/types/liturgy";
 import { formatLiturgyName } from "@/lib/liturgy/formatLiturgyName";
+import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
 interface LiturgyListRowProps {
   liturgy: LiturgySummary;
   isLast: boolean;
+  // null for an anonymous visitor -- Delete is hidden entirely then, same
+  // "no false affordance" rule as the Library list rows.
+  currentUser: CurrentUser | null;
 }
 
-// v3 groundwork: delete is unrestricted for now -- prepared
-// ahead of role-based access (see deleteLiturgyAction.ts's own note), not
-// gated to any user yet.
-export default function LiturgyListRow({ liturgy, isLast }: LiturgyListRowProps): React.ReactElement {
+export default function LiturgyListRow({ liturgy, isLast, currentUser }: LiturgyListRowProps): React.ReactElement {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,15 +42,17 @@ export default function LiturgyListRow({ liturgy, isLast }: LiturgyListRowProps)
         {formatLiturgyName(liturgy)}
       </Link>
       {error && <p className="text-[12px] text-error">{error}</p>}
-      <button
-        type="button"
-        onClick={handleDelete}
-        disabled={isDeleting}
-        title="Delete this liturgy"
-        className="text-text-muted hover:text-error disabled:opacity-50"
-      >
-        <TrashIcon size={17} />
-      </button>
+      {currentUser && (
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={isDeleting}
+          title="Delete this liturgy"
+          className="text-text-muted hover:text-error disabled:opacity-50"
+        >
+          <TrashIcon size={17} />
+        </button>
+      )}
     </div>
   );
 }

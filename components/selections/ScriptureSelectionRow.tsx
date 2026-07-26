@@ -11,11 +11,14 @@ import { PencilIcon, XIcon } from "@/components/liturgy/icons";
 import LibraryTextPreview from "@/components/library/LibraryTextPreview";
 import ScriptureCitationLink from "@/components/liturgy/ScriptureCitationLink";
 import type { ScriptureSelection, TextMark } from "@/types/liturgy";
+import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
 interface ScriptureSelectionRowProps {
   selection: ScriptureSelection;
   // False inside the Library's bilingual grid -- see FormulaListRow's same prop.
   bordered?: boolean;
+  // null for an anonymous visitor -- see FormulaListRow's own comment.
+  currentUser: CurrentUser | null;
 }
 
 // v2 Phase A: edit-in-place, closing the "browse only" gap this component's
@@ -28,6 +31,7 @@ interface ScriptureSelectionRowProps {
 export default function ScriptureSelectionRow({
   selection,
   bordered = true,
+  currentUser,
 }: ScriptureSelectionRowProps): React.ReactElement {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -133,15 +137,17 @@ export default function ScriptureSelectionRow({
         />
         <LibraryTextPreview title={selection.citation} text={selection.text} marks={selection.marks} className="mt-1" />
       </div>
-      <div className="flex items-center gap-3 shrink-0">
-        <button
-          type="button"
-          onClick={() => setIsEditing(true)}
-          className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
-        >
-          <PencilIcon size={15} /> Edit
-        </button>
-      </div>
+      {currentUser && (
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
+          >
+            <PencilIcon size={15} /> Edit
+          </button>
+        </div>
+      )}
       {error && !isEditing && <p className="text-[12px] text-error">{error}</p>}
     </div>
   );

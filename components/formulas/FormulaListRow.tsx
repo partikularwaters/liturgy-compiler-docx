@@ -7,6 +7,7 @@ import { updateFormula, deleteFormula } from "@/lib/formulas/formulaActions";
 import { PencilIcon, TrashIcon } from "@/components/liturgy/icons";
 import LibraryTextPreview from "@/components/library/LibraryTextPreview";
 import type { Formula, TextMark } from "@/types/liturgy";
+import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
 interface FormulaListRowProps {
   formula: Formula;
@@ -17,6 +18,12 @@ interface FormulaListRowProps {
   // border-bottom used to land at that row's own content height, which
   // rarely matched its companion's, producing two misaligned lines.
   bordered?: boolean;
+  // null for an anonymous visitor -- Edit/Delete are hidden entirely then
+  // (not just server-rejected), so there's no false "you can edit this"
+  // affordance for someone with no account at all. A signed-in Compiler
+  // hitting a Curator-only Formula still sees the buttons and gets the
+  // existing clear server-side error -- that distinction is intentional.
+  currentUser: CurrentUser | null;
 }
 
 export default function FormulaListRow({
@@ -24,6 +31,7 @@ export default function FormulaListRow({
   sectionNames,
   allFormulas,
   bordered = true,
+  currentUser,
 }: FormulaListRowProps): React.ReactElement {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -100,23 +108,25 @@ export default function FormulaListRow({
         <LibraryTextPreview title={formula.name} text={formula.defaultText} marks={formula.marks} className="mt-1" />
         {error && <p className="text-sm text-error mt-1">{error}</p>}
       </div>
-      <div className="flex items-center gap-3 shrink-0">
-        <button
-          type="button"
-          onClick={() => setIsEditing(true)}
-          className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
-        >
-          <PencilIcon size={15} /> Edit
-        </button>
-        <button
-          type="button"
-          title="Delete"
-          onClick={handleDelete}
-          className="text-text-muted hover:text-error"
-        >
-          <TrashIcon size={16} />
-        </button>
-      </div>
+      {currentUser && (
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
+          >
+            <PencilIcon size={15} /> Edit
+          </button>
+          <button
+            type="button"
+            title="Delete"
+            onClick={handleDelete}
+            className="text-text-muted hover:text-error"
+          >
+            <TrashIcon size={16} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
