@@ -712,6 +712,11 @@ export default function SectionCard({
           </p>
         )}
       </div>
+      {/* Hidden entirely for an anonymous visitor -- every "Add X" action
+          behind these buttons now requires login (task 33), so showing them
+          only to fail on click would be the same false affordance already
+          fixed for the Library's own Edit/Delete/New buttons. */}
+      {currentUser && (
       <div className="flex items-center gap-2 flex-wrap">
         {allowedTypes.includes("selection") && (
           <>
@@ -808,6 +813,7 @@ export default function SectionCard({
           </>
         )}
       </div>
+      )}
 
       {PRAYER_GUIDE_SECTIONS.includes(section.name) && (
         <PrayerGuidePanel
@@ -944,25 +950,29 @@ export default function SectionCard({
                     {selectionItems.map((s) => (
                       <span key={s.id} className="flex items-center gap-1.5">
                         <span className="text-[11px] text-text-muted">{displayCitation(s.citation, s.translation)}</span>
-                        <button
-                          type="button"
-                          title={`Edit ${s.citation}`}
-                          onClick={() => {
-                            setError(null);
-                            setEditingItemId(s.id);
-                          }}
-                          className="text-text-muted hover:text-accent-dark"
-                        >
-                          <PencilIcon size={15} />
-                        </button>
-                        <button
-                          type="button"
-                          title={`Remove ${s.citation}`}
-                          onClick={() => handleRemoveItem(s.id)}
-                          className="text-text-muted hover:text-error"
-                        >
-                          <TrashIcon size={15} />
-                        </button>
+                        {currentUser && (
+                          <>
+                            <button
+                              type="button"
+                              title={`Edit ${s.citation}`}
+                              onClick={() => {
+                                setError(null);
+                                setEditingItemId(s.id);
+                              }}
+                              className="text-text-muted hover:text-accent-dark"
+                            >
+                              <PencilIcon size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              title={`Remove ${s.citation}`}
+                              onClick={() => handleRemoveItem(s.id)}
+                              className="text-text-muted hover:text-error"
+                            >
+                              <TrashIcon size={15} />
+                            </button>
+                          </>
+                        )}
                       </span>
                     ))}
                   </div>
@@ -1138,27 +1148,31 @@ export default function SectionCard({
                     </p>
                   )}
                   {resolved.leaderOnly && <LeaderOnlyBadge />}
-                  {isEditable && (
-                    <button
-                      type="button"
-                      title="Edit"
-                      onClick={() => {
-                        setError(null);
-                        setEditingItemId(item.id);
-                      }}
-                      className="text-text-muted hover:text-accent-dark"
-                    >
-                      <PencilIcon size={15} />
-                    </button>
+                  {currentUser && (
+                    <>
+                      {isEditable && (
+                        <button
+                          type="button"
+                          title="Edit"
+                          onClick={() => {
+                            setError(null);
+                            setEditingItemId(item.id);
+                          }}
+                          className="text-text-muted hover:text-accent-dark"
+                        >
+                          <PencilIcon size={15} />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        title="Remove"
+                        onClick={() => handleRemoveItem(item.id)}
+                        className="text-text-muted hover:text-error"
+                      >
+                        <TrashIcon size={15} />
+                      </button>
+                    </>
                   )}
-                  <button
-                    type="button"
-                    title="Remove"
-                    onClick={() => handleRemoveItem(item.id)}
-                    className="text-text-muted hover:text-error"
-                  >
-                    <TrashIcon size={15} />
-                  </button>
                 </div>
                 {item.type === "song" ? (
                   <SongTitle song={resolved.song} />

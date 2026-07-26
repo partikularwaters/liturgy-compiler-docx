@@ -7,12 +7,18 @@ import { getVesperTableReadings } from "@/lib/liturgy/vesperTableRotation";
 import { addSelection } from "@/lib/liturgy/addSelectionAction";
 import { addVerbalCue } from "@/lib/liturgy/verbalCueActions";
 import { MORNING_VERBAL_CUE_TEMPLATES } from "@/lib/liturgy/verbalCueTemplates";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { CreatedLiturgy, LiturgyTemplateId, TemplateSection } from "@/types/liturgy";
 
 export async function createLiturgy(
   templateId: LiturgyTemplateId,
   serviceDate: string
 ): Promise<{ success: boolean; data?: CreatedLiturgy; error?: string }> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to create a liturgy." };
+  }
+
   const template = LITURGY_TEMPLATES.find((t) => t.id === templateId);
   if (!template || !/^\d{4}-\d{2}-\d{2}$/.test(serviceDate)) {
     return { success: false, error: "Invalid template or date." };
@@ -67,18 +73,26 @@ export async function createLiturgy(
   };
 }
 
+// Each cue targets a different Section -- a separate row in `sections`
+// keyed by (liturgy_id, template_section_index) -- so these are
+// independent writes with no shared state to race on. Was previously one
+// sequential `await` per cue in a for-loop, adding a full DB round trip's
+// latency for every single Section on top of the others -- the real cause
+// behind "Create Liturgy takes 5+ seconds."
 async function seedMorningVerbalCues(liturgyId: string, sections: TemplateSection[]): Promise<void> {
-  for (const [sectionName, text] of Object.entries(MORNING_VERBAL_CUE_TEMPLATES)) {
-    const sectionIndex = sections.findIndex((s) => s.name === sectionName);
-    if (sectionIndex === -1) {
-      console.error("[lib/liturgy/createLiturgyAction] verbal cue seed: Section not found in template:", sectionName);
-      continue;
-    }
-    const result = await addVerbalCue(liturgyId, sectionIndex, text, "leader_only");
-    if (!result.success) {
-      console.error("[lib/liturgy/createLiturgyAction] verbal cue seed failed:", sectionName, result.error);
-    }
-  }
+  await Promise.all(
+    Object.entries(MORNING_VERBAL_CUE_TEMPLATES).map(async ([sectionName, text]) => {
+      const sectionIndex = sections.findIndex((s) => s.name === sectionName);
+      if (sectionIndex === -1) {
+        console.error("[lib/liturgy/createLiturgyAction] verbal cue seed: Section not found in template:", sectionName);
+        return;
+      }
+      const result = await addVerbalCue(liturgyId, sectionIndex, text, "leader_only");
+      if (!result.success) {
+        console.error("[lib/liturgy/createLiturgyAction] verbal cue seed failed:", sectionName, result.error);
+      }
+    })
+  );
 }
 
 async function autoAssignVesperTableReadings(
@@ -100,15 +114,19 @@ async function autoAssignVesperTableReadings(
     ["Closing of the Table", readings.closingOfTable],
   ];
 
-  for (const [sectionName, citation] of targets) {
-    const sectionIndex = sections.findIndex((s) => s.name === sectionName);
-    if (sectionIndex === -1) {
-      console.error("[lib/liturgy/createLiturgyAction] auto-assign: Section not found in template:", sectionName);
-      continue;
-    }
-    const result = await addSelection(liturgyId, sectionIndex, citation, "");
-    if (!result.success) {
-      console.error("[lib/liturgy/createLiturgyAction] auto-assign failed:", sectionName, result.error);
-    }
-  }
+  // Same independent-rows reasoning as seedMorningVerbalCues above --
+  // parallelized for the same reason.
+  await Promise.all(
+    targets.map(async ([sectionName, citation]) => {
+      const sectionIndex = sections.findIndex((s) => s.name === sectionName);
+      if (sectionIndex === -1) {
+        console.error("[lib/liturgy/createLiturgyAction] auto-assign: Section not found in template:", sectionName);
+        return;
+      }
+      const result = await addSelection(liturgyId, sectionIndex, citation, "");
+      if (!result.success) {
+        console.error("[lib/liturgy/createLiturgyAction] auto-assign failed:", sectionName, result.error);
+      }
+    })
+  );
 }

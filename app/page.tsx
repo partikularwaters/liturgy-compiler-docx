@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getLiturgies } from "@/lib/liturgy/getLiturgies";
 import { formatLiturgyName } from "@/lib/liturgy/formatLiturgyName";
 import { ArrowRightIcon, PlusIcon } from "@/components/liturgy/icons";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
 const RECENT_COUNT = 5;
 
@@ -10,7 +11,7 @@ const RECENT_COUNT = 5;
 export const dynamic = "force-dynamic";
 
 export default async function Home(): Promise<React.ReactElement> {
-  const liturgies = await getLiturgies();
+  const [liturgies, currentUser] = await Promise.all([getLiturgies(), getCurrentUser()]);
   const recent = liturgies.slice(0, RECENT_COUNT);
 
   return (
@@ -81,12 +82,16 @@ export default async function Home(): Promise<React.ReactElement> {
       </p>
 
       <div className="flex items-center gap-3">
-        <Link
-          href="/liturgy/new"
-          className="flex items-center gap-1.5 bg-accent text-accent-foreground rounded-full px-5 py-2.5 text-[11px] font-semibold"
-        >
-          <PlusIcon size={13} /> Create Liturgy
-        </Link>
+        {/* Hidden entirely (not just server-rejected) for an anonymous
+            visitor -- liturgy creation now requires an account. */}
+        {currentUser && (
+          <Link
+            href="/liturgy/new"
+            className="flex items-center gap-1.5 bg-accent text-accent-foreground rounded-full px-5 py-2.5 text-[11px] font-semibold"
+          >
+            <PlusIcon size={13} /> Create Liturgy
+          </Link>
+        )}
         <Link
           href="/library"
           className="flex items-center gap-1.5 bg-surface border border-border text-text-primary rounded-full px-5 py-2.5 text-[11px] font-medium"

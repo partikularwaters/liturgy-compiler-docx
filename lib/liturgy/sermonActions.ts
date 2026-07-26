@@ -3,6 +3,7 @@
 import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
 import { normalizeTypography } from "@/lib/text/typographic";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { SermonItem } from "@/types/liturgy";
 
 // Sermon is a single passage-reference field per liturgy, not a list — saving
@@ -14,6 +15,11 @@ export async function saveSermonPassage(
 ): Promise<{ success: boolean; error?: string }> {
   if (!passage.trim()) {
     return { success: false, error: "Sermon passage is required." };
+  }
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to save the Sermon passage." };
   }
 
   const section = await getSectionContext(liturgyId, sectionIndex);

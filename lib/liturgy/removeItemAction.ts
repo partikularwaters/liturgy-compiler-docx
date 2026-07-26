@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
 // One generic delete path for every item type -- Selection, Formula, Verbal
 // Cue, Prayer, Sermon, Song all live in the same `items` jsonb array, so
@@ -14,6 +15,11 @@ export async function removeItem(
   sectionIndex: number,
   itemId: string
 ): Promise<{ success: boolean; error?: string }> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to remove this item." };
+  }
+
   const section = await getSectionContext(liturgyId, sectionIndex);
   if (!section) {
     return { success: false, error: "Unable to find that Section right now." };

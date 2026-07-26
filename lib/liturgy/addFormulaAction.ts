@@ -3,6 +3,7 @@
 import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
 import { normalizeTypography } from "@/lib/text/typographic";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { FormulaItem, TextMark } from "@/types/liturgy";
 
 export async function addFormula(
@@ -14,6 +15,11 @@ export async function addFormula(
 ): Promise<{ success: boolean; error?: string }> {
   if (!formulaId.trim()) {
     return { success: false, error: "A Formula must be selected." };
+  }
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to place a Formula." };
   }
 
   const section = await getSectionContext(liturgyId, sectionIndex);
@@ -85,6 +91,11 @@ export async function updateFormulaItem(
   marks: TextMark[] = [],
   trinitarianSeal: "en" | "fil" | null = null
 ): Promise<{ success: boolean; error?: string }> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to update this Formula." };
+  }
+
   const section = await getSectionContext(liturgyId, sectionIndex);
   if (!section) {
     return { success: false, error: "Unable to find that Section right now." };

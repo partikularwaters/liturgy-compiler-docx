@@ -7,6 +7,7 @@ import { formatCitation } from "@/lib/liturgy/formatCitation";
 import { normalizeCitationForTranslation } from "@/lib/bible/bookNamesTagalog";
 import { normalizeTypography } from "@/lib/text/typographic";
 import { saveCompanionTranslation } from "@/lib/selections/companionTranslation";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { SelectionItem, TextMark } from "@/types/liturgy";
 
 // Feature 22: these Sections are long, whole-passage readings meant to be
@@ -29,6 +30,11 @@ export async function addSelection(
 ): Promise<{ success: boolean; error?: string; companionSaved?: boolean }> {
   if (!citation.trim()) {
     return { success: false, error: "Citation is required." };
+  }
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to add this Scripture item." };
   }
 
   const section = await getSectionContext(liturgyId, sectionIndex);
@@ -107,6 +113,11 @@ export async function updateSelectionItem(
 ): Promise<{ success: boolean; error?: string; companionSaved?: boolean }> {
   if (!citation.trim()) {
     return { success: false, error: "Citation is required." };
+  }
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to update this Scripture item." };
   }
 
   const section = await getSectionContext(liturgyId, sectionIndex);

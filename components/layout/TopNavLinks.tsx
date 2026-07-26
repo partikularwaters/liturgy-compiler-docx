@@ -138,13 +138,17 @@ export default function TopNavLinks({ currentUser }: TopNavLinksProps): React.Re
         </div>
         <div className="flex items-center gap-3 md:gap-4">
           {/* CTA is always "Create Liturgy" now -- same primary action on
-              every page, not context-dependent. */}
-          <Link
-            href="/liturgy/new"
-            className="flex items-center gap-1 bg-cta-yellow text-cta-yellow-foreground rounded-full px-3 py-1.5 text-[13px] font-medium whitespace-nowrap"
-          >
-            <PlusIcon size={14} /> Create Liturgy
-          </Link>
+              every page, not context-dependent. Hidden entirely (not just
+              server-rejected) for an anonymous visitor -- liturgy creation
+              now requires an account. */}
+          {currentUser && (
+            <Link
+              href="/liturgy/new"
+              className="flex items-center gap-1 bg-cta-yellow text-cta-yellow-foreground rounded-full px-3 py-1.5 text-[13px] font-medium whitespace-nowrap"
+            >
+              <PlusIcon size={14} /> Create Liturgy
+            </Link>
+          )}
           <AccountMenu currentUser={currentUser} />
         </div>
           </div>

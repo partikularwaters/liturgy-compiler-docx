@@ -14,6 +14,11 @@ export async function addSong(
     return { success: false, error: "A Song must be selected." };
   }
 
+  const requester = await getCurrentUser();
+  if (!requester) {
+    return { success: false, error: "Sign in to place a Song." };
+  }
+
   const section = await getSectionContext(liturgyId, sectionIndex);
   if (!section) {
     return { success: false, error: "Unable to find that Section right now." };
@@ -80,6 +85,11 @@ export async function updateSongItem(
   notes: string,
   saveToPersonalLibrary: boolean = false
 ): Promise<{ success: boolean; error?: string; savedToPersonalLibrary?: boolean }> {
+  const requester = await getCurrentUser();
+  if (!requester) {
+    return { success: false, error: "Sign in to update this Song." };
+  }
+
   const section = await getSectionContext(liturgyId, sectionIndex);
   if (!section) {
     return { success: false, error: "Unable to find that Section right now." };
@@ -104,41 +114,38 @@ export async function updateSongItem(
   }
 
   let savedToPersonalLibrary = false;
-  if (saveToPersonalLibrary && existingItem?.type === "song") {
-    const currentUser = await getCurrentUser();
-    if (currentUser && currentUser.role === "compiler") {
-      const { data: existingFork } = await supabase
-        .from("songs")
-        .select("id")
-        .eq("owner_id", currentUser.id)
-        .eq("forked_from_id", existingItem.songId)
-        .maybeSingle();
+  if (saveToPersonalLibrary && existingItem?.type === "song" && requester.role === "compiler") {
+    const { data: existingFork } = await supabase
+      .from("songs")
+      .select("id")
+      .eq("owner_id", requester.id)
+      .eq("forked_from_id", existingItem.songId)
+      .maybeSingle();
 
-      if (existingFork) {
-        const { error: forkError } = await supabase
-          .from("songs")
-          .update({ title, attribution: attributionValue, year_published: yearPublishedValue, notes: notesValue })
-          .eq("id", existingFork.id);
+    if (existingFork) {
+      const { error: forkError } = await supabase
+        .from("songs")
+        .update({ title, attribution: attributionValue, year_published: yearPublishedValue, notes: notesValue })
+        .eq("id", existingFork.id);
+      savedToPersonalLibrary = !forkError;
+    } else {
+      const { data: original } = await supabase
+        .from("songs")
+        .select("section_name, kind")
+        .eq("id", existingItem.songId)
+        .single();
+      if (original) {
+        const { error: forkError } = await supabase.from("songs").insert({
+          section_name: original.section_name,
+          kind: original.kind,
+          title,
+          attribution: attributionValue,
+          year_published: yearPublishedValue,
+          notes: notesValue,
+          owner_id: requester.id,
+          forked_from_id: existingItem.songId,
+        });
         savedToPersonalLibrary = !forkError;
-      } else {
-        const { data: original } = await supabase
-          .from("songs")
-          .select("section_name, kind")
-          .eq("id", existingItem.songId)
-          .single();
-        if (original) {
-          const { error: forkError } = await supabase.from("songs").insert({
-            section_name: original.section_name,
-            kind: original.kind,
-            title,
-            attribution: attributionValue,
-            year_published: yearPublishedValue,
-            notes: notesValue,
-            owner_id: currentUser.id,
-            forked_from_id: existingItem.songId,
-          });
-          savedToPersonalLibrary = !forkError;
-        }
       }
     }
   }

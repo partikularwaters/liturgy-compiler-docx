@@ -3,6 +3,7 @@
 import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
 import { normalizeTypography } from "@/lib/text/typographic";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { VerbalCueItem } from "@/types/liturgy";
 
 export async function addVerbalCue(
@@ -16,6 +17,11 @@ export async function addVerbalCue(
 ): Promise<{ success: boolean; error?: string }> {
   if (!text.trim()) {
     return { success: false, error: "Verbal Cue text is required." };
+  }
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to add a Verbal Cue." };
   }
 
   const section = await getSectionContext(liturgyId, sectionIndex);
@@ -57,6 +63,11 @@ export async function updateVerbalCue(
 ): Promise<{ success: boolean; error?: string }> {
   if (!text.trim()) {
     return { success: false, error: "Verbal Cue text is required." };
+  }
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to update a Verbal Cue." };
   }
 
   const section = await getSectionContext(liturgyId, sectionIndex);
