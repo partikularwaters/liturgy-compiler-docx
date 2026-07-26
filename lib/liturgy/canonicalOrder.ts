@@ -31,7 +31,6 @@ export const SECTION_ORDER: string[] = [
   "Closing of the Table",
   "Hymn of Dedication",
   "Affirmation of Faith",
-  "Affirmation of Faith / Church Covenant",
   "Offertory & Thanksgiving",
   "Offertory Call",
   "Pastoral Prayer",

@@ -17,6 +17,9 @@ interface FormulaFormProps {
   initialMarks?: TextMark[];
   initialTranslation?: "fil" | "en" | null;
   initialPairedId?: string | null;
+  // Only meaningful when sectionName is "Affirmation of Faith" -- see
+  // Formula.kind's own comment (types/liturgy.ts).
+  initialKind?: "affirmation" | "covenant" | null;
   // Every other Formula, for the translation-pairing picker -- excludes
   // itself when editing (see the `id` prop below).
   allFormulas: Formula[];
@@ -30,7 +33,8 @@ interface FormulaFormProps {
     defaultText: string,
     marks: TextMark[],
     translation: "fil" | "en" | null,
-    pairedId: string | null
+    pairedId: string | null,
+    kind: "affirmation" | "covenant" | null
   ) => void;
   onCancel?: () => void;
 }
@@ -51,6 +55,7 @@ export default function FormulaForm({
   initialMarks = [],
   initialTranslation = null,
   initialPairedId = null,
+  initialKind = null,
   allFormulas,
   id,
   isSaving,
@@ -65,6 +70,7 @@ export default function FormulaForm({
   const [marks, setMarks] = useState<TextMark[]>(initialMarks);
   const [translation, setTranslation] = useState<"fil" | "en" | null>(initialTranslation);
   const [pairedId, setPairedId] = useState<string | null>(initialPairedId);
+  const [kind, setKind] = useState<"affirmation" | "covenant" | null>(initialKind);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const opposite = translation === "fil" ? "en" : "fil";
@@ -97,6 +103,25 @@ export default function FormulaForm({
           ))}
         </select>
       </div>
+      {sectionName === "Affirmation of Faith" && (
+        <div className="flex flex-col gap-1">
+          <label className="text-[13px] font-medium text-text-secondary" htmlFor="formula-kind">
+            Which is this?
+          </label>
+          <select
+            id="formula-kind"
+            value={kind ?? "affirmation"}
+            onChange={(e) => setKind(e.target.value as "affirmation" | "covenant")}
+            className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
+          >
+            <option value="affirmation">Affirmation of Faith</option>
+            <option value="covenant">Church Covenant</option>
+          </select>
+          <p className="text-[13px] text-text-muted">
+            This Section is shared by both -- the Compile View shows whichever one is actually placed.
+          </p>
+        </div>
+      )}
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="formula-name">
           Name
@@ -128,7 +153,7 @@ export default function FormulaForm({
         text={defaultText}
         marks={marks}
         onMarksChange={setMarks}
-        availableMarks={getFormulaMarks(sectionName)}
+        availableMarks={getFormulaMarks(sectionName, kind)}
         textareaRef={textareaRef}
       />
       <TranslationPairFields
@@ -145,7 +170,7 @@ export default function FormulaForm({
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(sectionName, name, defaultText, marks, translation, pairedId)}
+          onClick={() => onSubmit(sectionName, name, defaultText, marks, translation, pairedId, sectionName === "Affirmation of Faith" ? kind ?? "affirmation" : null)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >

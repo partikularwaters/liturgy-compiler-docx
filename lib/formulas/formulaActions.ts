@@ -24,7 +24,8 @@ export async function createFormula(
   defaultText: string,
   marks: TextMark[] = [],
   translation: "fil" | "en" | null = null,
-  pairedId: string | null = null
+  pairedId: string | null = null,
+  kind: "affirmation" | "covenant" | null = null
 ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
   if (!sectionName.trim() || !name.trim() || !defaultText.trim()) {
     return { success: false, error: "Section, name, and default text are required." };
@@ -48,6 +49,7 @@ export async function createFormula(
       marks,
       translation,
       owner_id: ownerId,
+      kind,
     })
     .select("id")
     .single();
@@ -74,7 +76,8 @@ export async function updateFormula(
   defaultText: string,
   marks: TextMark[] = [],
   translation?: "fil" | "en" | null,
-  pairedId?: string | null
+  pairedId?: string | null,
+  kind?: "affirmation" | "covenant" | null
 ): Promise<{ success: boolean; error?: string }> {
   if (!sectionName.trim() || !name.trim() || !defaultText.trim()) {
     return { success: false, error: "Section, name, and default text are required." };
@@ -110,6 +113,7 @@ export async function updateFormula(
       default_text: normalizeTypography(defaultText),
       marks,
       ...(translation !== undefined ? { translation } : {}),
+      ...(kind !== undefined ? { kind } : {}),
     })
     .eq("id", id);
 

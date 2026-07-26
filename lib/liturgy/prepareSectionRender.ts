@@ -11,7 +11,7 @@ import type { CompiledSection, Formula, Item, Prayer, SelectionItem, Song, TextM
 // imported since SectionCard is a client component and this helper is
 // shared by two server-rendered surfaces (PDF, WebView) that don't need its
 // editing-related state.
-const TITLE_IN_HEADER_SECTIONS = ["Affirmation of Faith", "Affirmation of Faith / Church Covenant"];
+const TITLE_IN_HEADER_SECTIONS = ["Affirmation of Faith"];
 
 export interface HeaderInfo {
   text: string;

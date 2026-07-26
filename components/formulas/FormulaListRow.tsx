@@ -36,11 +36,12 @@ export default function FormulaListRow({
     defaultText: string,
     marks: TextMark[],
     translation: "fil" | "en" | null,
-    pairedId: string | null
+    pairedId: string | null,
+    kind: "affirmation" | "covenant" | null
   ): void => {
     setIsSaving(true);
     setError(null);
-    updateFormula(formula.id, sectionName, name, defaultText, marks, translation, pairedId).then((result) => {
+    updateFormula(formula.id, sectionName, name, defaultText, marks, translation, pairedId, kind).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setIsEditing(false);
@@ -75,6 +76,7 @@ export default function FormulaListRow({
           initialMarks={formula.marks ?? []}
           initialTranslation={formula.translation}
           initialPairedId={formula.pairedId}
+          initialKind={formula.kind}
           allFormulas={allFormulas}
           id={formula.id}
           isSaving={isSaving}

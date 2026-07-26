@@ -268,7 +268,7 @@ function renderSection({ section, formulas, prayers, songs, audience }: RenderSe
 
   const headingRunChildren: TextRun[] = [
     new TextRun({
-      text: sectionTitle(section, songs),
+      text: sectionTitle(section, songs, formulas),
       bold: true,
       allCaps: true,
       size: BODY_SIZE,

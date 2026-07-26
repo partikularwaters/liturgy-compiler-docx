@@ -115,6 +115,13 @@ export interface Formula {
   // Same meaning as Prayer.ownerId (see that comment) -- null = shared/
   // canonical, a real user id = a Compiler's own unpromoted proposal.
   ownerId?: string | null;
+  // Only meaningful for a Formula scoped to "Affirmation of Faith" --
+  // disambiguates which of the two dynamic-naming identities this is, same
+  // role Song.kind (psalm/hymn) plays for its own dynamic Sections. Absent/
+  // null defaults to "affirmation" at render time (sectionTitle.ts) -- every
+  // other Formula (Absolution, Trinitarian Seal, etc.) has no such
+  // distinction to make and leaves this unset.
+  kind?: "affirmation" | "covenant" | null;
 }
 
 export interface FormulaItem extends TrinitarianSealable {

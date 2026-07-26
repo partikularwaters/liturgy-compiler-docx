@@ -356,7 +356,7 @@ function RenderedSection({
     <View key={index} style={styles.section} wrap={false}>
       <View style={styles.sectionHeadingRow}>
         <Text style={[styles.sectionHeading, compact ? styles.sectionHeadingCompact : {}]}>
-          {sectionTitle(section, songs)}
+          {sectionTitle(section, songs, formulas)}
         </Text>
         {prepared.header && (
           <Text

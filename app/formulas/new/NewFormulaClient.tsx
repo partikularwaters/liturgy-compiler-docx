@@ -25,11 +25,12 @@ export default function NewFormulaClient({
     defaultText: string,
     marks: TextMark[],
     translation: "fil" | "en" | null,
-    pairedId: string | null
+    pairedId: string | null,
+    kind: "affirmation" | "covenant" | null
   ): void => {
     setIsSaving(true);
     setError(null);
-    createFormula(sectionName, name, defaultText, marks, translation, pairedId).then((result) => {
+    createFormula(sectionName, name, defaultText, marks, translation, pairedId, kind).then((result) => {
       setIsSaving(false);
       if (result.success) {
         router.push("/library");

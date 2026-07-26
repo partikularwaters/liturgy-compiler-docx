@@ -24,9 +24,20 @@ const FORMULA_MARK_SECTIONS: Record<string, Exclude<TextMark["type"], "bold">[]>
   Charge: ["minister"],
   "The Great Commission": ["minister"],
   Benediction: ["minister"],
-  "Affirmation of Faith / Church Covenant": ["congregation", "small_caps"],
 };
 
-export function getFormulaMarks(sectionName: string): Exclude<TextMark["type"], "bold">[] {
+// "Affirmation of Faith" now covers two identities sharing one Section name
+// (2026-07-26 split -- see sectionTitle.ts) -- the Apostles' Creed (plain
+// prose, no dialogue) and Vesper's Church Covenant (call-and-response,
+// needs the toolbar). Keyed on `kind` rather than the old dedicated
+// combined-name entry, since both identities now live under the same
+// section name.
+export function getFormulaMarks(
+  sectionName: string,
+  kind?: "affirmation" | "covenant" | null
+): Exclude<TextMark["type"], "bold">[] {
+  if (sectionName === "Affirmation of Faith") {
+    return kind === "covenant" ? ["congregation", "small_caps"] : [];
+  }
   return FORMULA_MARK_SECTIONS[sectionName] ?? [];
 }

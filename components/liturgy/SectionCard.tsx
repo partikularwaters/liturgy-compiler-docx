@@ -71,7 +71,7 @@ const PRAYER_GUIDE_SECTIONS = [
 // Scripture), pushed below only if too long. Only applies when there's no
 // Selection in the Section (the two mechanics are mutually exclusive in
 // practice -- these Sections never mix a Creed with a Scripture reading).
-const TITLE_IN_HEADER_SECTIONS = ["Affirmation of Faith", "Affirmation of Faith / Church Covenant"];
+const TITLE_IN_HEADER_SECTIONS = ["Affirmation of Faith"];
 
 // Feature 28 Part A: "+ X" outline buttons, 25% smaller than the app's
 // standard secondary button, transparent fill -- shared by every Add
@@ -688,7 +688,7 @@ export default function SectionCard({
     <div id={`section-${sectionIndex}`} className="flex flex-col gap-2 scroll-mt-6">
       <div className="flex items-baseline justify-between gap-4 flex-wrap">
         <h2 className="font-serif-body text-[16px] font-bold uppercase text-text-primary">
-          {sectionTitle(section, songs)}
+          {sectionTitle(section, songs, formulas)}
         </h2>
         {headerReference && (
           <p
@@ -1077,7 +1077,7 @@ export default function SectionCard({
                     initialVisibility={item.visibility}
                     initialMarks={item.marks ?? []}
                     initialTrinitarianSeal={item.trinitarianSeal ?? null}
-                    availableMarks={getFormulaMarks(section.name)}
+                    availableMarks={getFormulaMarks(section.name, formulas.find((f) => f.id === item.formulaId)?.kind)}
                     allowTrinitarianSeal={TRINITARIAN_SEAL_SECTIONS.includes(section.name)}
                     isSaving={isSaving}
                     error={error}
