@@ -4,7 +4,7 @@ import type { Song } from "@/types/liturgy";
 export async function getSongs(sectionName?: string): Promise<Song[]> {
   let query = supabase
     .from("songs")
-    .select("id, section_name, kind, title, attribution, year_published, notes, translation, paired_id");
+    .select("id, section_name, kind, title, attribution, year_published, notes, translation, paired_id, owner_id");
 
   if (sectionName) {
     query = query.eq("section_name", sectionName);
@@ -17,7 +17,7 @@ export async function getSongs(sectionName?: string): Promise<Song[]> {
   if (error?.message.includes("translation") || error?.message.includes("paired_id")) {
     let fallbackQuery = supabase
       .from("songs")
-      .select("id, section_name, kind, title, attribution, year_published, notes");
+      .select("id, section_name, kind, title, attribution, year_published, notes, owner_id");
     if (sectionName) fallbackQuery = fallbackQuery.eq("section_name", sectionName);
     const fallback = await fallbackQuery.order("section_name").order("title");
     data = fallback.data?.map((row) => ({ ...row, translation: null, paired_id: null })) ?? null;
@@ -39,5 +39,6 @@ export async function getSongs(sectionName?: string): Promise<Song[]> {
     notes: row.notes,
     translation: (row as { translation?: "fil" | "en" | null }).translation ?? null,
     pairedId: (row as { paired_id?: string | null }).paired_id ?? null,
+    ownerId: (row as { owner_id?: string | null }).owner_id ?? null,
   }));
 }

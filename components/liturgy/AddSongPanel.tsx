@@ -9,6 +9,8 @@ import type { Song } from "@/types/liturgy";
 
 interface AddSongPanelProps {
   songs: Song[];
+  // null for an anonymous visitor -- "My Library" tab never shows then.
+  currentUserId: string | null;
   kind: "psalm" | "hymn";
   sectionName: string;
   liturgyId: string;
@@ -16,12 +18,17 @@ interface AddSongPanelProps {
   onDone: () => void;
 }
 
+type Mode = "shared" | "mine" | "new";
+
 function previewTitle(song: Song): string {
   return song.attribution ? `${song.title} (${song.attribution})` : song.title;
 }
 
+// task 6: same Shared Library / My Library / Write New split as
+// AddPrayerPanel.tsx -- see that file's comment for the full reasoning.
 export default function AddSongPanel({
   songs,
+  currentUserId,
   kind,
   sectionName,
   liturgyId,
@@ -29,38 +36,38 @@ export default function AddSongPanel({
   onDone,
 }: AddSongPanelProps): React.ReactElement {
   const router = useRouter();
-  const [isWritingNew, setIsWritingNew] = useState(songs.length === 0);
-  const [songId, setSongId] = useState(songs[0]?.id ?? "");
-  const [title, setTitle] = useState(songs[0]?.title ?? "");
-  const [attribution, setAttribution] = useState(songs[0]?.attribution ?? "");
-  const [yearPublished, setYearPublished] = useState(songs[0]?.yearPublished ?? "");
-  const [notes, setNotes] = useState(songs[0]?.notes ?? "");
+  const sharedSongs = songs.filter((s) => !s.ownerId);
+  const mySongs = currentUserId ? songs.filter((s) => s.ownerId === currentUserId) : [];
+
+  const [mode, setMode] = useState<Mode>(sharedSongs.length > 0 ? "shared" : mySongs.length > 0 ? "mine" : "new");
+  const activeList = mode === "shared" ? sharedSongs : mode === "mine" ? mySongs : [];
+  const [songId, setSongId] = useState(activeList[0]?.id ?? "");
+  const [title, setTitle] = useState(activeList[0]?.title ?? "");
+  const [attribution, setAttribution] = useState(activeList[0]?.attribution ?? "");
+  const [yearPublished, setYearPublished] = useState(activeList[0]?.yearPublished ?? "");
+  const [notes, setNotes] = useState(activeList[0]?.notes ?? "");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const attributionLabel = kind === "psalm" ? "Versification" : "Author";
 
-  const handleSelectSong = (id: string): void => {
-    const song = songs.find((s) => s.id === id);
-    setSongId(id);
+  const applySong = (song: Song | undefined): void => {
+    setSongId(song?.id ?? "");
     setTitle(song?.title ?? "");
     setAttribution(song?.attribution ?? "");
     setYearPublished(song?.yearPublished ?? "");
     setNotes(song?.notes ?? "");
   };
 
-  const handleWriteNew = (): void => {
-    setIsWritingNew(true);
-    setSongId("");
-    setTitle("");
-    setAttribution("");
-    setYearPublished("");
-    setNotes("");
+  const handleSelectSong = (id: string, list: Song[]): void => {
+    applySong(list.find((s) => s.id === id));
   };
 
-  const handlePickExisting = (): void => {
-    setIsWritingNew(false);
-    handleSelectSong(songs[0]?.id ?? "");
+  const switchMode = (next: Mode): void => {
+    setMode(next);
+    setError(null);
+    const list = next === "shared" ? sharedSongs : next === "mine" ? mySongs : [];
+    applySong(list[0]);
   };
 
   const handleSave = (): void => {
@@ -80,7 +87,7 @@ export default function AddSongPanel({
       });
     };
 
-    if (isWritingNew) {
+    if (mode === "new") {
       createSong(sectionName, kind, title, attribution, yearPublished, notes).then((result) => {
         if (result.success && result.data) {
           finish(result.data.id);
@@ -90,6 +97,8 @@ export default function AddSongPanel({
         }
       });
     } else {
+      // Editing a Shared entry here only succeeds for a Curator
+      // (songActions.ts's own gate) -- a Compiler gets a clear error.
       updateSong(songId, sectionName, kind, title, attribution, yearPublished, notes).then((result) => {
         if (result.success) {
           finish(songId);
@@ -103,26 +112,23 @@ export default function AddSongPanel({
 
   return (
     <div className="bg-surface-secondary border border-border rounded-md p-4 flex flex-col gap-3">
-      {songs.length > 0 && (
-        <div className="flex gap-4 text-[13px] font-medium text-text-secondary">
-          <button
-            type="button"
-            onClick={handlePickExisting}
-            className={!isWritingNew ? "text-accent-dark" : undefined}
-          >
-            Pick existing
+      <div className="flex gap-4 text-[13px] font-medium text-text-secondary">
+        {sharedSongs.length > 0 && (
+          <button type="button" onClick={() => switchMode("shared")} className={mode === "shared" ? "text-accent-dark" : undefined}>
+            Shared Library
           </button>
-          <button
-            type="button"
-            onClick={handleWriteNew}
-            className={isWritingNew ? "text-accent-dark" : undefined}
-          >
-            Write new
+        )}
+        {currentUserId && mySongs.length > 0 && (
+          <button type="button" onClick={() => switchMode("mine")} className={mode === "mine" ? "text-accent-dark" : undefined}>
+            My Library
           </button>
-        </div>
-      )}
+        )}
+        <button type="button" onClick={() => switchMode("new")} className={mode === "new" ? "text-accent-dark" : undefined}>
+          Write New
+        </button>
+      </div>
 
-      {!isWritingNew && songs.length > 0 && (
+      {mode !== "new" && activeList.length > 0 && (
         <div className="flex flex-col gap-1">
           <label className="text-[13px] font-medium text-text-secondary" htmlFor="song-select">
             {kind === "psalm" ? "Psalm" : "Hymn"}
@@ -130,10 +136,10 @@ export default function AddSongPanel({
           <select
             id="song-select"
             value={songId}
-            onChange={(e) => handleSelectSong(e.target.value)}
+            onChange={(e) => handleSelectSong(e.target.value, activeList)}
             className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
           >
-            {songs.map((s) => (
+            {activeList.map((s) => (
               <option key={s.id} value={s.id}>
                 {previewTitle(s)}
               </option>

@@ -5,7 +5,7 @@ import type { Prayer, TextMark } from "@/types/liturgy";
 export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
   let query = supabase
     .from("prayers")
-    .select("id, section_name, text, kind, marks, is_guide, translation, paired_id");
+    .select("id, section_name, text, kind, marks, is_guide, translation, paired_id, owner_id");
 
   if (sectionName) {
     query = query.eq("section_name", sectionName);
@@ -16,7 +16,7 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
   // Graceful fallback if `translation`/`paired_id` aren't present yet --
   // migrations are applied manually, not automatically.
   if (error?.message.includes("translation") || error?.message.includes("paired_id")) {
-    let fallbackQuery = supabase.from("prayers").select("id, section_name, text, kind, marks, is_guide");
+    let fallbackQuery = supabase.from("prayers").select("id, section_name, text, kind, marks, is_guide, owner_id");
     if (sectionName) fallbackQuery = fallbackQuery.eq("section_name", sectionName);
     const fallback = await fallbackQuery;
     data = fallback.data?.map((row) => ({ ...row, translation: null, paired_id: null })) ?? null;
@@ -28,7 +28,7 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
   // shouldn't go down over a missing column. Falls back to the old
   // `kind === 'guide'` reading so behavior is unchanged until it exists.
   if (error?.message.includes("is_guide")) {
-    let fallbackQuery = supabase.from("prayers").select("id, section_name, text, kind, marks");
+    let fallbackQuery = supabase.from("prayers").select("id, section_name, text, kind, marks, owner_id");
     if (sectionName) fallbackQuery = fallbackQuery.eq("section_name", sectionName);
     const fallback = await fallbackQuery;
     data = fallback.data?.map((row) => ({ ...row, is_guide: row.kind === "guide", translation: null, paired_id: null })) ?? null;
@@ -38,7 +38,7 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
   // Same graceful missing-column fallback as getLiturgy.ts, so the whole
   // Library's Prayer list doesn't go down over a missing column.
   if (error?.message.includes("marks")) {
-    let fallbackQuery = supabase.from("prayers").select("id, section_name, text, kind");
+    let fallbackQuery = supabase.from("prayers").select("id, section_name, text, kind, owner_id");
     if (sectionName) fallbackQuery = fallbackQuery.eq("section_name", sectionName);
     const fallback = await fallbackQuery;
     data =
@@ -61,6 +61,7 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
     isGuide: Boolean((row as { is_guide?: boolean }).is_guide),
     translation: (row as { translation?: "fil" | "en" | null }).translation ?? null,
     pairedId: (row as { paired_id?: string | null }).paired_id ?? null,
+    ownerId: (row as { owner_id?: string | null }).owner_id ?? null,
   }));
 
   // Order of Worship sequence for actual

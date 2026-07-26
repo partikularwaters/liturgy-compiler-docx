@@ -10,46 +10,55 @@ import type { Prayer } from "@/types/liturgy";
 
 interface AddPrayerPanelProps {
   prayers: Prayer[];
+  // null for an anonymous visitor -- "My Library" tab never shows then,
+  // since there's nothing of theirs to show.
+  currentUserId: string | null;
   sectionName: string;
   liturgyId: string;
   sectionIndex: number;
   onDone: () => void;
 }
 
+type Mode = "shared" | "mine" | "new";
+
 function previewText(text: string): string {
   return text.length > 60 ? `${text.slice(0, 60)}…` : text;
 }
 
+// task 6: replaces the old flat "Pick existing" dropdown (which mixed the
+// shared canonical set with everyone's private forks indiscriminately) with
+// three explicit modes -- Shared Library, My Library, Write New -- so it's
+// always clear which set an entry is coming from before placing it.
 export default function AddPrayerPanel({
   prayers,
+  currentUserId,
   sectionName,
   liturgyId,
   sectionIndex,
   onDone,
 }: AddPrayerPanelProps): React.ReactElement {
   const router = useRouter();
-  const [isWritingNew, setIsWritingNew] = useState(prayers.length === 0);
-  const [prayerId, setPrayerId] = useState(prayers[0]?.id ?? "");
-  const [text, setText] = useState(prayers[0]?.text ?? "");
+  const sharedPrayers = prayers.filter((p) => !p.ownerId);
+  const myPrayers = currentUserId ? prayers.filter((p) => p.ownerId === currentUserId) : [];
+
+  const [mode, setMode] = useState<Mode>(sharedPrayers.length > 0 ? "shared" : myPrayers.length > 0 ? "mine" : "new");
+  const activeList = mode === "shared" ? sharedPrayers : mode === "mine" ? myPrayers : [];
+  const [prayerId, setPrayerId] = useState(activeList[0]?.id ?? "");
+  const [text, setText] = useState(activeList[0]?.text ?? "");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSelectPrayer = (id: string): void => {
+  const handleSelectPrayer = (id: string, list: Prayer[]): void => {
     setPrayerId(id);
-    setText(prayers.find((p) => p.id === id)?.text ?? "");
+    setText(list.find((p) => p.id === id)?.text ?? "");
   };
 
-  const handleWriteNew = (): void => {
-    setIsWritingNew(true);
-    setPrayerId("");
-    setText("");
-  };
-
-  const handlePickExisting = (): void => {
-    setIsWritingNew(false);
-    const first = prayers[0];
-    setPrayerId(first?.id ?? "");
-    setText(first?.text ?? "");
+  const switchMode = (next: Mode): void => {
+    setMode(next);
+    setError(null);
+    const list = next === "shared" ? sharedPrayers : next === "mine" ? myPrayers : [];
+    setPrayerId(list[0]?.id ?? "");
+    setText(list[0]?.text ?? "");
   };
 
   const handleSave = (): void => {
@@ -69,7 +78,7 @@ export default function AddPrayerPanel({
       });
     };
 
-    if (isWritingNew) {
+    if (mode === "new") {
       createPrayer(sectionName, text).then((result) => {
         if (result.success && result.data) {
           finish(result.data.id);
@@ -82,8 +91,10 @@ export default function AddPrayerPanel({
       // This panel has no marking toolbar (Bold/Congregation/etc. are edited
       // from the Library instead) -- shift whatever marks the library entry
       // already has to match this text edit, rather than defaulting to `[]`
-      // and silently wiping them.
-      const original = prayers.find((p) => p.id === prayerId);
+      // and silently wiping them. Editing a Shared entry here only succeeds
+      // for a Curator (prayerActions.ts's own gate) -- a Compiler editing a
+      // shared entry gets a clear error instead, same as everywhere else.
+      const original = activeList.find((p) => p.id === prayerId);
       const shiftedMarks = shiftMarksForEdit(original?.text ?? "", text, original?.marks ?? []);
       updatePrayer(prayerId, sectionName, text, undefined, shiftedMarks).then((result) => {
         if (result.success) {
@@ -98,26 +109,23 @@ export default function AddPrayerPanel({
 
   return (
     <div className="bg-surface-secondary border border-border rounded-md p-4 flex flex-col gap-3">
-      {prayers.length > 0 && (
-        <div className="flex gap-4 text-[13px] font-medium text-text-secondary">
-          <button
-            type="button"
-            onClick={handlePickExisting}
-            className={!isWritingNew ? "text-accent-dark" : undefined}
-          >
-            Pick existing
+      <div className="flex gap-4 text-[13px] font-medium text-text-secondary">
+        {sharedPrayers.length > 0 && (
+          <button type="button" onClick={() => switchMode("shared")} className={mode === "shared" ? "text-accent-dark" : undefined}>
+            Shared Library
           </button>
-          <button
-            type="button"
-            onClick={handleWriteNew}
-            className={isWritingNew ? "text-accent-dark" : undefined}
-          >
-            Write new
+        )}
+        {currentUserId && myPrayers.length > 0 && (
+          <button type="button" onClick={() => switchMode("mine")} className={mode === "mine" ? "text-accent-dark" : undefined}>
+            My Library
           </button>
-        </div>
-      )}
+        )}
+        <button type="button" onClick={() => switchMode("new")} className={mode === "new" ? "text-accent-dark" : undefined}>
+          Write New
+        </button>
+      </div>
 
-      {!isWritingNew && prayers.length > 0 && (
+      {mode !== "new" && activeList.length > 0 && (
         <div className="flex flex-col gap-1">
           <label className="text-[13px] font-medium text-text-secondary" htmlFor="prayer-select">
             Prayer
@@ -125,10 +133,10 @@ export default function AddPrayerPanel({
           <select
             id="prayer-select"
             value={prayerId}
-            onChange={(e) => handleSelectPrayer(e.target.value)}
+            onChange={(e) => handleSelectPrayer(e.target.value, activeList)}
             className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
           >
-            {prayers.map((p) => (
+            {activeList.map((p) => (
               <option key={p.id} value={p.id}>
                 {previewText(p.text)}
               </option>
@@ -148,9 +156,11 @@ export default function AddPrayerPanel({
           rows={4}
           className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
         />
-        {!isWritingNew && prayers.length > 0 && (
+        {mode !== "new" && activeList.length > 0 && (
           <p className="text-[13px] text-text-muted">
-            Editing here updates this Prayer in the library for future use.
+            {mode === "shared"
+              ? "Editing here updates this Prayer in the shared library for future use."
+              : "Editing here updates this Prayer in your own library for future use."}
           </p>
         )}
       </div>

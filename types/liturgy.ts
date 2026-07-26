@@ -112,6 +112,9 @@ export interface Formula {
   // lib/liturgy/translationPairing.ts), not auto-detected.
   translation?: "fil" | "en" | null;
   pairedId?: string | null;
+  // Same meaning as Prayer.ownerId (see that comment) -- null = shared/
+  // canonical, a real user id = a Compiler's own unpromoted proposal.
+  ownerId?: string | null;
 }
 
 export interface FormulaItem extends TrinitarianSealable {
@@ -181,6 +184,11 @@ export interface Prayer {
   // translation companion against, so this is a real link set by hand).
   translation?: "fil" | "en" | null;
   pairedId?: string | null;
+  // null = shared/canonical (Curator-controlled); a real user id = a
+  // Compiler's own Personal Library fork/proposal. See
+  // 20260725040000_curator_compiler_ownership.sql. Used by the Compile
+  // View picker (task 6) to separate "Shared Library" from "My Library."
+  ownerId?: string | null;
 }
 
 export interface PrayerItem {
@@ -227,6 +235,8 @@ export interface Song {
   // translation companion against, so this is a real link set by hand).
   translation?: "fil" | "en" | null;
   pairedId?: string | null;
+  // Same meaning as Prayer.ownerId above.
+  ownerId?: string | null;
 }
 
 export interface SongItem {

@@ -61,7 +61,7 @@ function BilingualGrid<T extends { id: string }>({
 }
 
 export default async function LibraryPage(): Promise<React.ReactElement> {
-  const [formulas, allPrayers, scriptureSelections, songs, sectionNames] = await Promise.all([
+  const [allFormulas, allPrayers, scriptureSelections, allSongs, sectionNames] = await Promise.all([
     getFormulas(),
     getPrayers(),
     getScriptureSelections(),
@@ -69,11 +69,19 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
     getSectionNames(),
   ]);
 
+  // This page is the public, browse-anywhere Shared Library -- everyone's
+  // own unpromoted drafts/forks (ownerId set) belong in /my-library instead,
+  // never mixed in here where an anonymous visitor or another Compiler could
+  // see them (task 6's picker got this same fix; this page had the identical
+  // gap and was missed when Formula/Prayer/Song ownership shipped).
+  const formulas = allFormulas.filter((f) => !f.ownerId);
+  const songs = allSongs.filter((s) => !s.ownerId);
   const psalms = songs.filter((s) => s.kind === "psalm");
   const hymns = songs.filter((s) => s.kind === "hymn");
 
-  const prayers = allPrayers.filter((p) => !p.isGuide);
-  const guides = allPrayers.filter((p) => p.isGuide);
+  const sharedPrayers = allPrayers.filter((p) => !p.ownerId);
+  const prayers = sharedPrayers.filter((p) => !p.isGuide);
+  const guides = sharedPrayers.filter((p) => p.isGuide);
 
   const formulaRows = buildBilingualRows<Formula>(formulas);
   const prayerRows = buildBilingualRows<Prayer>(prayers);
@@ -170,7 +178,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <BilingualGrid
             cells={prayerRows}
             renderItem={(prayer) => (
-              <PrayerListRow prayer={prayer} sectionNames={sectionNames} allPrayers={allPrayers} bordered={false} />
+              <PrayerListRow prayer={prayer} sectionNames={sectionNames} allPrayers={sharedPrayers} bordered={false} />
             )}
           />
         )}
@@ -187,7 +195,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         ) : (
           <div className="bg-surface border border-border rounded-lg px-6">
             {guides.map((guide) => (
-              <PrayerListRow key={guide.id} prayer={guide} sectionNames={sectionNames} allPrayers={allPrayers} />
+              <PrayerListRow key={guide.id} prayer={guide} sectionNames={sectionNames} allPrayers={sharedPrayers} />
             ))}
           </div>
         )}

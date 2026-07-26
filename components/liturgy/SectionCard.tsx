@@ -403,10 +403,23 @@ export default function SectionCard({
   // `isGuide` entries are reference
   // material, never placeable as an actual liturgy item -- keep them out of
   // AddPrayerPanel's picker entirely.
-  const sectionPrayers = prayers.filter((p) => p.sectionName === section.name && !p.isGuide);
+  //
+  // task 6: also exclude another Compiler's private drafts/forks entirely --
+  // a null ownerId (shared/canonical) or the CURRENT user's own ownerId
+  // passes; anyone else's owned row (someone else's unpromoted proposal)
+  // never should have appeared in this picker for anyone but its owner.
+  const isVisibleToCurrentUser = (ownerId: string | null | undefined): boolean =>
+    !ownerId || ownerId === currentUser?.id;
+  const sectionPrayers = prayers.filter(
+    (p) => p.sectionName === section.name && !p.isGuide && isVisibleToCurrentUser(p.ownerId)
+  );
   const sectionGuides = prayers.filter((p) => p.sectionName === section.name && p.isGuide);
-  const sectionPsalms = songs.filter((s) => s.sectionName === section.name && s.kind === "psalm");
-  const sectionHymns = songs.filter((s) => s.sectionName === section.name && s.kind === "hymn");
+  const sectionPsalms = songs.filter(
+    (s) => s.sectionName === section.name && s.kind === "psalm" && isVisibleToCurrentUser(s.ownerId)
+  );
+  const sectionHymns = songs.filter(
+    (s) => s.sectionName === section.name && s.kind === "hymn" && isVisibleToCurrentUser(s.ownerId)
+  );
   const [isAddingExistingSelection, setIsAddingExistingSelection] = useState(false);
   const [isChoosingVesperReading, setIsChoosingVesperReading] = useState(false);
   const [isAddingFormula, setIsAddingFormula] = useState(false);
@@ -863,6 +876,7 @@ export default function SectionCard({
         <div className="mb-4">
           <AddPrayerPanel
             prayers={sectionPrayers}
+            currentUserId={currentUser?.id ?? null}
             sectionName={section.name}
             liturgyId={liturgyId}
             sectionIndex={sectionIndex}
@@ -891,6 +905,7 @@ export default function SectionCard({
         <div className="mb-4">
           <AddSongPanel
             songs={sectionPsalms}
+            currentUserId={currentUser?.id ?? null}
             kind="psalm"
             sectionName={section.name}
             liturgyId={liturgyId}
@@ -904,6 +919,7 @@ export default function SectionCard({
         <div className="mb-4">
           <AddSongPanel
             songs={sectionHymns}
+            currentUserId={currentUser?.id ?? null}
             kind="hymn"
             sectionName={section.name}
             liturgyId={liturgyId}
