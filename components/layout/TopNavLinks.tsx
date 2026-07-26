@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { HomeIcon } from "@/components/liturgy/icons";
+import { useEffect, useRef, useState } from "react";
+import { HomeIcon, PlusIcon } from "@/components/liturgy/icons";
 import AccountMenu from "@/components/layout/AccountMenu";
 import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
@@ -13,6 +14,32 @@ interface TopNavLinksProps {
 export default function TopNavLinks({ currentUser }: TopNavLinksProps): React.ReactElement | null {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // "Auto-hiding nav" / "hide-on-scroll" -- slides the pill up out of view
+  // when scrolling down (so it doesn't sit over content while reading),
+  // and reveals it again on any upward scroll. Always visible near the very
+  // top of the page regardless of direction, so it doesn't vanish the
+  // instant you start scrolling from rest.
+  const [isHidden, setIsHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    lastScrollY.current = window.scrollY;
+    const handleScroll = (): void => {
+      const currentScrollY = window.scrollY;
+      const delta = currentScrollY - lastScrollY.current;
+      if (currentScrollY < 80) {
+        setIsHidden(false);
+      } else if (delta > 8) {
+        setIsHidden(true);
+      } else if (delta < -8) {
+        setIsHidden(false);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // The public, shareable Liturgy Web View has no nav bar at all -- it's
   // meant to be the liturgy alone, viewed by a congregation member who has
@@ -39,9 +66,29 @@ export default function TopNavLinks({ currentUser }: TopNavLinksProps): React.Re
           spacer below reserves its height on every OTHER page so the pill
           doesn't overlap that page's own content -- the homepage's banner is
           deliberately left to run underneath it uncompensated, since floating
-          over the banner is the whole point here. */}
-      <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-[900px] bg-accent rounded-full shadow-lg">
-        <div className="px-6 h-14 flex items-center justify-between gap-6">
+          over the banner is the whole point here.
+
+          Hides on scroll-down, reveals on scroll-up (a single transform, not
+          display:none, so the height/layout never jumps). Liturgies/Bible
+          Reader/Library text links are hidden below `md` -- all six items
+          (icon, 3 links, CTA, account menu) never fit a phone-width pill
+          without either overflowing past the rounded right edge or pushing
+          the account menu (and with it, Sign In/Sign Up) off past the
+          visible pill entirely, which is exactly what was happening.
+
+          Horizontal centering moved to this OUTER wrapper (flexbox,
+          untransformed) rather than nav's own `left-1/2 -translate-x-1/2` --
+          Tailwind v4 utilities set the modern standalone `translate` CSS
+          property, and combining it on the same element with the hide/
+          reveal transform below doesn't compose reliably. Splitting them
+          across two elements (centering here, hide/reveal on nav itself)
+          means neither element ever needs two transforms at once. */}
+      <div className="fixed top-4 inset-x-0 z-50 flex justify-center px-4">
+        <nav
+          className="w-full max-w-[900px] bg-accent rounded-full shadow-lg transition-transform duration-300"
+          style={{ transform: isHidden ? "translateY(-6rem)" : "translateY(0)" }}
+        >
+          <div className="px-6 h-14 flex items-center justify-between gap-4">
         <Link
           href="/"
           title="Home"
@@ -53,7 +100,7 @@ export default function TopNavLinks({ currentUser }: TopNavLinksProps): React.Re
         >
           <HomeIcon size={20} />
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-6 mr-auto ml-6">
           <Link
             href="/liturgies"
             className={
@@ -88,18 +135,21 @@ export default function TopNavLinks({ currentUser }: TopNavLinksProps): React.Re
           >
             Library
           </Link>
+        </div>
+        <div className="flex items-center gap-3 md:gap-4">
           {/* CTA is always "Create Liturgy" now -- same primary action on
               every page, not context-dependent. */}
           <Link
             href="/liturgy/new"
-            className="bg-cta-yellow text-cta-yellow-foreground rounded-md px-4 py-2 text-sm font-medium"
+            className="flex items-center gap-1 bg-cta-yellow text-cta-yellow-foreground rounded-full px-3 py-1.5 text-[13px] font-medium whitespace-nowrap"
           >
-            Create Liturgy
+            <PlusIcon size={14} /> Create Liturgy
           </Link>
           <AccountMenu currentUser={currentUser} />
         </div>
-        </div>
-      </nav>
+          </div>
+        </nav>
+      </div>
       {!isHomepage && <div className="h-[72px]" aria-hidden="true" />}
     </>
   );
