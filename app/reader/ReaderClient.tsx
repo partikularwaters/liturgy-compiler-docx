@@ -210,54 +210,10 @@ export default function ReaderClient({
   };
 
   return (
-    <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-6">
-      <h1 className="text-[28px] font-bold leading-9 text-text-primary">Bible Reader</h1>
-
-      {/* AB/BSB toggle and Highlight picker
-          weren't aligned with the Book/Chapter selects -- BookChapterPicker
-          is a two-row block (label above select), while these are single-row
-          controls, so `items-center` centered them against its full height
-          instead of its actual select inputs. `items-end` bottom-aligns
-          everything to the selects themselves. */}
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div className="flex items-end gap-4 flex-wrap">
-          <BookChapterPicker
-            books={books}
-            selectedBook={chapter.book}
-            selectedChapter={chapter.chapter}
-            onBookChange={handleBookChange}
-            onChapterChange={handleChapterChange}
-          />
-          <div className="flex items-center rounded-md border border-border overflow-hidden text-sm font-medium">
-            <button
-              type="button"
-              onClick={() => handleLanguageChange("fil")}
-              className={
-                language === "fil"
-                  ? "px-3 py-1.5 bg-accent text-accent-foreground"
-                  : "px-3 py-1.5 bg-surface text-text-secondary hover:bg-surface-secondary"
-              }
-            >
-              AB
-            </button>
-            <button
-              type="button"
-              onClick={() => handleLanguageChange("en")}
-              className={
-                language === "en"
-                  ? "px-3 py-1.5 bg-accent text-accent-foreground"
-                  : "px-3 py-1.5 bg-surface text-text-secondary hover:bg-surface-secondary"
-              }
-            >
-              BSB
-            </button>
-          </div>
-        </div>
-        {/* No account, no highlighting -- hidden entirely rather than
-            shown-and-erroring, matching the "don't offer an affordance
-            that can't work" rule applied everywhere else in the app. */}
-        {currentUser && <HighlightColorPicker activeColor={activeColor} onSelect={setActiveColor} />}
-      </div>
+    <div className="max-w-[1120px] mx-auto p-8 flex flex-col gap-6">
+      <h1 className="font-serif-body text-[28px] font-bold leading-9 text-text-primary [font-variant:small-caps]">
+        Bible Reader
+      </h1>
 
       {targetSection && (
         <div className="flex items-center justify-between bg-accent-light rounded-md px-3 py-1.5">
@@ -278,8 +234,14 @@ export default function ReaderClient({
           so the Reader looked like two different pages depending on how you
           arrived. The sidebar now always renders; its contents are just
           whichever of the three is relevant right now. */}
+      {/* Sidebar stays a fixed width; the reading column now fills whatever
+          space remains (a narrow gap, not a matched-width column) -- Book/
+          Chapter and the Highlight picker moved to sit directly above the
+          reading pane instead of spanning above both columns, and the AB/
+          BSB toggle moved inline with the pane's own "{book} {chapter}"
+          heading (see VerseDisplay's headingAccessory). */}
       <div className="flex flex-col md:flex-row items-start gap-6">
-        <div className="w-full md:w-[340px] shrink-0 md:sticky md:top-8 flex flex-col gap-4">
+        <div className="w-full md:w-[460px] shrink-0 md:sticky md:top-8 flex flex-col gap-4">
           {!targetSection ? (
             <ReaderTargetPicker liturgies={liturgies} />
           ) : candidateCitation ? (
@@ -306,13 +268,52 @@ export default function ReaderClient({
             </div>
           )}
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col gap-4">
+          <div className="flex items-end justify-between flex-wrap gap-3">
+            <BookChapterPicker
+              books={books}
+              selectedBook={chapter.book}
+              selectedChapter={chapter.chapter}
+              onBookChange={handleBookChange}
+              onChapterChange={handleChapterChange}
+            />
+            {/* No account, no highlighting -- hidden entirely rather than
+                shown-and-erroring, matching the "don't offer an affordance
+                that can't work" rule applied everywhere else in the app. */}
+            {currentUser && <HighlightColorPicker activeColor={activeColor} onSelect={setActiveColor} />}
+          </div>
           <VerseDisplay
             chapter={chapter}
             highlights={highlights}
             onVerseClick={handleVerseClick}
             verseMarkers={targetSection ? verseMarkers : undefined}
             onVerseMarkerClick={targetSection ? handleVerseMarkerClick : undefined}
+            headingAccessory={
+              <div className="flex items-center rounded-md border border-border overflow-hidden text-sm font-medium shrink-0">
+                <button
+                  type="button"
+                  onClick={() => handleLanguageChange("fil")}
+                  className={
+                    language === "fil"
+                      ? "px-3 py-1.5 bg-accent text-accent-foreground"
+                      : "px-3 py-1.5 bg-surface text-text-secondary hover:bg-surface-secondary"
+                  }
+                >
+                  AB
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleLanguageChange("en")}
+                  className={
+                    language === "en"
+                      ? "px-3 py-1.5 bg-accent text-accent-foreground"
+                      : "px-3 py-1.5 bg-surface text-text-secondary hover:bg-surface-secondary"
+                  }
+                >
+                  BSB
+                </button>
+              </div>
+            }
           />
         </div>
       </div>

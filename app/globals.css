@@ -5,7 +5,13 @@
   --font-serif-display: var(--font-old-standard-tt), serif;
   --font-serif-body: var(--font-ibarra-real-nova), serif;
 
-  --color-background: #F7F6F2;
+  /* 2026-07-28: background flattened to pure white, kept from the
+     accent-color trial (Madrid confirmed this piece, reverted the rest --
+     the yellow accent swap itself didn't work out). --color-surface is
+     ALSO white already, so cards have zero background separation from the
+     page -- border-border is doing all the work distinguishing a card from
+     the page underneath it. */
+  --color-background: #FFFFFF;
   --color-surface: #FFFFFF;
   --color-surface-secondary: #F1EFE9;
 
@@ -37,8 +43,12 @@
   --color-error-light: #EBD4D2;
   --color-error-foreground: #FFFFFF;
 
-  /* v1.1 — provisional, revisited later in v1 */
-  --color-cta-yellow: #F0B429;
+  /* Reformed Life's actual brand yellow (from the 2026-07-28 accent-color
+     trial, kept here even though that trial's broader accent swap was
+     reverted) -- was a provisional guess (#F0B429) before. Checked against
+     cta-yellow-foreground: 9.14:1, passes AAA (was 7.39:1 with the old
+     value, still fine either way). */
+  --color-cta-yellow: #FFCC33;
   --color-cta-yellow-foreground: #3A2B00;
   /* Feature 24: confirmed real value from the reference bulletin docx
      (redesign-plan-v1.1.md §AB), not a provisional guess. */

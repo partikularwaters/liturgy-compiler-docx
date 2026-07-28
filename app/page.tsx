@@ -87,16 +87,16 @@ export default async function Home(): Promise<React.ReactElement> {
         {currentUser && (
           <Link
             href="/liturgy/new"
-            className="flex items-center gap-1.5 bg-accent text-accent-foreground rounded-full px-5 py-2.5 text-[11px] font-semibold"
+            className="flex items-center gap-1.5 bg-accent text-accent-foreground rounded-full px-3 py-1.5 text-[13px] font-semibold"
           >
-            <PlusIcon size={13} /> Create Liturgy
+            <PlusIcon size={14} /> Create Liturgy
           </Link>
         )}
         <Link
           href="/library"
-          className="flex items-center gap-1.5 bg-surface border border-border text-text-primary rounded-full px-5 py-2.5 text-[11px] font-medium"
+          className="flex items-center gap-1.5 bg-surface border border-border text-text-primary rounded-full px-3 py-1.5 text-[13px] font-medium"
         >
-          <ArrowRightIcon size={13} /> Browse Library
+          <ArrowRightIcon size={14} /> Browse Library
         </Link>
       </div>
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { HomeIcon, PlusIcon } from "@/components/liturgy/icons";
+import { HomeIcon, PlusIcon, TriangleIcon } from "@/components/liturgy/icons";
 import AccountMenu from "@/components/layout/AccountMenu";
 import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 import type { SessionStatus } from "@/lib/auth/getSessionStatus";
@@ -103,40 +103,59 @@ export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksP
           <HomeIcon size={20} />
         </Link>
         <div className="hidden md:flex items-center gap-6 mr-auto ml-6">
-          <Link
-            href="/liturgies"
-            className={
-              isLiturgiesActive
-                ? "text-sm font-semibold text-accent-foreground"
-                : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
-            }
-          >
-            Liturgies
-          </Link>
-          <Link
-            href="/reader"
-            className={
-              isReaderActive
-                ? "text-sm font-semibold text-accent-foreground"
-                : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
-            }
-          >
-            Bible Reader
-          </Link>
+          {/* Active-page indicator: a small triangle beneath the current
+              link, pointing up at it -- the previous full-opacity-vs-70%
+              treatment was too subtle to read as "you are here" at a
+              glance. */}
+          <span className="relative flex flex-col items-center">
+            <Link
+              href="/liturgies"
+              className={
+                isLiturgiesActive
+                  ? "text-sm font-semibold text-accent-foreground"
+                  : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+              }
+            >
+              Liturgies
+            </Link>
+            {isLiturgiesActive && (
+              <TriangleIcon size={8} className="absolute -bottom-2 text-accent-foreground" />
+            )}
+          </span>
+          <span className="relative flex flex-col items-center">
+            <Link
+              href="/reader"
+              className={
+                isReaderActive
+                  ? "text-sm font-semibold text-accent-foreground"
+                  : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+              }
+            >
+              Bible Reader
+            </Link>
+            {isReaderActive && (
+              <TriangleIcon size={8} className="absolute -bottom-2 text-accent-foreground" />
+            )}
+          </span>
           {/* Library is now a persistent link like the two above, instead of
               borrowing the CTA button's slot (that button used to relabel
               itself to "Browse Library" on every non-home page, which read
               as two different actions rather than one consistent nav). */}
-          <Link
-            href="/library"
-            className={
-              isLibraryActive
-                ? "text-sm font-semibold text-accent-foreground"
-                : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
-            }
-          >
-            Library
-          </Link>
+          <span className="relative flex flex-col items-center">
+            <Link
+              href="/library"
+              className={
+                isLibraryActive
+                  ? "text-sm font-semibold text-accent-foreground"
+                  : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+              }
+            >
+              Library
+            </Link>
+            {isLibraryActive && (
+              <TriangleIcon size={8} className="absolute -bottom-2 text-accent-foreground" />
+            )}
+          </span>
         </div>
         <div className="flex items-center gap-3 md:gap-4">
           {/* CTA is always "Create Liturgy" now -- same primary action on

@@ -24,6 +24,7 @@ import {
   IconChevronDown,
   IconLogout,
   IconClock,
+  IconTriangleFilled,
 } from "@tabler/icons-react";
 
 interface IconProps {
@@ -70,3 +71,6 @@ export const LogoutIcon = wrap(IconLogout);
 // Pending-approval state (Account menu) -- signals "waiting," distinct from
 // the plain account icon shown once a role is actually granted.
 export const ClockIcon = wrap(IconClock);
+// Nav active-page indicator -- a small filled triangle beneath the current
+// page's link, pointing up at it.
+export const TriangleIcon = wrap(IconTriangleFilled);

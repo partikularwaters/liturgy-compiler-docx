@@ -13,7 +13,9 @@ export default async function LiturgiesPage(): Promise<React.ReactElement> {
   return (
     <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-[28px] font-bold leading-9 text-text-primary">Liturgies</h1>
+        <h1 className="font-serif-body text-[28px] font-bold leading-9 text-text-primary [font-variant:small-caps]">
+          Liturgies
+        </h1>
         {currentUser && (
           <Link
             href="/liturgy/new"

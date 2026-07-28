@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { login } from "@/lib/auth/authActions";
 
 export default function LoginForm(): React.ReactElement {
@@ -42,9 +43,14 @@ export default function LoginForm(): React.ReactElement {
         />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-[13px] font-medium text-text-secondary" htmlFor="login-password">
-          Password
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="text-[13px] font-medium text-text-secondary" htmlFor="login-password">
+            Password
+          </label>
+          <Link href="/forgot-password" className="text-[13px] text-accent hover:underline">
+            Forgot your password?
+          </Link>
+        </div>
         <input
           id="login-password"
           type="password"
@@ -58,7 +64,7 @@ export default function LoginForm(): React.ReactElement {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+        className="w-full text-center bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
       >
         {isSubmitting ? "Signing in…" : "Sign In"}
       </button>

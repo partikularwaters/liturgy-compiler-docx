@@ -64,7 +64,9 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
 
   return (
     <div className="max-w-[1120px] mx-auto p-8 flex flex-col gap-8">
-      <h1 className="text-[28px] font-bold leading-9 text-text-primary">Browse Library</h1>
+      <h1 className="font-serif-body text-[28px] font-bold leading-9 text-text-primary [font-variant:small-caps]">
+        Library
+      </h1>
 
       {/* task 13: pure-CSS AB/BSB toggle for narrow screens -- see the
           matching [data-translation] rules in app/globals.css. Radio inputs

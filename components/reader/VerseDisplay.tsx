@@ -13,6 +13,11 @@ interface VerseDisplayProps {
   onVerseClick: (verseNumber: number) => void;
   verseMarkers?: Record<number, VerseMarker>;
   onVerseMarkerClick?: (verseNumber: number) => void;
+  // Rendered inline with the "{book} {chapter}" heading -- the AB/BSB
+  // translation toggle, moved here from its own row above the two-column
+  // layout so it reads as part of "which text is this" rather than a
+  // separate control floating near the Book/Chapter pickers.
+  headingAccessory?: React.ReactNode;
 }
 
 const highlightBgClass: Record<string, string> = {
@@ -42,12 +47,16 @@ export default function VerseDisplay({
   onVerseClick,
   verseMarkers,
   onVerseMarkerClick,
+  headingAccessory,
 }: VerseDisplayProps): React.ReactElement {
   return (
     <div className="bg-surface border border-border rounded-lg p-6 md:p-12 shadow-[0px_1px_3px_rgba(34,32,28,0.08)]">
-      <h2 className="font-serif-display text-[22px] font-semibold leading-[30px] text-text-primary mb-4">
-        {chapter.book} {chapter.chapter}
-      </h2>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <h2 className="font-serif-display text-[22px] font-semibold leading-[30px] text-text-primary">
+          {chapter.book} {chapter.chapter}
+        </h2>
+        {headingAccessory}
+      </div>
       <div className="font-serif-body text-[19.5px] leading-[1.75] text-text-primary">
         {chapter.verses.map((verse) => {
           const marker = verseMarkers?.[verse.number];

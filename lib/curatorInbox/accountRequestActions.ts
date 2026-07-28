@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
+import { createNotification } from "@/lib/notifications/createNotification";
 
 // Every action here is Curator-only, checked explicitly (not just relied on
 // via RLS) since the service-role client bypasses RLS entirely -- this
@@ -25,6 +26,13 @@ export async function grantRole(userId: string, role: "curator" | "compiler"): P
     console.error("[lib/curatorInbox/accountRequestActions/grantRole]", error.message);
     return { success: false, error: "Unable to grant that role right now." };
   }
+
+  await createNotification(
+    userId,
+    "account_approved",
+    `Your account has been approved as a ${role === "curator" ? "Curator" : "Compiler"}.`,
+    role === "curator" ? "/curator-inbox" : "/my-library"
+  );
 
   return { success: true };
 }
