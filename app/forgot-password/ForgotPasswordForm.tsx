@@ -24,7 +24,9 @@ export default function ForgotPasswordForm(): React.ReactElement {
   };
 
   if (submitted) {
-    return <p className="text-sm text-text-secondary">If that email has an account, a reset link is on its way.</p>;
+    return (
+      <p className="text-sm text-text-secondary">If that email has an account, a password reset link is on its way.</p>
+    );
   }
 
   return (

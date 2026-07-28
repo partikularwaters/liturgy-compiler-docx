@@ -28,10 +28,7 @@ export default function SignupForm(): React.ReactElement {
 
   if (submitted) {
     return (
-      <p className="text-sm text-text-secondary">
-        Account created. Check your email to confirm it, then wait for the Curator to approve your request and
-        assign a role -- you'll be able to sign in once that happens.
-      </p>
+      <p className="text-sm text-text-secondary">Account created. Check your email to confirm your account.</p>
     );
   }
 

@@ -57,7 +57,7 @@ export default function AccountMenu({ currentUser, sessionStatus }: AccountMenuP
                 <p className="text-[11px] font-medium uppercase text-text-muted">Pending Approval</p>
                 <p className="text-[13px] text-text-secondary mt-1">
                   {sessionStatus.kind === "pending" && sessionStatus.firstName ? `Hi ${sessionStatus.firstName} — ` : ""}
-                  a Curator needs to review your request before you can sign in.
+                  your account is pending Curator approval.
                 </p>
               </div>
               <button
