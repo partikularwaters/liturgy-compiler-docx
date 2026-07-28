@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import TopNavLinks from "@/components/layout/TopNavLinks";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
+import { getSessionStatus } from "@/lib/auth/getSessionStatus";
 
 export default async function TopNav(): Promise<React.ReactElement> {
-  const currentUser = await getCurrentUser();
+  const [currentUser, sessionStatus] = await Promise.all([getCurrentUser(), getSessionStatus()]);
 
   return (
     <Suspense
@@ -13,7 +14,7 @@ export default async function TopNav(): Promise<React.ReactElement> {
         </div>
       }
     >
-      <TopNavLinks currentUser={currentUser} />
+      <TopNavLinks currentUser={currentUser} sessionStatus={sessionStatus} />
     </Suspense>
   );
 }

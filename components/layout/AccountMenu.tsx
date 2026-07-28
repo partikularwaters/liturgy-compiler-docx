@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { logout } from "@/lib/auth/authActions";
-import { UserCircleIcon, ChevronDownIcon, LogoutIcon } from "@/components/liturgy/icons";
+import { UserCircleIcon, ChevronDownIcon, LogoutIcon, ClockIcon } from "@/components/liturgy/icons";
 import type { CurrentUser } from "@/lib/auth/getCurrentUser";
+import type { SessionStatus } from "@/lib/auth/getSessionStatus";
 
 interface AccountMenuProps {
   currentUser: CurrentUser | null;
+  sessionStatus: SessionStatus;
 }
 
 // Replaces the previous inline "role badge + context link + Sign Out" (or
@@ -15,7 +17,7 @@ interface AccountMenuProps {
 // affordance -- one icon button, same footprint whether signed in or out,
 // opening a small dropdown for the actual choices. Matches how most apps
 // (GitHub, Google, etc.) keep the nav's account surface to one control.
-export default function AccountMenu({ currentUser }: AccountMenuProps): React.ReactElement {
+export default function AccountMenu({ currentUser, sessionStatus }: AccountMenuProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +34,7 @@ export default function AccountMenu({ currentUser }: AccountMenuProps): React.Re
 
   const contextHref = currentUser?.role === "curator" ? "/curator-inbox" : "/my-library";
   const contextLabel = currentUser?.role === "curator" ? "Curator Inbox" : "My Library";
+  const isPending = sessionStatus.kind === "pending";
 
   return (
     <div ref={menuRef} className="relative">
@@ -39,16 +42,36 @@ export default function AccountMenu({ currentUser }: AccountMenuProps): React.Re
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className="flex items-center gap-1 text-accent-foreground/70 hover:text-accent-foreground"
-        aria-label="Account menu"
+        aria-label={isPending ? "Account menu -- pending approval" : "Account menu"}
         aria-expanded={isOpen}
       >
-        <UserCircleIcon size={22} />
+        {isPending ? <ClockIcon size={22} /> : <UserCircleIcon size={22} />}
         <ChevronDownIcon size={14} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-border rounded-md shadow-lg py-1 z-50">
-          {currentUser ? (
+        <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-md shadow-lg py-1 z-50">
+          {isPending ? (
+            <>
+              <div className="px-4 py-2 border-b border-border">
+                <p className="text-[11px] font-medium uppercase text-text-muted">Pending Approval</p>
+                <p className="text-[13px] text-text-secondary mt-1">
+                  {sessionStatus.kind === "pending" && sessionStatus.firstName ? `Hi ${sessionStatus.firstName} — ` : ""}
+                  a Curator needs to review your request before you can sign in.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  logout();
+                }}
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-text-primary hover:bg-surface-secondary text-left"
+              >
+                <LogoutIcon size={15} /> Sign Out
+              </button>
+            </>
+          ) : currentUser ? (
             <>
               <div className="px-4 py-2 border-b border-border">
                 <p className="text-[11px] font-medium uppercase text-text-muted">

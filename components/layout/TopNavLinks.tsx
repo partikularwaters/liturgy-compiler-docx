@@ -6,12 +6,14 @@ import { useEffect, useRef, useState } from "react";
 import { HomeIcon, PlusIcon } from "@/components/liturgy/icons";
 import AccountMenu from "@/components/layout/AccountMenu";
 import type { CurrentUser } from "@/lib/auth/getCurrentUser";
+import type { SessionStatus } from "@/lib/auth/getSessionStatus";
 
 interface TopNavLinksProps {
   currentUser: CurrentUser | null;
+  sessionStatus: SessionStatus;
 }
 
-export default function TopNavLinks({ currentUser }: TopNavLinksProps): React.ReactElement | null {
+export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksProps): React.ReactElement | null {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -149,7 +151,7 @@ export default function TopNavLinks({ currentUser }: TopNavLinksProps): React.Re
               <PlusIcon size={14} /> Create Liturgy
             </Link>
           )}
-          <AccountMenu currentUser={currentUser} />
+          <AccountMenu currentUser={currentUser} sessionStatus={sessionStatus} />
         </div>
           </div>
         </nav>

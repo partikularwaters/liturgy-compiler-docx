@@ -23,6 +23,7 @@ import {
   IconUserCircle,
   IconChevronDown,
   IconLogout,
+  IconClock,
 } from "@tabler/icons-react";
 
 interface IconProps {
@@ -66,3 +67,6 @@ export const XIcon = wrap(IconX);
 export const UserCircleIcon = wrap(IconUserCircle);
 export const ChevronDownIcon = wrap(IconChevronDown);
 export const LogoutIcon = wrap(IconLogout);
+// Pending-approval state (Account menu) -- signals "waiting," distinct from
+// the plain account icon shown once a role is actually granted.
+export const ClockIcon = wrap(IconClock);

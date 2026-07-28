@@ -92,15 +92,25 @@ export async function updateScriptureSelection(
   return { success: true, companionSaved };
 }
 
-// Deliberately always fails -- Madrid's own call: "they can't delete from
-// the Library" for Scripture specifically, since its FIL/ENG pairing has an
-// independent canonical key and no owner_id/Curator-lockdown escape hatch
-// the way Formula/Prayer/Song have. The RLS policy already has no delete
-// rule for this table (20260725040000_curator_compiler_ownership.sql), but
-// that alone doesn't stop this app's own service-role client, which
-// bypasses RLS entirely -- so the block has to live here too. Kept as a
-// real function (rather than deleted outright) so a defensive caller still
-// gets a clear error instead of a missing-import build failure.
-export async function deleteScriptureSelection(_id: string): Promise<{ success: boolean; error?: string }> {
-  return { success: false, error: "Scripture Library items cannot be deleted." };
+// Reversed 2026-07-28 (Madrid, running this live as Curator, wants full
+// delete access across the Library for management). Curator-only, flat --
+// unlike Formula/Prayer/Song's "your own row or a Curator" rule, Scripture
+// has no owner_id/fork model at all, so there's no "your own row" case to
+// carve out; a Compiler still can't delete here, consistent with never
+// having an owned fork of a Scripture entry to begin with. Mirrors the
+// scripture_selections_delete RLS policy (20260728030000).
+export async function deleteScriptureSelection(id: string): Promise<{ success: boolean; error?: string }> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser || currentUser.role !== "curator") {
+    return { success: false, error: "Only a Curator can delete a Scripture Library item." };
+  }
+
+  const { error } = await supabase.from("scripture_selections").delete().eq("id", id);
+
+  if (error) {
+    console.error("[lib/selections/scriptureSelectionActions/deleteScriptureSelection]", error.message);
+    return { success: false, error: "Unable to delete this Scripture item right now." };
+  }
+
+  return { success: true };
 }

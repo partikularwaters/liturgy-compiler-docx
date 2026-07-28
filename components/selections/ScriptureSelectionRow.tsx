@@ -2,12 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { updateScriptureSelection } from "@/lib/selections/scriptureSelectionActions";
+import { updateScriptureSelection, deleteScriptureSelection } from "@/lib/selections/scriptureSelectionActions";
 import { autosizeTextarea } from "@/lib/text/autosize";
 import { shiftMarksForEdit } from "@/lib/text/marks";
 import { getSelectionMarks } from "@/lib/liturgy/markableSections";
 import MarkEditor from "@/components/liturgy/MarkEditor";
-import { PencilIcon, XIcon } from "@/components/liturgy/icons";
+import { PencilIcon, TrashIcon, XIcon } from "@/components/liturgy/icons";
 import LibraryTextPreview from "@/components/library/LibraryTextPreview";
 import ScriptureCitationLink from "@/components/liturgy/ScriptureCitationLink";
 import type { ScriptureSelection, TextMark } from "@/types/liturgy";
@@ -66,6 +66,19 @@ export default function ScriptureSelectionRow({
         }
       }
     );
+  };
+
+  const handleDelete = (): void => {
+    if (!window.confirm(`Delete "${selection.citation}"? This does not remove it from liturgies it's already placed in.`)) {
+      return;
+    }
+    deleteScriptureSelection(selection.id).then((result) => {
+      if (result.success) {
+        router.refresh();
+      } else {
+        setError(result.error ?? "Unable to delete this Scripture item right now.");
+      }
+    });
   };
 
   if (isEditing) {
@@ -146,6 +159,11 @@ export default function ScriptureSelectionRow({
           >
             <PencilIcon size={15} /> Edit
           </button>
+          {currentUser.role === "curator" && (
+            <button type="button" title="Delete" onClick={handleDelete} className="text-text-muted hover:text-error">
+              <TrashIcon size={16} />
+            </button>
+          )}
         </div>
       )}
       {error && !isEditing && <p className="text-[12px] text-error">{error}</p>}
