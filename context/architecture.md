@@ -162,7 +162,7 @@ All tables below are live and shipped. The hybrid relational/jsonb split (decide
 | id | uuid | Primary key |
 | liturgy_id | uuid | References `liturgies` |
 | template_section_index | integer | Which Template slot this fills |
-| items | jsonb | **Superseded by `section_items` below (v3 item 1, 2026-07-28) — column left in place, unused, until a follow-up migration drops it once the cutover is verified live.** Was: ordered array of Item objects. |
+| items | jsonb | **Removed 2026-07-28** (`20260728020000_drop_sections_items.sql`) — fully superseded by `section_items` below (v3 item 1), verified live first (Compile View, docx export, Web View, and a real add/remove round-trip all confirmed against the live database) before this column was dropped. |
 | column_break_before | boolean | v2 — "start this Section at the top of the next Word column," a per-liturgy authoring decision. Lives on this instance row, not `templates.sections`, since it's this week's actual content, not a template default. Defaults `false`. |
 | show_prayer_guide | boolean | v2 — whether *this* liturgy's docx export includes this Section's Prayer Guide (if one exists). Defaults `true`. |
 
@@ -180,7 +180,7 @@ Replaces `sections.items`'s jsonb array — one row per item instead of one arra
 
 `lib/liturgy/sectionItems.ts` is the single place that converts a `section_items` row back into the `Item` shape (`{ id, type, ...data }`) and the only place that writes to this table — every read chokepoint (`getSectionContext.ts`, `getLiturgy.ts`, `getLiturgies.ts`, `getTargetSection.ts`) and every mutation action calls through it, so nothing downstream (`SectionCard.tsx`, `prepareSectionRender.ts`, `resolveItemText.ts`, the docx/PDF/Web View renderers) needed to change at all — they only ever consumed `Item[]`, never the storage shape underneath it.
 
-**Cutover status (2026-07-28):** migration + app code shipped; `supabase/migrations/20260728010000_section_items_table.sql` is additive only (creates `section_items`, does not touch `sections.items`). Requires, in order: (1) Madrid runs that migration in the Supabase SQL editor, (2) `node --env-file=.env.local scripts/backfill-section-items.mjs` once, to copy every existing liturgy's items into the new table, (3) a live verification pass (add/edit/delete one of every item type on a real liturgy, export both Guide/Bulletin, check the Web View) before `sections.items` is dropped in a separate follow-up migration.
+**Cutover status: complete (2026-07-28).** Madrid ran `20260728010000_section_items_table.sql` and the backfill script; a read-only verification script confirmed all 69 existing items landed with zero missing. Live pass confirmed: Compile View renders correctly (all six item types), a real add/reload/remove round-trip on a live liturgy persisted correctly through a full page reload, both docx exports (`?audience=guide`/`?audience=bulletin`) return 200 with real content, and the public Web View renders correctly. `20260728020000_drop_sections_items.sql` (needs Madrid to run it in the Supabase SQL editor) removes the now-fully-unused `sections.items` column.
 
 **Item shape (within `section_items.data`) — as actually shipped, `types/liturgy.ts`:**
 ```json
