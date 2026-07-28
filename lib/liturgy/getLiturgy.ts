@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/db/supabase";
-import type { CompiledLiturgy, CompiledSection, Item, TemplateSection } from "@/types/liturgy";
+import { getItemsForSections } from "@/lib/liturgy/sectionItems";
+import type { CompiledLiturgy, CompiledSection, TemplateSection } from "@/types/liturgy";
 
 export async function getLiturgy(id: string): Promise<CompiledLiturgy | null> {
   // Same missing-column safety as the sections query below --
@@ -50,26 +51,26 @@ export async function getLiturgy(id: string): Promise<CompiledLiturgy | null> {
   // default every Section to "no break" / "show the guide," identical to
   // every liturgy's current behavior.
   let sectionRows:
-    | { template_section_index: number; items: Item[]; column_break_before?: boolean; show_prayer_guide?: boolean }[]
+    | { id: string; template_section_index: number; column_break_before?: boolean; show_prayer_guide?: boolean }[]
     | null = null;
   {
     const { data, error } = await supabase
       .from("sections")
-      .select("template_section_index, items, column_break_before, show_prayer_guide")
+      .select("id, template_section_index, column_break_before, show_prayer_guide")
       .eq("liturgy_id", id)
       .order("template_section_index");
 
     if (error?.message.includes("column_break_before") || error?.message.includes("show_prayer_guide")) {
       const fallback = await supabase
         .from("sections")
-        .select("template_section_index, items")
+        .select("id, template_section_index")
         .eq("liturgy_id", id)
         .order("template_section_index");
       if (fallback.error || !fallback.data) {
         console.error("[lib/liturgy/getLiturgy]", fallback.error?.message);
         return null;
       }
-      sectionRows = fallback.data as { template_section_index: number; items: Item[] }[];
+      sectionRows = fallback.data as { id: string; template_section_index: number }[];
     } else if (error || !data) {
       console.error("[lib/liturgy/getLiturgy]", error?.message);
       return null;
@@ -78,10 +79,12 @@ export async function getLiturgy(id: string): Promise<CompiledLiturgy | null> {
     }
   }
 
+  const itemsBySection = await getItemsForSections(sectionRows.map((row) => row.id));
+
   const template = liturgy.templates as unknown as { name: string; sections: TemplateSection[] };
   const sections: CompiledSection[] = sectionRows.map((row) => ({
     ...template.sections[row.template_section_index],
-    items: row.items as Item[],
+    items: itemsBySection.get(row.id) ?? [],
     columnBreakBefore: row.column_break_before ?? false,
     showPrayerGuide: row.show_prayer_guide ?? true,
   }));

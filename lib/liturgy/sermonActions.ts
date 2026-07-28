@@ -1,7 +1,7 @@
 "use server";
 
-import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
+import { insertSectionItem, updateSectionItem } from "@/lib/liturgy/sectionItems";
 import { normalizeTypography } from "@/lib/text/typographic";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { SermonItem } from "@/types/liturgy";
@@ -32,21 +32,18 @@ export async function saveSermonPassage(
   }
 
   const normalizedPassage = normalizeTypography(passage);
-  const existing = section.items.find((item) => item.type === "sermon");
+  const existing = section.items.find((item): item is SermonItem => item.type === "sermon");
 
-  const items = existing
-    ? section.items.map((item) =>
-        item.id === existing.id ? { ...item, passage: normalizedPassage } : item
-      )
-    : [
-        ...section.items,
-        { id: crypto.randomUUID(), type: "sermon", passage: normalizedPassage } as SermonItem,
-      ];
+  const { success, error } = existing
+    ? await updateSectionItem({ ...existing, passage: normalizedPassage })
+    : await insertSectionItem(section.id, {
+        id: crypto.randomUUID(),
+        type: "sermon",
+        passage: normalizedPassage,
+      });
 
-  const { error } = await supabase.from("sections").update({ items }).eq("id", section.id);
-
-  if (error) {
-    console.error("[lib/liturgy/sermonActions/saveSermonPassage]", error.message);
+  if (!success) {
+    console.error("[lib/liturgy/sermonActions/saveSermonPassage]", error);
     return { success: false, error: "Unable to save the Sermon passage right now." };
   }
   return { success: true };

@@ -162,11 +162,27 @@ All tables below are live and shipped. The hybrid relational/jsonb split (decide
 | id | uuid | Primary key |
 | liturgy_id | uuid | References `liturgies` |
 | template_section_index | integer | Which Template slot this fills |
-| items | jsonb | Ordered array of Item objects (see below) |
+| items | jsonb | **Superseded by `section_items` below (v3 item 1, 2026-07-28) — column left in place, unused, until a follow-up migration drops it once the cutover is verified live.** Was: ordered array of Item objects. |
 | column_break_before | boolean | v2 — "start this Section at the top of the next Word column," a per-liturgy authoring decision. Lives on this instance row, not `templates.sections`, since it's this week's actual content, not a template default. Defaults `false`. |
 | show_prayer_guide | boolean | v2 — whether *this* liturgy's docx export includes this Section's Prayer Guide (if one exists). Defaults `true`. |
 
-**Item shape (within `sections.items` jsonb) — as actually shipped, `types/liturgy.ts`:**
+### `section_items` (v3, new — 2026-07-28)
+
+Replaces `sections.items`'s jsonb array — one row per item instead of one array per Section, so v3 items 3-5 (tagging, universal search, cross-day duplicate flagging) can query across items directly. One polymorphic table, not six per-type tables — keeps the item-deletion Invariant below literally true (one untyped delete-by-id), and a future universal search is one query with a `type` filter instead of a six-way UNION.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| id | uuid | Primary key — same id the item had inside the old jsonb array |
+| section_id | uuid | References `sections`, `on delete cascade` |
+| position | integer | Explicit render order (a table has no inherent order the way an array element did) — new items go at the end; `lib/liturgy/sortSectionItems.ts` still applies its own promotion rules on top of this at render time |
+| type | text | `Item['type']` union, `check` constraint |
+| data | jsonb | Every field an item has today except `id`/`type` (citation, text, marks, formulaId, overrideText, prayerId, songId, etc.) — unchanged shape, just moved off the array |
+
+`lib/liturgy/sectionItems.ts` is the single place that converts a `section_items` row back into the `Item` shape (`{ id, type, ...data }`) and the only place that writes to this table — every read chokepoint (`getSectionContext.ts`, `getLiturgy.ts`, `getLiturgies.ts`, `getTargetSection.ts`) and every mutation action calls through it, so nothing downstream (`SectionCard.tsx`, `prepareSectionRender.ts`, `resolveItemText.ts`, the docx/PDF/Web View renderers) needed to change at all — they only ever consumed `Item[]`, never the storage shape underneath it.
+
+**Cutover status (2026-07-28):** migration + app code shipped; `supabase/migrations/20260728010000_section_items_table.sql` is additive only (creates `section_items`, does not touch `sections.items`). Requires, in order: (1) Madrid runs that migration in the Supabase SQL editor, (2) `node --env-file=.env.local scripts/backfill-section-items.mjs` once, to copy every existing liturgy's items into the new table, (3) a live verification pass (add/edit/delete one of every item type on a real liturgy, export both Guide/Bulletin, check the Web View) before `sections.items` is dropped in a separate follow-up migration.
+
+**Item shape (within `section_items.data`) — as actually shipped, `types/liturgy.ts`:**
 ```json
 {
   "type": "selection" | "formula" | "verbal_cue" | "prayer" | "sermon" | "song",
@@ -280,7 +296,7 @@ Unique on `(book, chapter, verse)` — keyed by citation only, not translation, 
 
 This keeps dedup and Formula/Prayer/Song/Selection-reuse queryable directly in SQL (citation and the various `*_id` fields are real columns/keys), while Item content stays flexible in jsonb since its shape varies by type — the hybrid split we already agreed on.
 
-**Decided:** jsonb for v1 and v2 both. Simpler to build, and neither v1 nor v2 needs to query across items — v2's docx export reads a whole liturgy in one shot, exactly like the legacy PDF export did, which jsonb handles fine. Migrating Items to their own child table (one row per item, tagged by Section) is **v3 item 1** — corrected here 2026-07-22, this line previously said "v2," which had drifted out of sync with `build-plan.md`'s actual 2026-07-20 v2/v3 scoping. v3 is where Sections become editable/reorderable and where search/tagging/coherence-score all need real per-item rows, so that's the natural point to revisit the storage shape, not before.
+**Decided:** jsonb for v1 and v2 both. Simpler to build, and neither v1 nor v2 needs to query across items — v2's docx export reads a whole liturgy in one shot, exactly like the legacy PDF export did, which jsonb handles fine. Migrating Items to their own child table (one row per item, tagged by Section) is **v3 item 1** — corrected here 2026-07-22, this line previously said "v2," which had drifted out of sync with `build-plan.md`'s actual 2026-07-20 v2/v3 scoping. v3 is where Sections become editable/reorderable and where search/tagging/coherence-score all need real per-item rows, so that's the natural point to revisit the storage shape, not before. **Shipped 2026-07-28 — see `section_items` above.**
 
 ---
 
@@ -337,6 +353,6 @@ Rules the AI agent must never violate:
 - A non-Sunday `service_date` never displays a Lord's Day number anywhere in the app (Compile View, PDF, Liturgy History, naming convention) — `getLordsDayNumber()`'s computation itself is unchanged, this is purely a display suppression rule.
 - **Citations are always run through `lib/liturgy/formatCitation()` before being displayed** — converts a verse-range hyphen to an en dash (e.g. "47:5-9" → "47:5–9"). Applied centrally in `resolveItemText.ts` (Selection labels, Song titles) and in the header-reference builders (`prepareSectionRender.ts`, `SectionCard.tsx`), not re-applied ad hoc per renderer — this is what let the fix apply retroactively to already-saved citations with no migration.
 - **`prepareSectionRender.ts` is the single source of truth for how a Section's items lay out** (header-reference text — Selection citations, a Creed/Church-Covenant Formula's name, or a lone Song's title — plus the multi-Selection merged-paragraph text/marks), shared by the PDF export and the Web View. `SectionCard.tsx` (Compile View) keeps its own parallel logic rather than importing this helper, since it alone needs editing-state awareness (falling back to per-item rendering while a Selection is being edited) that the two read-only surfaces never need — but any change to the header-reference or merge rules must be applied in both places, or the three surfaces will drift.
-- Deleting an item (any of the six types) goes through one generic action, `lib/liturgy/removeItemAction.ts`'s `removeItem()` — never a per-type delete function. All six item types live in the same `items` jsonb array, so removal is always the same array-filter operation regardless of type.
+- Deleting an item (any of the six types) goes through one generic action, `lib/liturgy/removeItemAction.ts`'s `removeItem()` — never a per-type delete function. As of the `section_items` migration (v3 item 1), this is a single untyped `delete from section_items where id = $1` — even more clearly type-agnostic than the old array-filter it replaced, and the direct reason that table's shape is one polymorphic table rather than six per-type ones.
 - Small Caps marking is available on every Section that can hold a Selection (`lib/liturgy/markableSections.ts`'s `getSelectionMarks()`) — it's a per-word reverential-capitalization convention (divine names), not scoped like the Leader/Congregation/Minister dialogue treatment, which stays genuinely restricted to Sections that alternate speaking parts.
 - The public Liturgy Web View (`/liturgy/[id]/view`) never shows the app's own top nav bar — `TopNavLinks.tsx` returns `null` for that route. A page meant to be shared by URL with a congregation member has no business exposing internal compiler navigation.

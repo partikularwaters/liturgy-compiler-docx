@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/db/supabase";
-import type { Item, LiturgySummary, SermonItem, TemplateSection } from "@/types/liturgy";
+import { getItemsForSections } from "@/lib/liturgy/sectionItems";
+import type { LiturgySummary, SermonItem, TemplateSection } from "@/types/liturgy";
 
 export async function getLiturgies(): Promise<LiturgySummary[]> {
   const { data, error } = await supabase
@@ -16,7 +17,7 @@ export async function getLiturgies(): Promise<LiturgySummary[]> {
 
   const { data: sectionRows, error: sectionsError } = await supabase
     .from("sections")
-    .select("liturgy_id, template_section_index, items")
+    .select("id, liturgy_id, template_section_index")
     .in(
       "liturgy_id",
       data.map((row) => row.id)
@@ -26,13 +27,15 @@ export async function getLiturgies(): Promise<LiturgySummary[]> {
     console.error("[lib/liturgy/getLiturgies]", sectionsError.message);
   }
 
+  const itemsBySection = await getItemsForSections((sectionRows ?? []).map((row) => row.id));
+
   return data.map((row) => {
     const template = row.templates as unknown as { name: string; sections: TemplateSection[] };
     const sermonSectionIndex = template.sections.findIndex((s) => s.name === "Sermon");
     const sermonRow = sectionRows?.find(
       (s) => s.liturgy_id === row.id && s.template_section_index === sermonSectionIndex
     );
-    const sermonItem = (sermonRow?.items as Item[] | undefined)?.find(
+    const sermonItem = (sermonRow ? itemsBySection.get(sermonRow.id) : undefined)?.find(
       (item): item is SermonItem => item.type === "sermon"
     );
 

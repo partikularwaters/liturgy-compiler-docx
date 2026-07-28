@@ -1,7 +1,7 @@
 "use server";
 
-import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
+import { deleteSectionItem } from "@/lib/liturgy/sectionItems";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
 // One generic delete path for every item type -- Selection, Formula, Verbal
@@ -25,12 +25,10 @@ export async function removeItem(
     return { success: false, error: "Unable to find that Section right now." };
   }
 
-  const items = section.items.filter((item) => item.id !== itemId);
+  const { success, error } = await deleteSectionItem(itemId);
 
-  const { error } = await supabase.from("sections").update({ items }).eq("id", section.id);
-
-  if (error) {
-    console.error("[lib/liturgy/removeItemAction]", error.message);
+  if (!success) {
+    console.error("[lib/liturgy/removeItemAction]", error);
     return { success: false, error: "Unable to remove this item right now." };
   }
 

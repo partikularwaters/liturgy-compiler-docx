@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
+import { insertSectionItem, updateSectionItem } from "@/lib/liturgy/sectionItems";
 import { normalizeTypography } from "@/lib/text/typographic";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { PrayerItem, TextMark } from "@/types/liturgy";
@@ -57,13 +58,10 @@ export async function addPrayer(
     leaderOnly: prayer.kind === "leader",
   };
 
-  const { error: updateError } = await supabase
-    .from("sections")
-    .update({ items: [...section.items, newItem] })
-    .eq("id", section.id);
+  const { success, error: updateError } = await insertSectionItem(section.id, newItem);
 
-  if (updateError) {
-    console.error("[lib/liturgy/addPrayerAction]", updateError.message);
+  if (!success) {
+    console.error("[lib/liturgy/addPrayerAction]", updateError);
     return { success: false, error: "Unable to place this Prayer right now." };
   }
 
@@ -109,14 +107,14 @@ export async function updatePrayerItem(
 
   const normalizedText = normalizeTypography(text);
   const existingItem = section.items.find((item) => item.id === itemId && item.type === "prayer");
-  const items = section.items.map((item) =>
-    item.id === itemId && item.type === "prayer" ? { ...item, text: normalizedText, marks } : item
-  );
+  if (!existingItem || existingItem.type !== "prayer") {
+    return { success: false, error: "Unable to find that Prayer right now." };
+  }
 
-  const { error } = await supabase.from("sections").update({ items }).eq("id", section.id);
+  const { success, error } = await updateSectionItem({ ...existingItem, text: normalizedText, marks });
 
-  if (error) {
-    console.error("[lib/liturgy/addPrayerAction/updatePrayerItem]", error.message);
+  if (!success) {
+    console.error("[lib/liturgy/addPrayerAction/updatePrayerItem]", error);
     return { success: false, error: "Unable to update this Prayer right now." };
   }
 

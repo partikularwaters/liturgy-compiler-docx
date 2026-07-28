@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
+import { insertSectionItem, updateSectionItem } from "@/lib/liturgy/sectionItems";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { SongItem } from "@/types/liturgy";
 
@@ -58,13 +59,10 @@ export async function addSong(
     notes: song.notes,
   };
 
-  const { error: updateError } = await supabase
-    .from("sections")
-    .update({ items: [...section.items, newItem] })
-    .eq("id", section.id);
+  const { success, error: updateError } = await insertSectionItem(section.id, newItem);
 
-  if (updateError) {
-    console.error("[lib/liturgy/addSongAction]", updateError.message);
+  if (!success) {
+    console.error("[lib/liturgy/addSongAction]", updateError);
     return { success: false, error: "Unable to place this Song right now." };
   }
 
@@ -96,20 +94,23 @@ export async function updateSongItem(
   }
 
   const existingItem = section.items.find((item) => item.id === itemId && item.type === "song");
+  if (!existingItem || existingItem.type !== "song") {
+    return { success: false, error: "Unable to find that Song right now." };
+  }
   const attributionValue = attribution.trim() || null;
   const yearPublishedValue = yearPublished.trim() || null;
   const notesValue = notes.trim() || null;
 
-  const items = section.items.map((item) =>
-    item.id === itemId && item.type === "song"
-      ? { ...item, title, attribution: attributionValue, yearPublished: yearPublishedValue, notes: notesValue }
-      : item
-  );
+  const { success, error } = await updateSectionItem({
+    ...existingItem,
+    title,
+    attribution: attributionValue,
+    yearPublished: yearPublishedValue,
+    notes: notesValue,
+  });
 
-  const { error } = await supabase.from("sections").update({ items }).eq("id", section.id);
-
-  if (error) {
-    console.error("[lib/liturgy/addSongAction/updateSongItem]", error.message);
+  if (!success) {
+    console.error("[lib/liturgy/addSongAction/updateSongItem]", error);
     return { success: false, error: "Unable to update this Song right now." };
   }
 

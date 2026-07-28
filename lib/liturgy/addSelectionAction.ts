@@ -3,6 +3,7 @@
 import { supabase } from "@/lib/db/supabase";
 import { isDuplicateCitation } from "@/lib/liturgy/dedup";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
+import { insertSectionItem, updateSectionItem } from "@/lib/liturgy/sectionItems";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
 import { normalizeCitationForTranslation } from "@/lib/bible/bookNamesTagalog";
 import { normalizeTypography } from "@/lib/text/typographic";
@@ -63,13 +64,10 @@ export async function addSelection(
     ...(trinitarianSeal ? { trinitarianSeal } : {}),
   };
 
-  const { error: updateError } = await supabase
-    .from("sections")
-    .update({ items: [...section.items, newItem] })
-    .eq("id", section.id);
+  const { success, error: updateError } = await insertSectionItem(section.id, newItem);
 
-  if (updateError) {
-    console.error("[lib/liturgy/addSelectionAction]", updateError.message);
+  if (!success) {
+    console.error("[lib/liturgy/addSelectionAction]", updateError);
     return { success: false, error: "Unable to save this Scripture item right now." };
   }
 
@@ -137,23 +135,21 @@ export async function updateSelectionItem(
     existingItem && existingItem.type === "selection" ? (existingItem.translation ?? "fil") : "fil";
   const formattedCitation = normalizeCitationForTranslation(formatCitation(citation), translation);
 
-  const items = section.items.map((item) =>
-    item.id === itemId && item.type === "selection"
-      ? {
-          ...item,
-          citation: formattedCitation,
-          text: normalizedText,
-          amenExpected,
-          marks,
-          trinitarianSeal: trinitarianSeal ?? undefined,
-        }
-      : item
-  );
+  if (!existingItem || existingItem.type !== "selection") {
+    return { success: false, error: "Unable to find that Scripture item right now." };
+  }
 
-  const { error } = await supabase.from("sections").update({ items }).eq("id", section.id);
+  const { success, error } = await updateSectionItem({
+    ...existingItem,
+    citation: formattedCitation,
+    text: normalizedText,
+    amenExpected,
+    marks,
+    trinitarianSeal: trinitarianSeal ?? undefined,
+  });
 
-  if (error) {
-    console.error("[lib/liturgy/addSelectionAction/updateSelectionItem]", error.message);
+  if (!success) {
+    console.error("[lib/liturgy/addSelectionAction/updateSelectionItem]", error);
     return { success: false, error: "Unable to update this Scripture item right now." };
   }
 

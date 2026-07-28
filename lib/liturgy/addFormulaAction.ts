@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
+import { insertSectionItem, updateSectionItem } from "@/lib/liturgy/sectionItems";
 import { normalizeTypography } from "@/lib/text/typographic";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { FormulaItem, TextMark } from "@/types/liturgy";
@@ -64,13 +65,10 @@ export async function addFormula(
     ...(overrideText ? {} : { marks: (formula.marks as TextMark[] | null) ?? [] }),
   };
 
-  const { error: updateError } = await supabase
-    .from("sections")
-    .update({ items: [...section.items, newItem] })
-    .eq("id", section.id);
+  const { success, error: updateError } = await insertSectionItem(section.id, newItem);
 
-  if (updateError) {
-    console.error("[lib/liturgy/addFormulaAction]", updateError.message);
+  if (!success) {
+    console.error("[lib/liturgy/addFormulaAction]", updateError);
     return { success: false, error: "Unable to place this Formula right now." };
   }
 
@@ -101,22 +99,21 @@ export async function updateFormulaItem(
     return { success: false, error: "Unable to find that Section right now." };
   }
 
-  const items = section.items.map((item) =>
-    item.id === itemId && item.type === "formula"
-      ? {
-          ...item,
-          overrideText: overrideText ? normalizeTypography(overrideText) : null,
-          visibility,
-          marks,
-          trinitarianSeal: trinitarianSeal ?? undefined,
-        }
-      : item
-  );
+  const existingItem = section.items.find((item) => item.id === itemId && item.type === "formula");
+  if (!existingItem || existingItem.type !== "formula") {
+    return { success: false, error: "Unable to find that Formula right now." };
+  }
 
-  const { error } = await supabase.from("sections").update({ items }).eq("id", section.id);
+  const { success, error } = await updateSectionItem({
+    ...existingItem,
+    overrideText: overrideText ? normalizeTypography(overrideText) : null,
+    visibility,
+    marks,
+    trinitarianSeal: trinitarianSeal ?? undefined,
+  });
 
-  if (error) {
-    console.error("[lib/liturgy/addFormulaAction/updateFormulaItem]", error.message);
+  if (!success) {
+    console.error("[lib/liturgy/addFormulaAction/updateFormulaItem]", error);
     return { success: false, error: "Unable to update this Formula right now." };
   }
 

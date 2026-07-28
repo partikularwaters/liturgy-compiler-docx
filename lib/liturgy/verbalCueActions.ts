@@ -1,7 +1,7 @@
 "use server";
 
-import { supabase } from "@/lib/db/supabase";
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
+import { insertSectionItem, updateSectionItem } from "@/lib/liturgy/sectionItems";
 import { normalizeTypography } from "@/lib/text/typographic";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { VerbalCueItem } from "@/types/liturgy";
@@ -39,13 +39,10 @@ export async function addVerbalCue(
     showAlternate,
   };
 
-  const { error } = await supabase
-    .from("sections")
-    .update({ items: [...section.items, newItem] })
-    .eq("id", section.id);
+  const { success, error } = await insertSectionItem(section.id, newItem);
 
-  if (error) {
-    console.error("[lib/liturgy/verbalCueActions/addVerbalCue]", error.message);
+  if (!success) {
+    console.error("[lib/liturgy/verbalCueActions/addVerbalCue]", error);
     return { success: false, error: "Unable to add this Verbal Cue right now." };
   }
   return { success: true };
@@ -77,16 +74,22 @@ export async function updateVerbalCue(
 
   const normalizedText = normalizeTypography(text);
   const normalizedAlternate = textAlternate.trim() ? normalizeTypography(textAlternate) : undefined;
-  const items = section.items.map((item) =>
-    item.id === itemId && item.type === "verbal_cue"
-      ? { ...item, text: normalizedText, visibility, rubric, textAlternate: normalizedAlternate, showAlternate }
-      : item
-  );
+  const existingItem = section.items.find((item) => item.id === itemId && item.type === "verbal_cue");
+  if (!existingItem || existingItem.type !== "verbal_cue") {
+    return { success: false, error: "Unable to find that Verbal Cue right now." };
+  }
 
-  const { error } = await supabase.from("sections").update({ items }).eq("id", section.id);
+  const { success, error } = await updateSectionItem({
+    ...existingItem,
+    text: normalizedText,
+    visibility,
+    rubric,
+    textAlternate: normalizedAlternate,
+    showAlternate,
+  });
 
-  if (error) {
-    console.error("[lib/liturgy/verbalCueActions/updateVerbalCue]", error.message);
+  if (!success) {
+    console.error("[lib/liturgy/verbalCueActions/updateVerbalCue]", error);
     return { success: false, error: "Unable to update this Verbal Cue right now." };
   }
   return { success: true };

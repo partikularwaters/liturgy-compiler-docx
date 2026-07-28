@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/db/supabase";
+import { getItemsForSection } from "@/lib/liturgy/sectionItems";
 import type { Item, TemplateSection } from "@/types/liturgy";
 
 export interface SectionContext {
@@ -24,7 +25,7 @@ export async function getSectionContext(
 
   const { data: sectionRow, error: sectionError } = await supabase
     .from("sections")
-    .select("id, items")
+    .select("id")
     .eq("liturgy_id", liturgyId)
     .eq("template_section_index", sectionIndex)
     .single();
@@ -42,5 +43,7 @@ export async function getSectionContext(
     return null;
   }
 
-  return { id: sectionRow.id, items: sectionRow.items as Item[], sectionName };
+  const items = await getItemsForSection(sectionRow.id);
+
+  return { id: sectionRow.id, items, sectionName };
 }
