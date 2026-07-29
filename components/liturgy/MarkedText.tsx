@@ -5,6 +5,15 @@ interface MarkedTextProps {
   text: string;
   marks: TextMark[] | undefined;
   className?: string;
+  // Defaults true (the Compile View/PDF/Web View's normal body-text
+  // treatment). LibraryTextPreview passes false when its own Tailwind
+  // `line-clamp-*` truncation is active -- `-webkit-line-clamp` forces the
+  // paragraph into a legacy `-webkit-box` display for the truncation
+  // itself, and text-align: justify's line-stretching breaks inside that
+  // box model (lines render narrow/ragged instead of stretching to fill the
+  // container). The two were never meant to combine; turning justify off
+  // specifically for the clamped state is the fix, not a stylistic choice.
+  justify?: boolean;
 }
 
 // Feature 25: Leader/Congregation/Minister/Small-Caps rendering
@@ -16,12 +25,12 @@ interface MarkedTextProps {
 // two whenever a word inside it was also small-capped) are both resolved
 // per-run by applyMarks(), so this component just maps each run's flags
 // straight to <strong>/font-variant.
-export default function MarkedText({ text, marks, className }: MarkedTextProps): React.ReactElement {
+export default function MarkedText({ text, marks, className, justify = true }: MarkedTextProps): React.ReactElement {
   const segments = applyMarks(text, marks);
 
   return (
     <p
-      className={`font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap text-justify ${className ?? ""}`}
+      className={`font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap ${justify ? "text-justify" : "text-left"} ${className ?? ""}`}
     >
       {segments.map((segment, i) => {
         const rendered = segment.runs.map((run, j) => {

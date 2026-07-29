@@ -25,6 +25,7 @@ import {
   IconLogout,
   IconClock,
   IconTriangleFilled,
+  IconMenu2,
 } from "@tabler/icons-react";
 
 interface IconProps {
@@ -74,3 +75,5 @@ export const ClockIcon = wrap(IconClock);
 // Nav active-page indicator -- a small filled triangle beneath the current
 // page's link, pointing up at it.
 export const TriangleIcon = wrap(IconTriangleFilled);
+// Mobile nav hamburger toggle.
+export const MenuIcon = wrap(IconMenu2);

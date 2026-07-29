@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { HomeIcon, PlusIcon, TriangleIcon } from "@/components/liturgy/icons";
+import { HomeIcon, PlusIcon, TriangleIcon, MenuIcon } from "@/components/liturgy/icons";
 import AccountMenu from "@/components/layout/AccountMenu";
 import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 import type { SessionStatus } from "@/lib/auth/getSessionStatus";
@@ -42,6 +42,37 @@ export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksP
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Mobile hamburger menu -- below `md`, Liturgies/Bible Reader/Library have
+  // nowhere to live in the pill itself (see the floating-pill comment
+  // below), so they move into this dropdown instead of disappearing
+  // entirely. Same open/close-on-outside-click pattern as AccountMenu.tsx;
+  // also closes on navigation, since a Link click doesn't itself unmount
+  // this dropdown the way a full page load would.
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  // React's own "adjust state during render" pattern for resetting state
+  // when a prop changes -- setting state directly in the render body (not
+  // inside an effect) when a tracked value changes is explicitly the
+  // recommended alternative to a useEffect-only reset, which would cause an
+  // extra cascading render after every navigation.
+  const [lastPathname, setLastPathname] = useState(pathname);
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
+    setIsMobileMenuOpen(false);
+  }
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent): void => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMobileMenuOpen]);
 
   // The public, shareable Liturgy Web View has no nav bar at all -- it's
   // meant to be the liturgy alone, viewed by a congregation member who has
@@ -94,14 +125,59 @@ export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksP
         <Link
           href="/"
           title="Home"
-          className={
-            isHomepage
-              ? "text-accent-foreground"
-              : "text-accent-foreground/70 hover:text-accent-foreground"
-          }
+          className={`hidden md:block ${
+            isHomepage ? "text-accent-foreground" : "text-accent-foreground/70 hover:text-accent-foreground"
+          }`}
         >
           <HomeIcon size={20} />
         </Link>
+        <div className="md:hidden relative" ref={mobileMenuRef}>
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            className="text-accent-foreground/70 hover:text-accent-foreground"
+            aria-label="Open menu"
+            aria-expanded={isMobileMenuOpen}
+          >
+            <MenuIcon size={20} />
+          </button>
+          {isMobileMenuOpen && (
+            <div className="absolute left-0 top-full mt-2 w-48 bg-surface border border-border rounded-md shadow-lg py-1 z-50">
+              <Link
+                href="/"
+                className={`block px-4 py-2 text-sm hover:bg-surface-secondary ${
+                  isHomepage ? "font-semibold text-text-primary" : "text-text-primary"
+                }`}
+              >
+                Home
+              </Link>
+              <Link
+                href="/liturgies"
+                className={`block px-4 py-2 text-sm hover:bg-surface-secondary ${
+                  isLiturgiesActive ? "font-semibold text-text-primary" : "text-text-primary"
+                }`}
+              >
+                Liturgies
+              </Link>
+              <Link
+                href="/reader"
+                className={`block px-4 py-2 text-sm hover:bg-surface-secondary ${
+                  isReaderActive ? "font-semibold text-text-primary" : "text-text-primary"
+                }`}
+              >
+                Bible Reader
+              </Link>
+              <Link
+                href="/library"
+                className={`block px-4 py-2 text-sm hover:bg-surface-secondary ${
+                  isLibraryActive ? "font-semibold text-text-primary" : "text-text-primary"
+                }`}
+              >
+                Library
+              </Link>
+            </div>
+          )}
+        </div>
         <div className="hidden md:flex items-center gap-6 mr-auto ml-6">
           {/* Active-page indicator: a small triangle beneath the current
               link, pointing up at it -- the previous full-opacity-vs-70%

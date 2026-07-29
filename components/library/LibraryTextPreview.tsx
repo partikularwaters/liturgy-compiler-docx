@@ -46,6 +46,7 @@ export default function LibraryTextPreview({
         text={text}
         marks={marks}
         className={`${className ?? ""} ${isLikelyOverflowing ? "line-clamp-3" : ""}`}
+        justify={!isLikelyOverflowing}
       />
       {isLikelyOverflowing && (
         <button
