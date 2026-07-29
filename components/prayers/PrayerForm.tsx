@@ -121,7 +121,7 @@ export default function PrayerForm({
           className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
         >
           <option value="corporate">Corporate (whole church prays it — Bulletin + Guide)</option>
-          <option value="leader">Leader (leader/minister's own material — Guide only)</option>
+          <option value="leader">Leader (leader/minister’s own material — Guide only)</option>
         </select>
       </div>
       <div className="flex flex-col gap-1">

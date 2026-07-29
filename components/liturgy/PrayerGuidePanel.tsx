@@ -66,7 +66,7 @@ export default function PrayerGuidePanel({
               onChange={handleToggleIncluded}
               disabled={isSaving}
             />
-            Add this Prayer Guide to the Leader&apos;s Guide
+            Add this Prayer Guide to the Leader’s Guide
           </label>
           {guides.map((guide) => (
             <p key={guide.id} className="text-sm text-text-primary whitespace-pre-line">

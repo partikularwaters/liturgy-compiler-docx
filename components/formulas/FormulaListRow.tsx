@@ -99,7 +99,7 @@ export default function FormulaListRow({
 
   return (
     <div className={`py-4 flex items-start justify-between gap-4 ${bordered ? "border-b border-border" : ""}`}>
-      <div>
+      <div className="flex-1 min-w-0">
         <p className="text-[13px] text-text-secondary">
           {formula.sectionName}
           {formula.translation && <> · {formula.translation === "en" ? "English" : "Filipino"}</>}

@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/db/supabase";
 import { getItemsForSections } from "@/lib/liturgy/sectionItems";
-import type { LiturgySummary, SermonItem, TemplateSection } from "@/types/liturgy";
+import type { LiturgySummary, SelectionItem, SermonItem, TemplateSection } from "@/types/liturgy";
 
 export async function getLiturgies(): Promise<LiturgySummary[]> {
   const { data, error } = await supabase
@@ -31,20 +31,32 @@ export async function getLiturgies(): Promise<LiturgySummary[]> {
 
   return data.map((row) => {
     const template = row.templates as unknown as { name: string; sections: TemplateSection[] };
-    const sermonSectionIndex = template.sections.findIndex((s) => s.name === "Sermon");
-    const sermonRow = sectionRows?.find(
-      (s) => s.liturgy_id === row.id && s.template_section_index === sermonSectionIndex
+
+    // Morning's own "Sermon" section holds a real SermonItem. Vesper has no
+    // Sermon section at all -- "The Lord's Discourses" (a Selection) is its
+    // closest equivalent for this summary line, per Madrid's own framing
+    // (the Liturgies list's middle/side text next to the template name and
+    // date). `sermonPassage` carries either value; the field wasn't renamed
+    // since every consumer already treats it as "whatever goes in that
+    // slot," not literally "a Sermon."
+    const sectionName = template.name === "Vesper Worship" ? "The Lord's Discourses" : "Sermon";
+    const sectionIndex = template.sections.findIndex((s) => s.name === sectionName);
+    const sectionRow = sectionRows?.find(
+      (s) => s.liturgy_id === row.id && s.template_section_index === sectionIndex
     );
-    const sermonItem = (sermonRow ? itemsBySection.get(sermonRow.id) : undefined)?.find(
-      (item): item is SermonItem => item.type === "sermon"
-    );
+    const items = sectionRow ? itemsBySection.get(sectionRow.id) : undefined;
+
+    const sermonPassage =
+      sectionName === "Sermon"
+        ? (items?.find((item): item is SermonItem => item.type === "sermon")?.passage ?? null)
+        : (items?.find((item): item is SelectionItem => item.type === "selection")?.citation ?? null);
 
     return {
       id: row.id,
       templateName: template.name,
       serviceDate: row.service_date,
       lordsDayNumber: row.lords_day_number,
-      sermonPassage: sermonItem?.passage ?? null,
+      sermonPassage,
     };
   });
 }

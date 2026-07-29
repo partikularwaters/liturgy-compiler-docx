@@ -25,7 +25,13 @@ function ABLink({ citation, className }: { citation: string; className?: string 
   const href = `https://www.biblegateway.com/passage/?search=${encodeURIComponent(english)}&version=ABTAG2001&src=tools`;
 
   return (
-    <a href={href} data-bibleref={english} className={`bibleref ${className ?? ""}`.trim()}>
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-bibleref={english}
+      className={`bibleref ${className ?? ""}`.trim()}
+    >
       {citation}
     </a>
   );

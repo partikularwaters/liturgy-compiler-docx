@@ -176,7 +176,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
       <div className="flex flex-col gap-3">
         <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Guides</h2>
         <p className="text-[13px] text-text-muted">
-          Reference outlines shown next to "Add Prayer" on the Sections that need one (redesign-plan-v1.1.md
+          Reference outlines shown next to “Add Prayer” on the Sections that need one (redesign-plan-v1.1.md
           §W) — never placed into a liturgy directly.
         </p>
         {guides.length === 0 ? (

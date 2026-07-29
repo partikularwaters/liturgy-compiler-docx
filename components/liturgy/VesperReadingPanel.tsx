@@ -74,7 +74,7 @@ export default function VesperReadingPanel({
     <div className="bg-surface-secondary border border-border rounded-md p-4 flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="vesper-reading-select">
-          Reading (from the Handbook's rotation)
+          Reading (from the Handbook’s rotation)
         </label>
         <select
           id="vesper-reading-select"

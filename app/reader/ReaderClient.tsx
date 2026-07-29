@@ -241,7 +241,7 @@ export default function ReaderClient({
           BSB toggle moved inline with the pane's own "{book} {chapter}"
           heading (see VerseDisplay's headingAccessory). */}
       <div className="flex flex-col md:flex-row items-start gap-6">
-        <div className="w-full md:w-[460px] shrink-0 md:sticky md:top-8 flex flex-col gap-4">
+        <div className="w-full md:w-[360px] shrink-0 md:sticky md:top-8 flex flex-col gap-4">
           {!targetSection ? (
             <ReaderTargetPicker liturgies={liturgies} />
           ) : candidateCitation ? (

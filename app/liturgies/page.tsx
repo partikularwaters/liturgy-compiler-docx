@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getLiturgies } from "@/lib/liturgy/getLiturgies";
-import LiturgyListRow from "@/components/liturgy/LiturgyListRow";
+import { groupLiturgiesByDate } from "@/lib/liturgy/groupLiturgiesByDate";
+import LiturgyDateRow from "@/components/liturgy/LiturgyDateRow";
 import { PlusIcon } from "@/components/liturgy/icons";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
@@ -9,9 +10,10 @@ export const dynamic = "force-dynamic";
 
 export default async function LiturgiesPage(): Promise<React.ReactElement> {
   const [liturgies, currentUser] = await Promise.all([getLiturgies(), getCurrentUser()]);
+  const dateGroups = groupLiturgiesByDate(liturgies);
 
   return (
-    <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-6">
+    <div className="max-w-[1120px] mx-auto p-8 flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="font-serif-body text-[28px] font-bold leading-9 text-text-primary [font-variant:small-caps]">
           Liturgies
@@ -26,7 +28,7 @@ export default async function LiturgiesPage(): Promise<React.ReactElement> {
         )}
       </div>
 
-      {liturgies.length === 0 ? (
+      {dateGroups.length === 0 ? (
         <div>
           <p className="text-sm text-text-muted">No liturgies yet.</p>
           {currentUser && (
@@ -40,8 +42,13 @@ export default async function LiturgiesPage(): Promise<React.ReactElement> {
         </div>
       ) : (
         <div className="bg-surface border border-border rounded-lg overflow-hidden">
-          {liturgies.map((liturgy, index) => (
-            <LiturgyListRow key={liturgy.id} liturgy={liturgy} isLast={index === liturgies.length - 1} currentUser={currentUser} />
+          {dateGroups.map((group, index) => (
+            <LiturgyDateRow
+              key={group.serviceDate}
+              group={group}
+              isLast={index === dateGroups.length - 1}
+              currentUser={currentUser}
+            />
           ))}
         </div>
       )}
