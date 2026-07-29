@@ -94,9 +94,11 @@ export default function SongListRow({
   }
 
   return (
-    <div className={`py-4 flex items-start justify-between gap-4 ${bordered ? "border-b border-border" : ""}`}>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] text-text-secondary">
+    // Edit/Delete are absolutely positioned, not a flex sibling -- see
+    // FormulaListRow's own comment for the full reasoning.
+    <div className={`relative py-4 ${bordered ? "border-b border-border" : ""}`}>
+      <div>
+        <p className="text-[13px] text-text-secondary pr-20">
           {song.sectionName}
           {song.translation && <> · {song.translation === "en" ? "English" : "Filipino"}</>}
         </p>
@@ -107,7 +109,7 @@ export default function SongListRow({
         {error && <p className="text-sm text-error mt-1">{error}</p>}
       </div>
       {currentUser && (
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="absolute top-4 right-0 flex items-center gap-3">
           <button
             type="button"
             onClick={() => setIsEditing(true)}

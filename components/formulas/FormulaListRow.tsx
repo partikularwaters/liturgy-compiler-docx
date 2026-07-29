@@ -98,9 +98,18 @@ export default function FormulaListRow({
   }
 
   return (
-    <div className={`py-4 flex items-start justify-between gap-4 ${bordered ? "border-b border-border" : ""}`}>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] text-text-secondary">
+    // Edit/Delete are absolutely positioned, not a flex sibling -- a flex
+    // sibling claims a whole column for the row's full height (even though
+    // it only has content at the top), which caps the body text's width to
+    // whatever's left over. Absolute positioning takes the buttons out of
+    // that width-sharing entirely, so the body preview can use the row's
+    // full width; the only line genuinely at the same height as the
+    // buttons is the Section-name label above, which is short enough in
+    // practice not to run under them (accepted tradeoff, not solved by
+    // reserved padding).
+    <div className={`relative py-4 ${bordered ? "border-b border-border" : ""}`}>
+      <div>
+        <p className="text-[13px] text-text-secondary pr-20">
           {formula.sectionName}
           {formula.translation && <> · {formula.translation === "en" ? "English" : "Filipino"}</>}
         </p>
@@ -109,7 +118,7 @@ export default function FormulaListRow({
         {error && <p className="text-sm text-error mt-1">{error}</p>}
       </div>
       {currentUser && (
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="absolute top-4 right-0 flex items-center gap-3">
           <button
             type="button"
             onClick={() => setIsEditing(true)}
