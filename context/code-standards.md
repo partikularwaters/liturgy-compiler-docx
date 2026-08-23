@@ -92,10 +92,15 @@ None — no analytics in v1, per project-overview.md.
 
 | Variable | Used In |
 | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | `lib/db/supabase.ts` — the one place the Supabase client is instantiated |
+| `NEXT_PUBLIC_SUPABASE_URL` | Service-role and signed-in-user Supabase clients |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `lib/auth/supabaseServer.ts`, `lib/auth/supabaseBrowser.ts`, and `middleware.ts` — signed-in-user sessions |
 | `SUPABASE_SERVICE_ROLE_KEY` | `lib/db/supabase.ts` — server-side only, never exposed to the client |
 
-**Corrected 2026-07-18** — this table previously also listed `NEXT_PUBLIC_SUPABASE_ANON_KEY` as used for "client-side reads." No such variable is used anywhere in the codebase — there is no browser Supabase client in this app at all (see `library-docs.md`'s Usage Pattern 1); every read and write goes through `lib/db/supabase.ts`'s single server-only client via a Server Action or Server Component. Both required env vars must be set in any deployment target (e.g. Vercel's Project Settings → Environment Variables) — the app fails at build/module-load time (`createClient(undefined, undefined)` throws immediately) if either is missing, which surfaces as `Failed to collect page data for /api/...` during a production build.
+All three values are required. `npm run dev` and `npm run build` call
+`scripts/check-env.mjs` first so a missing value produces a clear setup message
+instead of a Supabase module-load failure. The anon key is public by design;
+the service-role key is not and must never reach a browser bundle, log, commit,
+fixture, or chat.
 
 ---
 
@@ -123,6 +128,9 @@ Approved dependencies for this project:
 - `tailwindcss` (v4) — styling
 - `@tabler/icons-react` — shared icon set (2026-07-25: replaced the hand-rolled SVGs in `components/liturgy/icons.tsx`; that file still owns the exported names/props every call site uses, just backed by Tabler now)
 - `@supabase/ssr` — v3 Curator/Compiler auth (2026-07-25), cookie-backed session handling for Server Components/Actions and middleware. Distinct from `lib/db/supabase.ts`'s existing service-role client (bypasses RLS by design, used for every trusted server-side write) -- `lib/auth/supabaseServer.ts`/`supabaseBrowser.ts` carry the actual signed-in user's session so `auth.uid()` resolves inside RLS policies.
+- `@vercel/speed-insights` — optional performance telemetry on the Vercel Hobby allowance; it never gates an application feature
+- `supabase` (development) — free local Supabase CLI used to replay migrations against a disposable database
+- `vitest` (development) — focused unit and regression tests
 
 Do not install any other packages without updating this list first.
 

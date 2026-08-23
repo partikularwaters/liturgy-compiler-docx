@@ -28,12 +28,13 @@ Never rely on general training knowledge alone for library APIs — they change 
 
 ## Supabase (Database Client)
 
-Primary data store — Liturgies, Sections (with jsonb Items), Formulas, Prayers.
+Primary data store — Liturgies, Sections, row-based Section Items, reusable
+libraries, Auth roles, and notifications.
 
-### Usage Pattern 1 — Server-Only Client
+### Usage Pattern 1 — Two clients with different authority
 
 ```typescript
-// lib/db/supabase.ts — the only place Supabase is instantiated
+// lib/db/supabase.ts — the server-only service-role client
 import { createClient } from '@supabase/supabase-js';
 
 export const supabase = createClient(
@@ -42,16 +43,27 @@ export const supabase = createClient(
 );
 ```
 
+`lib/db/supabase.ts` is the server-only service-role client. It bypasses RLS,
+so every client-reachable mutation using it must perform its own authorization
+check before writing.
+
+`lib/auth/supabaseServer.ts` and `lib/auth/supabaseBrowser.ts` carry the signed-in
+user's session using the public anon key. They exist for Auth and RLS-aware user
+context; they never receive the service-role key.
+
 **Rules:**
 
-- Never import this client into a component — only into Server Actions and `lib/liturgy`, `lib/bible`
-- No separate browser client in v1 — there's no client-side auth or realtime need yet
+- Never import the service-role client into a Client Component
+- Never assume RLS protects a service-role write
+- Public reads remain available without login; authenticated authority is required for mutations
 
 ---
 
 ### Usage Pattern 2 — Queries
 
 ```typescript
+import { insertSectionItem } from '@/lib/liturgy/sectionItems';
+
 // Read
 const { data, error } = await supabase
   .from('liturgies')
@@ -59,18 +71,16 @@ const { data, error } = await supabase
   .eq('id', liturgyId)
   .single();
 
-// Write
-const { data, error } = await supabase
-  .from('sections')
-  .update({ items: updatedItems })
-  .eq('id', sectionId);
+// Item writes go through lib/liturgy/sectionItems.ts rather than being issued
+// ad hoc from a component or feature action.
+const result = await insertSectionItem(sectionId, item);
 ```
 
 **Rules:**
 
 - Always handle the error return — never assume success
 - Use `.single()` when expecting exactly one row
-- Items are read/written as a whole jsonb array per Section (see architecture.md) — don't attempt to patch a single Item without reading and rewriting the full array
+- Section Items live as individual `section_items` rows. Read and write them only through `lib/liturgy/sectionItems.ts`, which converts storage rows to the shared `Item` type.
 
 ---
 

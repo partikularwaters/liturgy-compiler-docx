@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Old_Standard_TT, Ibarra_Real_Nova } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import TopNav from "@/components/layout/TopNav";
 import ScriptureLinker from "@/components/layout/ScriptureLinker";
 import "./globals.css";
@@ -38,6 +39,7 @@ export default function RootLayout({
         <TopNav />
         <main className="flex-1 min-h-full">{children}</main>
         <ScriptureLinker />
+        <SpeedInsights />
       </body>
     </html>
   );

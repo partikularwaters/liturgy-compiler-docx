@@ -47,9 +47,13 @@ The original repo's PDF pipeline stays in this codebase (`lib/pdf/`), frozen and
 
 ## Getting started
 
+Project-owner account and production-readiness steps are kept in
+[`docs/OWNER-GUIDE.md`](docs/OWNER-GUIDE.md). It identifies exactly which steps
+require Madrid and which ones Codex should handle.
+
 ```bash
 npm install
-cp .env.local.example .env.local   # fill in your Supabase project's URL + service role key
+cp .env.local.example .env.local   # fill in all three Supabase values locally
 npm run dev
 ```
 
@@ -57,10 +61,34 @@ Required environment variables (`.env.local`):
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-Database schema changes live in `supabase/migrations/` — apply them against your Supabase project before running the app against fresh data.
+Never commit `.env.local` or paste its values into chat. `npm run dev` and
+`npm run build` run a preflight check that names any missing variable without
+printing its value.
+
+### Free local database rehearsal
+
+The repository includes the Supabase CLI as a development dependency. After
+installing a free Docker-compatible runtime, use:
+
+```bash
+npm run db:start
+npm run db:reset
+npm run db:status
+```
+
+The local database is disposable: `db:reset` erases its local data and replays
+every file in `supabase/migrations/`. It never targets the hosted production
+project unless you deliberately link and push to that project. Bible text is
+loaded separately with `npm run seed:bible` after `.env.local` points to the
+local stack.
+
+For the first local Curator, sign up normally, then change that local
+`user_roles` row from `pending` to `curator` in local Supabase Studio. Ordered
+migrations intentionally contain no environment-specific Auth user IDs.
 
 ---
 
