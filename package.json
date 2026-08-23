@@ -3,10 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "env:check": "node scripts/check-env.mjs",
+    "dev": "npm run env:check && next dev",
+    "build": "npm run env:check && next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:status": "supabase status",
+    "db:reset": "supabase db reset",
+    "db:verify-contract": "node --env-file=.env.local scripts/verify-db-contract.mjs",
     "seed:bible": "node --env-file=.env.local scripts/seed-bible.ts"
   },
   "dependencies": {
@@ -14,6 +22,7 @@
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.2",
     "@tabler/icons-react": "^3.45.0",
+    "@vercel/speed-insights": "^2.0.0",
     "docx": "^9.7.1",
     "next": "16.2.10",
     "react": "19.2.4",
@@ -26,7 +35,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "supabase": "^2.114.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
