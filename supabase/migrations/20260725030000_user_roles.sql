@@ -23,15 +23,6 @@ create policy "user_roles_write_curator_only" on user_roles
     exists (select 1 from user_roles ur where ur.user_id = auth.uid() and ur.role = 'curator')
   );
 
--- Placeholder seed data -- Madrid asked for placeholder accounts to unblock
--- this work until he provides real ones. Two real Supabase Auth users were
--- created via the admin API (not invented UUIDs) so these rows reference
--- actual auth.users entries and the login flow is genuinely testable once
--- NEXT_PUBLIC_SUPABASE_ANON_KEY is added to .env.local. Credentials given
--- directly in chat, not committed here. DELETE these two rows (and the
--- corresponding auth.users accounts, via the Supabase dashboard) once real
--- accounts exist.
-insert into user_roles (user_id, role) values
-  ('04135f3b-3637-4e18-9c9a-1107c0646d80', 'curator'),
-  ('18033cdb-7ee9-40ad-89b5-6e0022ed208e', 'compiler')
-on conflict (user_id) do nothing;
+-- Roles are assigned after a real Auth user signs up. Never seed user IDs in
+-- an ordered migration: auth.users belongs to each Supabase environment, so a
+-- production UUID cannot exist in a clean local or recovery project.
