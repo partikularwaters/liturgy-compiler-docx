@@ -77,6 +77,10 @@ web_modules/
 .env*
 !.env*.example
 
+# Personal Claude Code permission grants -- machine/session-specific, not
+# shared project config (settings.json and launch.json are).
+.claude/settings.local.json
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
