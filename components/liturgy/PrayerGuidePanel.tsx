@@ -11,6 +11,7 @@ interface PrayerGuidePanelProps {
   liturgyId: string;
   sectionIndex: number;
   showPrayerGuide: boolean;
+  canEdit: boolean;
 }
 
 // Feature 27: reference panel for 'guide'-kind Prayer library entries
@@ -32,6 +33,7 @@ export default function PrayerGuidePanel({
   liturgyId,
   sectionIndex,
   showPrayerGuide,
+  canEdit,
 }: PrayerGuidePanelProps): React.ReactElement | null {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -59,15 +61,17 @@ export default function PrayerGuidePanel({
       </button>
       {isOpen && (
         <div className="bg-surface-secondary border border-border rounded-md p-3 flex flex-col gap-2 max-w-[420px]">
-          <label className="flex items-center gap-2 text-[12px] font-medium text-text-secondary">
-            <input
-              type="checkbox"
-              checked={showPrayerGuide}
-              onChange={handleToggleIncluded}
-              disabled={isSaving}
-            />
-            Add this Prayer Guide to the Leader’s Guide
-          </label>
+          {canEdit && (
+            <label className="flex items-center gap-2 text-[12px] font-medium text-text-secondary">
+              <input
+                type="checkbox"
+                checked={showPrayerGuide}
+                onChange={handleToggleIncluded}
+                disabled={isSaving}
+              />
+              Add this Prayer Guide to the Leader’s Guide
+            </label>
+          )}
           {guides.map((guide) => (
             <p key={guide.id} className="text-sm text-text-primary whitespace-pre-line">
               {guide.text}

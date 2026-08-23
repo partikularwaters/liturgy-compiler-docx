@@ -505,7 +505,7 @@ export default function SectionCard({
   const isAnySelectionBeingEdited = selectionItems.some((item) => item.id === editingItemId);
   const shouldMergeSelections = selectionItems.length > 1 && !isAnySelectionBeingEdited;
   let combinedSelectionText = "";
-  let combinedSelectionMarks: TextMark[] = [];
+  const combinedSelectionMarks: TextMark[] = [];
   if (shouldMergeSelections) {
     let offset = 0;
     const parts: string[] = [];
@@ -821,6 +821,7 @@ export default function SectionCard({
           liturgyId={liturgyId}
           sectionIndex={sectionIndex}
           showPrayerGuide={section.showPrayerGuide}
+          canEdit={currentUser !== null}
         />
       )}
 

@@ -2,6 +2,7 @@
 
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
 import { addSelection, updateSelectionItem } from "@/lib/liturgy/addSelectionAction";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
 // Lets the Compiler pick a different reading
 // than vesperTableRotation.ts's automated pick, from that Section's own
@@ -16,6 +17,11 @@ export async function chooseVesperReading(
   sectionIndex: number,
   citation: string
 ): Promise<{ success: boolean; error?: string }> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to choose this Vesper reading." };
+  }
+
   const section = await getSectionContext(liturgyId, sectionIndex);
   if (!section) {
     return { success: false, error: "Unable to find that Section right now." };

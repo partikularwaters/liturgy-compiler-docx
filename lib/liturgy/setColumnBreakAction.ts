@@ -1,6 +1,7 @@
 "use server";
 
 import { supabase } from "@/lib/db/supabase";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
 // v2 item 2: continuous-flow authoring's manual override -- "start this
 // Section at the top of the next Word column" in the exported docx. A
@@ -14,6 +15,11 @@ export async function setColumnBreak(
   sectionIndex: number,
   columnBreakBefore: boolean
 ): Promise<{ success: boolean; error?: string }> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to change this column setting." };
+  }
+
   const { error } = await supabase
     .from("sections")
     .update({ column_break_before: columnBreakBefore })

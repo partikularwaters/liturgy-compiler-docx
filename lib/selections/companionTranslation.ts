@@ -1,4 +1,4 @@
-"use server";
+import "server-only";
 
 import { supabase } from "@/lib/db/supabase";
 import { parseCitationReference, toFilipinoCitation } from "@/lib/bible/bookNamesTagalog";

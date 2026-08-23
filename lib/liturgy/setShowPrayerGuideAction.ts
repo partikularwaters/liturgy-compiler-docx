@@ -1,6 +1,7 @@
 "use server";
 
 import { supabase } from "@/lib/db/supabase";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
 // Per-liturgy "add this Prayer Guide to the
 // Leader's Guide" toggle -- mirrors setColumnBreakAction.ts's pattern
@@ -12,6 +13,11 @@ export async function setShowPrayerGuide(
   sectionIndex: number,
   showPrayerGuide: boolean
 ): Promise<{ success: boolean; error?: string }> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Sign in to change this Prayer Guide setting." };
+  }
+
   const { error } = await supabase
     .from("sections")
     .update({ show_prayer_guide: showPrayerGuide })
