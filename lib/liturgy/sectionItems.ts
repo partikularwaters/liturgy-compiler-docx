@@ -63,8 +63,13 @@ export async function getItemsForSections(sectionIds: string[]): Promise<Map<str
   return bySection;
 }
 
-// New item goes at the end of its Section -- position is just "how many
-// items are already there," not a value the caller picks.
+// New item goes at the end of its Section. Position is computed server-side
+// by the section_items_set_position trigger (20260824010000), not read here
+// and passed along -- a client-side "count, then insert" round trip left a
+// window for two concurrent placements into the same Section to read the
+// same count and collide (BA-003). The trigger serializes concurrent
+// inserts per Section with a transaction-scoped advisory lock, so whatever
+// this call omits/sends for position is overwritten there.
 export async function insertSectionItem(
   sectionId: string,
   item: Item
@@ -82,7 +87,7 @@ export async function insertSectionItem(
   const { id, type, ...data } = item;
   const { error } = await supabase
     .from("section_items")
-    .insert({ id, section_id: sectionId, position: count ?? 0, type, data });
+    .insert({ id, section_id: sectionId, type, data });
 
   if (error) {
     console.error("[lib/liturgy/sectionItems/insertSectionItem]", error.message);
