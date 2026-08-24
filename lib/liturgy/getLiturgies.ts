@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/db/supabase";
 import { getItemsForSections } from "@/lib/liturgy/sectionItems";
-import type { LiturgySummary, SelectionItem, SermonItem, TemplateSection } from "@/types/liturgy";
+import type { Item, LiturgySummary, SelectionItem, SermonItem, TemplateSection } from "@/types/liturgy";
 
 export async function getLiturgies(): Promise<LiturgySummary[]> {
   const { data, error } = await supabase
@@ -27,7 +27,17 @@ export async function getLiturgies(): Promise<LiturgySummary[]> {
     console.error("[lib/liturgy/getLiturgies]", sectionsError.message);
   }
 
-  const itemsBySection = await getItemsForSections((sectionRows ?? []).map((row) => row.id));
+  // This is a summary list, not an export -- degrade gracefully (log and
+  // treat as "no sermon passage to show") rather than fail the whole
+  // dashboard over one item-read error, matching this function's own
+  // existing handling of sectionsError above. BA-004's fail-closed
+  // requirement is specifically about getLiturgy()'s export path, where a
+  // silent gap produces a misleadingly "complete" downloadable document.
+  const itemsResult = await getItemsForSections((sectionRows ?? []).map((row) => row.id));
+  if (itemsResult === null) {
+    console.error("[lib/liturgy/getLiturgies] failed to load items for one or more sections");
+  }
+  const itemsBySection = itemsResult ?? new Map<string, Item[]>();
 
   return data.map((row) => {
     const template = row.templates as unknown as { name: string; sections: TemplateSection[] };

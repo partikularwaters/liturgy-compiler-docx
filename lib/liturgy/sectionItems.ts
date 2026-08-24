@@ -18,7 +18,15 @@ function reconstructItems(rows: SectionItemRow[]): Item[] {
     .map((row) => ({ id: row.id, type: row.type, ...row.data }) as Item);
 }
 
-export async function getItemsForSection(sectionId: string): Promise<Item[]> {
+// BA-004: a read failure here used to be swallowed into an empty result,
+// which let a caller like getLiturgy() carry on and hand back a liturgy
+// that *looks* complete but is silently missing every item in the Sections
+// that failed to load -- an export built from that renders as a successful,
+// blank-looking DOCX/PDF instead of a visible failure. `null` means "this
+// read failed," distinct from "these Sections genuinely have no items yet"
+// (`[]`/an empty Map), so every caller can choose to fail closed instead of
+// treating the two as the same thing.
+export async function getItemsForSection(sectionId: string): Promise<Item[] | null> {
   const { data, error } = await supabase
     .from("section_items")
     .select("id, type, data, position")
@@ -26,7 +34,7 @@ export async function getItemsForSection(sectionId: string): Promise<Item[]> {
 
   if (error) {
     console.error("[lib/liturgy/sectionItems/getItemsForSection]", error.message);
-    return [];
+    return null;
   }
 
   return reconstructItems(data ?? []);
@@ -34,8 +42,9 @@ export async function getItemsForSection(sectionId: string): Promise<Item[]> {
 
 // Bulk variant for getLiturgy.ts/getLiturgies.ts, which already fetch every
 // Section row for one liturgy in one query -- avoids one round trip per
-// Section on top of that.
-export async function getItemsForSections(sectionIds: string[]): Promise<Map<string, Item[]>> {
+// Section on top of that. Same null-on-failure contract as
+// getItemsForSection above.
+export async function getItemsForSections(sectionIds: string[]): Promise<Map<string, Item[]> | null> {
   const bySection = new Map<string, Item[]>();
   if (sectionIds.length === 0) return bySection;
 
@@ -46,7 +55,7 @@ export async function getItemsForSections(sectionIds: string[]): Promise<Map<str
 
   if (error) {
     console.error("[lib/liturgy/sectionItems/getItemsForSections]", error.message);
-    return bySection;
+    return null;
   }
 
   const rowsBySection = new Map<string, SectionItemRow[]>();
@@ -74,16 +83,6 @@ export async function insertSectionItem(
   sectionId: string,
   item: Item
 ): Promise<{ success: boolean; error?: string }> {
-  const { count, error: countError } = await supabase
-    .from("section_items")
-    .select("id", { count: "exact", head: true })
-    .eq("section_id", sectionId);
-
-  if (countError) {
-    console.error("[lib/liturgy/sectionItems/insertSectionItem]", countError.message);
-    return { success: false, error: "Unable to place this item right now." };
-  }
-
   const { id, type, ...data } = item;
   const { error } = await supabase
     .from("section_items")

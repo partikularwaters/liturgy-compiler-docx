@@ -45,5 +45,13 @@ export async function getSectionContext(
 
   const items = await getItemsForSection(sectionRow.id);
 
+  // Same reasoning as getLiturgy.ts's BA-004 fix -- callers of this context
+  // (dedup checks, "already-placed items" previews) must not treat a failed
+  // read as "this Section has no items."
+  if (items === null) {
+    console.error("[lib/liturgy/getSectionContext] failed to load items for section", sectionRow.id);
+    return null;
+  }
+
   return { id: sectionRow.id, items, sectionName };
 }

@@ -81,6 +81,14 @@ export async function getLiturgy(id: string): Promise<CompiledLiturgy | null> {
 
   const itemsBySection = await getItemsForSections(sectionRows.map((row) => row.id));
 
+  // BA-004: fail closed rather than silently compiling (and exporting) a
+  // liturgy that's missing items because their read failed, not because
+  // those Sections are genuinely empty -- see sectionItems.ts's comment.
+  if (itemsBySection === null) {
+    console.error("[lib/liturgy/getLiturgy] failed to load items for liturgy", id);
+    return null;
+  }
+
   const template = liturgy.templates as unknown as { name: string; sections: TemplateSection[] };
   const sections: CompiledSection[] = sectionRows.map((row) => ({
     ...template.sections[row.template_section_index],

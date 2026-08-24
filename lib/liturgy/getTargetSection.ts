@@ -37,6 +37,12 @@ export async function getTargetSection(liturgyId: string, sectionIndex: number):
   if (sectionError || !sectionRow) return null;
 
   const items = await getItemsForSection(sectionRow.id);
+
+  // Same reasoning as getLiturgy.ts's BA-004 fix -- a failed read must not
+  // be treated as "no existing citations here," or the dedup check below
+  // would silently stop protecting against a duplicate placement.
+  if (items === null) return null;
+
   const citations = items.filter((item) => item.type === "selection").map((item) => item.citation);
 
   return {

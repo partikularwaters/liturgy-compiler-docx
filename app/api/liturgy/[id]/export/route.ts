@@ -24,38 +24,49 @@ export async function GET(request: Request, { params }: RouteParams): Promise<Re
   const audience = url.searchParams.get("audience") === "bulletin" ? "bulletin" : "guide";
   const format = url.searchParams.get("format") === "docx" ? "docx" : "pdf";
 
-  const [liturgy, formulas, prayers, songs] = await Promise.all([
-    getLiturgy(id),
-    getFormulas(),
-    getPrayers(),
-    getSongs(),
-  ]);
+  // BA-004: fail closed on any unexpected error during document assembly
+  // (a read that throws instead of returning an error object, a rendering
+  // failure, etc.) rather than let it produce a truncated response the
+  // client can't distinguish from a real, complete export.
+  try {
+    const [liturgy, formulas, prayers, songs] = await Promise.all([
+      getLiturgy(id),
+      getFormulas(),
+      getPrayers(),
+      getSongs(),
+    ]);
 
-  if (!liturgy) {
-    return new Response("Liturgy not found.", { status: 404 });
-  }
+    if (!liturgy) {
+      return new Response("Liturgy not found, or its content could not be loaded. Please try again.", {
+        status: 404,
+      });
+    }
 
-  const filenameBase = `${liturgy.templateName.replace(/\s+/g, "-")}-${liturgy.serviceDate}-${audience}`;
+    const filenameBase = `${liturgy.templateName.replace(/\s+/g, "-")}-${liturgy.serviceDate}-${audience}`;
 
-  if (format === "docx") {
-    const document = buildLiturgyDocx({ liturgy, formulas, prayers, songs, audience });
-    const buffer = await Packer.toBuffer(document);
+    if (format === "docx") {
+      const document = buildLiturgyDocx({ liturgy, formulas, prayers, songs, audience });
+      const buffer = await Packer.toBuffer(document);
 
-    return new Response(new Uint8Array(buffer), {
+      return new Response(new Uint8Array(buffer), {
+        headers: {
+          "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "Content-Disposition": `attachment; filename="${filenameBase}.docx"`,
+        },
+      });
+    }
+
+    const document = createElement(LiturgyDocument, { liturgy, formulas, prayers, songs, audience });
+    const stream = await renderToStream(document as Parameters<typeof renderToStream>[0]);
+
+    return new Response(stream as unknown as ReadableStream, {
       headers: {
-        "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": `attachment; filename="${filenameBase}.docx"`,
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${filenameBase}.pdf"`,
       },
     });
+  } catch (error) {
+    console.error("[app/api/liturgy/[id]/export]", error);
+    return new Response("Unable to generate this export right now. Please try again.", { status: 500 });
   }
-
-  const document = createElement(LiturgyDocument, { liturgy, formulas, prayers, songs, audience });
-  const stream = await renderToStream(document as Parameters<typeof renderToStream>[0]);
-
-  return new Response(stream as unknown as ReadableStream, {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${filenameBase}.pdf"`,
-    },
-  });
 }
