@@ -642,34 +642,54 @@ Not yet pushed — committed only (`6bc5d79`, `8fc16da`, `c2da5eb`).
 - [x] v2 Phase A, Songs Library management page (2026-07-20): `deleteSong()` added to `lib/songs/songActions.ts` (create/update already existed), new `SongForm.tsx`/`SongListRow.tsx`/`/songs/new` route, `/library`'s stale "coming in Feature 21" placeholder replaced with a real Psalms/Hymns split. Verified live end-to-end (create, edit, delete). See Session Memory Bank entry above for full detail. **This completes every buildable item in v2 Phase A's library-completeness bullet** — only the marking-toolbar-on-library-entry item remains, blocked on a real decision (see Up Next).
 
 ## In Progress
-- [ ] **PAUSED by Madrid — Integrity stabilization, Phase 1 server-action containment, local batch ready.** Anonymous Prayer Guide, column-break, and Vesper-reading paths now reject before privileged access; two internal service-role helpers are no longer exported as callable Server Actions; signed-out visitors can still read Prayer Guide text but no longer see its export-setting checkbox. Six focused tests and the production build pass. Production code has not been deployed, committed, staged, or pushed.
+- [ ] Nothing in progress. Phase 1 server-action containment (the item formerly paused here) shipped and deployed as part of Banka Docking's BA-002 closure (2026-08-24) — see Decisions Made and Known Issues.
 
 ## Up Next
-- [ ] On restore, verify Git/disk state first and ask Madrid to confirm the restored handoff. Do not resume work automatically.
-- [ ] After confirmation, review the complete uncommitted foundation + Phase 1 containment worktree and agree on commit boundaries. Commit/push/deploy the containment code only after explicit approval; then repeat the live anonymous, authenticated-role, Compile View, and DOCX checks.
-- [ ] Seed the local Bible datasets, bootstrap one local Curator, and rehearse the critical Morning workflow. No current Vesper liturgy exists in production, so a representative Vesper fixture must be created only in the disposable local database.
+Ranked list, confirmed by Madrid 2026-08-24 (adoption-assessment backlog re-verified live before ranking; see Session Notes):
+
+**High priority, in order:**
+1. [x] **BA-003 — code fixed and locally verified, 2026-08-24.** ~~`section_items.position` can duplicate after deletion/concurrent insertion~~ (`lib/liturgy/sectionItems.ts:85`, non-atomic `count ?? 0` insert). Fixed with a new migration (`supabase/migrations/20260824010000_section_items_atomic_position.sql`): a `BEFORE INSERT` trigger computes `position` server-side inside the insert's own transaction, serialized per-Section via `pg_advisory_xact_lock` (a second concurrent insert into the same Section blocks until the first commits), plus a `unique (section_id, position)` constraint as a hard backstop. The migration also renumbers any pre-existing duplicate positions before adding the constraint, so it's safe to run against live data. `insertSectionItem()` no longer does the racy count-then-insert — it just inserts and lets the trigger own `position`. Verified locally: full `supabase db reset` replays clean; a raw-SQL test confirmed 6 truly concurrent inserts into the same Section landed at 6 distinct sequential positions with zero collisions; a second test called the exact `insertSectionItem`-shaped payload (no `position` field sent) and got correct sequential positions back; `db:verify-contract` still passes (RLS/grants untouched); `tsc --noEmit`, `eslint`, `npm test` (6/6), and `next build` all clean. **Migration run in Production 2026-08-24 — confirmed by Madrid**: `pg_constraint`/`pg_trigger` check both returned `1` (constraint and trigger present). Schema-side fix is fully live. The app-code fix (`insertSectionItem()` no longer doing the count-then-insert) still needs to be committed and deployed — Production's current code still does the old two-step pattern, which continues to work correctly against the new schema (the trigger overwrites whatever `position` it sends), just without yet dropping the now-redundant client-side count query.
+2. [x] **BA-004 — fixed and verified live, 2026-08-24.** ~~Item-read errors can surface as a successful, silently truncated DOCX export~~ (root cause: `lib/liturgy/sectionItems.ts`'s `getItemsForSection(s)` swallowed a read error into an empty `[]`/`Map`, so `getLiturgy()` carried on and returned a liturgy object that *looked* complete but was silently missing every item in the Sections that failed to read). Fixed at the shared chokepoint: `getItemsForSection`/`getItemsForSections` now return `null` on a read failure, distinct from "these Sections genuinely have no items yet." `getLiturgy()` (the export/Compile-View/Web-View path) now fails closed — returns `null` on that signal, same as its two existing read-failure branches. `getSectionContext.ts`/`getTargetSection.ts` (the Reader's dedup-check path) do the same, closing a related latent bug where a transient read error could have silently let a duplicate citation slip past the dedup check. `getLiturgies.ts` (the dashboard summary list) deliberately keeps graceful degradation instead of failing the whole page — not the export path, no downloadable artifact at stake. Also wrapped `app/api/liturgy/[id]/export/route.ts`'s whole handler in a `try/catch` (it had none) so any other unexpected error also fails closed with a 500, not a partial response. **Verified live, not just typechecked**: exported a real DOCX (200, 52KB) against a real local liturgy; renamed `section_items` to break the read mid-flight; re-hit the same export URL and got a real `404` with a clear error message instead of a 200 with a blank document; restored the table and confirmed the export succeeded again identically (200, same 52KB). `tsc --noEmit`, `eslint` (changed files clean), `npm test` (6/6), `next build` all clean.
+3. [x] **BA-005 — done, 2026-08-24.** ~~Upgrade Next.js 16.2.10 → 16.3.2~~, as its own isolated batch (`next`/`eslint-config-next` bumped together, exact-pin convention preserved — not left as npm's default `^`). Closed all 5 Next.js-rooted high-severity `npm audit` findings; a follow-up `npm audit fix` (non-force) also cleared 2 unrelated transitive dev-tooling findings (`brace-expansion`, `js-yaml`) found along the way — `npm audit` now reports **0 vulnerabilities**. Verified: `tsc --noEmit` clean, `npm test` 6/6, `npm run lint` unchanged (same pre-existing BA-006 error/warnings only), `next build` succeeds (all 20 routes compile). **New, non-blocking heads-up surfaced by the build**: Next.js 16.3.2 deprecates the `middleware.ts` convention in favor of `proxy.ts` (codemod: `npx @next/codemod@canary middleware-to-proxy`) — this repo still uses `middleware.ts`; not migrated this pass since it wasn't in scope, but flagging so it doesn't surprise a future upgrade.
+4. [x] **Confirmed 2026-08-24 — already ran.** `supabase/migrations/20260728020000_drop_sections_items.sql` was already applied to Production. Verified live by Madrid running `select column_name from information_schema.columns where table_name = 'sections' and column_name = 'items';` in the Supabase SQL Editor — "Success. No rows returned," meaning the column is gone. No action needed.
+5. [ ] BA-007 — confirm the automated Vesper "Matthew 5–7" rotation reading against the printed handbook (currently resting on an unresolved OCR correction).
+
+**Medium priority, after the above:**
+6. [ ] v3 item 6 — Supabase Auth + role-based Formula access control (`formulas.access_level` unused since Feature 08).
+7. [ ] BA-006 — fix `ReaderClient.tsx:69` set-state-in-effect lint error + 3 warnings (next time that file is touched).
+8. [ ] v2 leftover — Absolution's legacy "Minister:"/"Congregation:" text cleanup (redundant with automatic mark labels).
+9. [ ] Reconfirm older loose ends from `progress-tracker.md`'s July sessions: Gmail SMTP real-inbox delivery, deletion of the two placeholder accounts, Madrid's own sign-in re-confirmation — status unclear post-Banka-adoption, verify rather than assume.
+
+**Low priority / gated, not scheduled:**
+10. [ ] v3 item 2 — Template/Section editing (needs its own scoping pass first; every `sections` row references its slot by position today).
+11. [ ] v3 items 3–5 — Items tagging → universal search/dup-flagging → coherence score (sequential, blocked on item 2).
+12. [ ] v3 item 7 — Reformed Life PowerPoint Builder integration (needs an external scoping conversation first).
+
+**Buried cold — do not resurface until Madrid raises it himself:**
+- [ ] BA-008 / v3 item 8 — AB2001/MBB text extraction, gated on an unsent PBS permission request. Madrid's explicit call (2026-08-24): near-zero chance of resolution, keep off the active list entirely.
 
 ## Blocked
-- [ ] No engineering blocker. Production still runs the pre-Phase-1 code until the local containment batch is reviewed and separately approved for deployment.
+- [ ] No engineering blocker on the high-priority items above. v3 item 2 (Template/Section editing) is blocked on its own scoping pass, not an external dependency.
 
 ---
 
 ## Known Issues
 | Issue | Severity | Status |
 | --- | --- | --- |
-| PBS permission request for AB2001/MBB adaptation (capitalization, referent clarity, non-contiguous restructuring) not yet sent/answered | Medium | Open — drafted, pending send |
-| Anonymous visitors can reach client-callable compile mutations backed by the service role | Critical | Prayer Guide, column-break, and Vesper-reading gaps fixed and tested locally; existing guarded actions re-audited; pending Production code deployment |
-| `section_items.position` can duplicate after deletion or concurrent insertion | Critical | Confirmed in source; requires atomic insertion plus a database uniqueness guarantee |
-| Item-read errors can become successful empty/partial exports | Critical | Confirmed in source; fail-closed export work follows ordering repair |
-| Next.js 16.2.10 and its transitive PostCSS/Sharp versions have three high-severity production audit findings | High | 16.3.1 is the audit's repair candidate; upgrade stays a separate verified batch |
-| Full ESLint run has one pre-existing error (`ReaderClient.tsx`) and three warnings | Medium | `SectionCard.tsx`'s independent `prefer-const` error was removed while the file was in Phase 1 scope; Reader behavior remains separate |
-| Automated Vesper row `Matthew 5–7` is still based on an unresolved OCR correction | High | Needs confirmation against the printed handbook before relying on that rotation |
+| PBS permission request for AB2001/MBB adaptation (capitalization, referent clarity, non-contiguous restructuring) not yet sent/answered | Medium | **Buried cold, 2026-08-24 — do not resurface until Madrid raises it himself.** Near-zero chance of resolution per his own call; drafted, unsent |
+| Anonymous visitors can reach client-callable compile mutations backed by the service role | Critical | **Resolved 2026-08-24** — shipped as commit `0e43007`, deployed and live-verified as part of Banka Docking's BA-002 closure |
+| `section_items.position` can duplicate after deletion or concurrent insertion | Critical | **Resolved 2026-08-24** — atomic trigger + advisory lock + unique constraint, migration `20260824010000_section_items_atomic_position.sql`, verified locally with real concurrent-insert tests and confirmed live in Production (constraint + trigger both present). App-code side of the fix (dropping the now-redundant client-side count query) still needs to be committed/deployed. |
+| Item-read errors can become successful empty/partial exports | Critical | **Fixed 2026-08-24** — `getItemsForSection(s)` now returns `null` on failure instead of an empty result; `getLiturgy()`/`getSectionContext.ts`/`getTargetSection.ts` fail closed on that signal; export route wrapped in `try/catch`. Verified live: a real broken-read simulation produced a `404` with a clear message instead of a 200 with a blank docx. No migration needed, code-only. |
+| Next.js 16.2.10 and its transitive PostCSS/Sharp versions have five high-severity production audit findings | High | **Resolved 2026-08-24** — upgraded to Next.js 16.3.2 (isolated batch); `npm audit` now reports 0 vulnerabilities |
+| Full ESLint run has one pre-existing error (`ReaderClient.tsx`) and three warnings | Medium | Re-confirmed live 2026-08-24, unchanged |
+| Automated Vesper row `Matthew 5–7` is still based on an unresolved OCR correction | High | Needs confirmation against the printed handbook before relying on that rotation. Ranked #5 |
 | Clean local replay formerly depended on different Supabase defaults than Production | Critical | Resolved locally and in Production by the explicit database contract migration |
 | Production was missing the `notifications` table present in migration `20260728050000` and used by current code | High | Resolved by the idempotent Production contract migration |
 
 ---
 
 ## Decisions Made
+- **2026-08-24** — Post-Banka-adoption backlog ranked and prioritized with Madrid: BA-003 and BA-004 go first (both Critical, both re-confirmed live in source), then the rest of the high-priority list in the order recorded under Up Next. **BA-008 (PBS/AB2001-MBB permission request) is buried cold by Madrid's explicit instruction** — near-zero chance of resolution; do not surface it in future planning or status reports unless Madrid raises it himself.
 - **2026-08-15** — Stabilize in place: preserve verified weekly worship behavior, repair authorization/data/recovery boundaries first, and defer broad refactors. Public reading remains anonymous; mutations require a trusted Curator/Compiler.
 - **2026-08-15** — Free/accessibility boundary: no paid dependency or congregation login; Vercel Speed Insights is observational only on Hobby; Supabase local rehearsal uses free Docker-compatible tooling; free hosting does not imply a guaranteed uptime SLA.
 - **2026-08-15** — Banka transition is two-stage: make the repo reproducible and verified first, then reconcile present-tense architecture and archive stale narrative. `context/progress-tracker.md` remains the sole Standard-tier session-state destination.
@@ -694,6 +714,14 @@ Not yet pushed — committed only (`6bc5d79`, `8fc16da`, `c2da5eb`).
 ---
 
 ## Session Notes
+
+**2026-08-24 — Post-adoption backlog audit and prioritization**
+- First working session after Banka adoption (commit `f0aa3bf`). Restored via `/remember restore`, confirmed no drift (`main` clean, matches `origin/main`).
+- Built a ranked build list from `build-plan.md`'s remaining v2/v3 items plus `ADOPTION-ASSESSMENT.md`'s stabilization backlog (BA-003 through BA-008).
+- Re-verified every BA-00x finding live rather than trusting the assessment's dates: `npm audit` (5 high-severity, Next.js-rooted, still open — BA-005), `npm run lint` (same 1 error + 3 warnings — BA-006), grepped `lib/liturgy/sectionItems.ts` (non-atomic `count ?? 0` insert confirmed — BA-003), grepped the export route (confirmed zero `try`/`catch` anywhere — BA-004). `npm ls` confirmed no missing/unmet dependencies; only version drift.
+- Dependency audit: no missing packages. Outdated but low-urgency: React 19.2.4→19.2.8, Supabase JS 2.110→2.112, `@react-pdf/renderer` 4.5→4.8, and others — safe to batch whenever, not blocking anything.
+- Madrid ranked the backlog: BA-003/BA-004 first, then the rest of the high-priority list in order (see Up Next), and gave an explicit standing instruction to bury BA-008 cold rather than keep resurfacing it in status reports.
+- Next actual build session should start on BA-003 (`section_items.position` atomic insert + DB uniqueness constraint).
 
 **2026-08-15 — Integrity stabilization Phase 0 started**
 - Preserved the uncommitted Speed Insights integration (`app/layout.tsx`, `package.json`, lockfile); confirmed Vercel Hobby and kept telemetry non-gating.
