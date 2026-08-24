@@ -22,34 +22,31 @@ export interface DiscourseReading {
   group: DiscourseGroup;
 }
 
-// The 12 rows of "The Lord's Discourse" column, top to bottom, exactly as
-// printed. Two things in the source table are flagged here rather than
-// silently corrected:
-// - Row 7's citation was badly OCR-mangled in the source PDF ("Matthew
-//   5–6:1–8, 6–34, 7:1–29"); rendered here as the plain chapter range
-//   "Matthew 5–7" (the traditional bounds of the Sermon on the Mount) --
-//   TODO: needs confirmation against the actual handbook page.
-// - Rows 9 and 11 are both titled "The Parabolic Discourse" in the source
-//   table (Matthew 13 and Matthew 24–25 respectively) -- likely a title
-//   typo in the handbook itself (Matthew 24–25 is traditionally the
-//   Olivet Discourse), reproduced as printed rather than silently
-//   relabeled.
-// - The handbook's own narrative text says the Matthean group has "six
-//   readings," but the table lists only five (rows 7–11) before the single
-//   Luke row -- reproduced as the table actually lists it (12 rows total),
-//   not forced to match the "six" description.
+// The 12 rows of "The Lord's Discourse" column, top to bottom. Confirmed
+// 2026-08-24 (BA-007) against Madrid's own source document ("Vesper
+// Service and Lord's Table.docx", not the OCR'd handbook PDF this file
+// originally transcribed), which corrected three things:
+// - Row 6 was missing a second citation -- the Good Shepherd half of the
+//   reading (John 10:1–18) alongside the Light of the World half (John
+//   8:12–58).
+// - Row 7's citation was a placeholder guess ("Matthew 5–7") pending this
+//   confirmation; the real reading deliberately skips 6:9–15 (the Lord's
+//   Prayer passage), so it's not the plain chapter range.
+// - Row 11 was titled "The Parabolic Discourse" (a duplicate of row 9),
+//   flagged here as a likely typo -- the source document confirms it's
+//   "The Olivet Discourse."
 const DISCOURSE_CYCLE: DiscourseReading[] = [
   { citation: "John 14–16", title: "Farewell Discourse", group: "johannine" },
   { citation: "John 3:1–21", title: "The New Birth", group: "johannine" },
   { citation: "John 4:1–42", title: "The Water of Life", group: "johannine" },
   { citation: "John 5:1–47", title: "The Divine Son", group: "johannine" },
   { citation: "John 6:22–69", title: "The Bread of Life", group: "johannine" },
-  { citation: "John 8:12–58", title: "The Light of the World and the Good Shepherd", group: "johannine" },
-  { citation: "Matthew 5–7", title: "The Sermon on the Mount", group: "matthean" },
+  { citation: "John 8:12–58, 10:1–18", title: "The Light of the World and the Good Shepherd", group: "johannine" },
+  { citation: "Matthew 5:1–6:8, 6:16–34, 7:1–29", title: "The Sermon on the Mount", group: "matthean" },
   { citation: "Matthew 10:1–42", title: "The Mission Discourse", group: "matthean" },
   { citation: "Matthew 13", title: "The Parabolic Discourse", group: "matthean" },
   { citation: "Matthew 18", title: "The Community Discourse", group: "matthean" },
-  { citation: "Matthew 24–25", title: "The Parabolic Discourse", group: "matthean" },
+  { citation: "Matthew 24–25", title: "The Olivet Discourse", group: "matthean" },
   { citation: "Luke 12:1–59, 15:1–32", title: "The Kingdom and Discipleship", group: "kingdom" },
 ];
 
