@@ -276,7 +276,7 @@ An empty Section shows only its heading and available add controls across Compil
 
 ## Trinitarian Seal
 
-The None/Filipino/English toggle is available for Selection and Formula content in Benediction, as defined by `TRINITARIAN_SEAL_SECTIONS`. The wording is approved domain content and is never improvised. It is appended at resolution time, remains separate from the raw stored prose, and receives a real `bold` mark through the shared rendering path. Add/edit forms use the same control and live-preview treatment.
+The None/Filipino/English toggle is available for Selection content in Benediction, as defined by `TRINITARIAN_SEAL_SECTIONS`. Formula was removed from Benediction's Compile View add controls 2026-08-25 (`FORMULA_EXCLUDED_SECTIONS` in `SectionCard.tsx`) specifically to close the ambiguity of a Section-scoped toggle applying to two different item types at once — the toggle now unambiguously targets the one item type left. The wording is approved domain content and is never improvised. It is appended at resolution time, remains separate from the raw stored prose, and receives a real `bold` mark through the shared rendering path. Add/edit forms use the same control and live-preview treatment.
 
 ## Item Deletion
 
