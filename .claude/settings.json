@@ -13,7 +13,11 @@
       "mcp__Claude_Browser__tabs_context",
       "Bash(curl -s *)",
       "Bash(pdftotext *)",
-      "Bash(tasklist *)"
+      "Bash(tasklist *)",
+      "Bash(npm test *)",
+      "Bash(npm run lint *)",
+      "Bash(npx eslint *)",
+      "Bash(npm run db:status *)"
     ]
   }
 }
