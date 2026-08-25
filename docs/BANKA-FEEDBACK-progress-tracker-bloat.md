@@ -5,6 +5,13 @@
 **Audience:** a Banka-repo session evaluating protocol changes — this is a
 proposal to discuss, not a change already made to Banka itself.
 
+**Resolved, 2026-08-25:** Banka adopted this as Protocol §2.9 (Session-State
+Bloat Prevention and Correction), operationalized in `remember`/`moor`/
+`charter`/`scale`. This project's manual split (Section 3 below) was migrated
+to §2.9's canonical `context/overflow/session-notes/` shape the same day —
+see `progress-tracker.md`'s Decisions Made. Sections below are kept as the
+original proposal record, not updated to match the resolved shape.
+
 ---
 
 ## 1. Problem

@@ -1,21 +1,25 @@
 # Progress Tracker
 
-## Archive Index
+## Overflow Index
 
 The full pass-by-pass build narrative through v3's kickoff (2026-07-11
 through 2026-07-29) was split out on 2026-08-24 to keep this file fast to
 restore from — it had grown to ~320KB. **Decisions Made below still carries
-every settled fact from that era in full**; the archives below are the
+every settled fact from that era in full**; the overflow files below are the
 underlying story, read on demand via `grep`, never loaded wholesale by
-`/remember restore` or any other default flow.
+`/remember restore` or any other default flow. As of 2026-08-25 this split
+follows Banka Protocol §2.9's canonical structure (`context/overflow/`),
+having previously used ad hoc `progress-tracker-archive-*.md` file names —
+see Decisions Made for that migration.
 
-| File | Covers | Date range |
-| --- | --- | --- |
-| `context/progress-tracker-archive-v1.md` | Original build, Phases 1-5 | 2026-07-11 → 07-14 |
-| `context/progress-tracker-archive-v1.1.md` | Shell & Compile View redesign, Phases 6-8 | 2026-07-15 → 07-18 |
-| `context/progress-tracker-archive-v2-v3.md` | Translation breadth, docx export, RBAC, Curator Inbox, v3 kickoff | 2026-07-20 → 07-29 |
+| File | Type | Covers | Date range |
+| --- | --- | --- | --- |
+| `context/overflow/session-notes/01-session-notes.md` | Session Notes | Original build, Phases 1-5 | 2026-07-11 → 07-14 |
+| `context/overflow/session-notes/02-session-notes.md` | Session Notes | Shell & Compile View redesign, Phases 6-8 | 2026-07-15 → 07-18 |
+| `context/overflow/session-notes/03-session-notes.md` | Session Notes | Translation breadth, docx export, RBAC, Curator Inbox, v3 kickoff | 2026-07-20 → 07-29 |
+| `context/overflow/session-notes/04-session-notes.md` | Session Notes | Banka Docking assessment (BA-001/BA-002 evidence) and Banka adoption | 2026-08-24 |
 
-To find something specific: `grep -rn "<keyword>" context/progress-tracker-archive-*.md` rather than reading a whole file. Each archive also has its own Contents list at the top.
+To find something specific: `grep -rn "<keyword>" context/overflow/session-notes/*.md` rather than reading a whole file. Each overflow file also has its own descriptive header at the top.
 
 ---
 
@@ -118,7 +122,9 @@ Ranked list, confirmed by Madrid 2026-08-24 (adoption-assessment backlog re-veri
 ---
 
 ## Decisions Made
-- **2026-08-24** — `progress-tracker.md` split into a lean live file (this one) plus three archive files, per Madrid's explicit request after the file grew to ~320KB. **Supersedes the 2026-08-15 entry below** ("remains the sole Standard-tier session-state destination") — this file is still the primary session-state file, but is no longer the sole one; see the Archive Index above and `AGENTS.md`'s matching note. `linis` applied a light-touch pass to the archives (direct quotes paraphrased; technical narrative/lessons preserved). A companion report was written for a separate Banka-repo session proposing this as a general pattern worth Banka supporting natively — see `docs/BANKA-FEEDBACK-progress-tracker-bloat.md`.
+- **2026-08-25** — "Memory during Banka Docking Protocol" (the verbatim BA-001/BA-002 evidence carried over from `ADOPTION-ASSESSMENT.md`) moved out of this live file into `context/overflow/session-notes/04-session-notes.md`, per Track B's per-thread settledness check — both findings are closed and the adoption they document is complete, so the thread has a genuine settled boundary. Content is unchanged, still verbatim; only its location moved. Overflow Index above updated with the new row.
+- **2026-08-25** — Banka adopted Protocol §2.9 (Session-State Bloat Prevention and Correction) upstream — built directly in response to this project's own feedback report (`docs/BANKA-FEEDBACK-progress-tracker-bloat.md`). The 2026-08-24 ad hoc split below was migrated to match §2.9's canonical shape: `context/progress-tracker-archive-v1.md` / `-v1.1.md` / `-v2-v3.md` renamed and moved to `context/overflow/session-notes/01-session-notes.md` / `02-` / `03-` (content unchanged, only path/name), and the live file's "Archive Index" section renamed "Overflow Index" to match. Local skills (`~/.claude/skills/{charter,moor,remember,scale}/SKILL.md`) synced from Banka's updated `skills-kit/` so `remember`/`moor` apply §2.9's checks automatically going forward — no more manual splits. See `AGENTS.md`'s matching note.
+- **2026-08-24** — `progress-tracker.md` split into a lean live file (this one) plus three archive files (since renamed/relocated, see 2026-08-25 above), per Madrid's explicit request after the file grew to ~320KB. **Supersedes the 2026-08-15 entry below** ("remains the sole Standard-tier session-state destination") — this file is still the primary session-state file, but is no longer the sole one; see the Overflow Index above and `AGENTS.md`'s matching note. `linis` applied a light-touch pass to the archives (direct quotes paraphrased; technical narrative/lessons preserved). A companion report was written for a separate Banka-repo session proposing this as a general pattern worth Banka supporting natively — see `docs/BANKA-FEEDBACK-progress-tracker-bloat.md` (proposal now resolved upstream, see 2026-08-25 above).
 - **2026-08-24** — Post-Banka-adoption backlog ranked and prioritized with Madrid: BA-003 and BA-004 go first (both Critical, both re-confirmed live in source), then the rest of the high-priority list in the order recorded under Up Next. **BA-008 (PBS/AB2001-MBB permission request) is buried cold by Madrid's explicit instruction** — near-zero chance of resolution; do not surface it in future planning or status reports unless Madrid raises it himself.
 - **2026-08-15** — Stabilize in place: preserve verified weekly worship behavior, repair authorization/data/recovery boundaries first, and defer broad refactors. Public reading remains anonymous; mutations require a trusted Curator/Compiler.
 - **2026-08-15** — Free/accessibility boundary: no paid dependency or congregation login; Vercel Speed Insights is observational only on Hobby; Supabase local rehearsal uses free Docker-compatible tooling; free hosting does not imply a guaranteed uptime SLA.
@@ -173,96 +179,3 @@ Ranked list, confirmed by Madrid 2026-08-24 (adoption-assessment backlog re-veri
 - Prayer Guide reference text remains public, but its “Add this Prayer Guide to the Leader’s Guide” mutation checkbox now renders only for a trusted Curator/Compiler. This preserves anonymous reading while removing a misleading control.
 - Added a Vitest alias config plus four focused authorization tests. Anonymous Prayer Guide/column/Vesper calls are proven to stop before privileged access; a Compiler path is proven to reach the intended operations. Full suite: 6 passing tests. Changed files lint clean; full lint now has only the pre-existing `ReaderClient.tsx` effect error and three warnings. Production build succeeds. No Phase 1 code has been deployed.
 - Madrid paused the session after the local containment batch passed. Nothing from Phase 1 was staged, committed, pushed, or deployed. The larger working tree also contains the completed Phase 0 foundation, Vercel Speed Insights integration, local tooling, documentation, and the already-applied database contract migration; preserve all of it. The next session must restore first, confirm Git reality, and wait for Madrid before choosing commit boundaries or touching Production.
-
-
----
-
-## Memory during Banka Docking Protocol
-
-Carried forward verbatim from `ADOPTION-ASSESSMENT.md` (project root, produced
-during Docking, 2026-08-24) per explicit instruction — this is the direct
-evidence behind that assessment's two Resolved readiness findings (BA-001,
-BA-002), not narrative color, and is not to be compressed away.
-
-**2026-08-24 — Docking assessment, then same-session readiness closure**
-
-- Ran a full Docking pass (read-only discovery, authority: read-only plus
-  minimal readiness fixes with each fix individually confirmed). Produced this
-  assessment with two open Readiness requirements: BA-001 (Preview shared
-  Production's privileged Supabase key) and BA-002 (`main` didn't reflect real
-  project state — Phase 0/Phase 1 work sat uncommitted).
-- **BA-002 closed first.** The uncommitted working tree was split into 5
-  reviewed commits, each proposed with a full commit message and confirmed by
-  Madrid individually before the next was staged: `0e43007` (require sign-in
-  for Vesper-reading/column-break/Prayer-Guide actions — the Phase 1
-  authorization fix), `c2a4e16` (remove hardcoded production `auth.users`
-  UUIDs from the `user_roles` migration), `de8dc52` (add Vitest, Supabase CLI,
-  and the env preflight check as local dev tooling), `bcd9402` (the explicit
-  database-contract migration — already live in Production since 2026-08-16,
-  this commit only caught Git up to that reality), `05e708c` (Speed Insights
-  and doc updates). A sixth commit, `9873c8a`, followed separately to stop
-  tracking `.claude/settings.local.json` (per-machine Claude Code permission
-  grants, not shared project config — added to `.gitignore`, file kept on
-  disk). All six were pushed to `origin/main` together in one push, verified
-  matching, and the resulting Production deploy was verified live (anonymous
-  Home/Library/Reader, signed-out `/liturgy/new` guard, signed-in Compile View,
-  both DOCX exports).
-- **BA-001 closed second**, now that the Phase 1 fixes were actually deployed
-  (a precondition for the rotation plan). Sequence actually followed:
-  1. Created a new Supabase **secret key** (replacing the legacy
-     `service_role` key), added to Vercel scoped **Production only**, marked
-     Sensitive.
-  2. Hit a real Vercel UI limitation along the way: an existing environment
-     variable's environment scope could not be edited in place — changing
-     Production/Preview scope required deleting the variable and re-adding it
-     fresh with the correct scope checked.
-  3. Verified the new secret key live before touching anything else.
-  4. Decided to disable Vercel Preview deployments entirely (Environments →
-     Preview → Branch Tracking off) rather than give Preview its own
-     non-production Supabase project — proportionate for a single-developer
-     project with no PR-review workflow; local Supabase (already set up via
-     `supabase/config.toml` and `npm run db:start`/`db:reset`) plus
-     `npm run dev`/`build`/`test` already covers the development-without-
-     touching-Production need that Preview would otherwise have served.
-  5. Replaced the legacy `anon` key with an **already-existing default
-     publishable key** on the Supabase project (no need to generate a new
-     one) — kept under the existing `NEXT_PUBLIC_SUPABASE_ANON_KEY` variable
-     name rather than renaming it, since the app code reads that exact
-     variable name in several places and a rename would require a coordinated
-     code change, not just a dashboard edit. This is recorded as a deferred,
-     non-blocking cleanup item, not a defect.
-  6. Verified live again after the publishable-key swap: the homepage loaded
-     real recent-liturgies data, and `/reader` rendered real AB1905 Filipino
-     verse text (Psalms 95) — genuine end-to-end database reads on the new
-     key, not cached or placeholder content.
-  7. Only after both new keys were confirmed live did Madrid disable the
-     legacy `anon`/`service_role` JWT-based key pair in Supabase's dashboard
-     ("Disable JWT-based API keys").
-- Net effect: Production now runs on Supabase's newer publishable/secret key
-  pair, scoped Production-only; Preview deployments no longer exist for this
-  project; the legacy key pair is fully retired.
-
-**2026-08-24 — Banka adoption**
-
-- `Ready for Banka` status (above) plus Madrid's explicit election to
-  continue triggered Banka adoption per `/Users/madridj1689/Code/projects/banka-docking-protocol/handoff/BANKA-HANDOFF.md`
-  and current Banka protocol 1.1.0 at `/Users/madridj1689/Code/projects/Banka`.
-- Classified as a legacy Standard-tier Banka authority (`CLAUDE.md` carried
-  the `# Project Operating Protocol` heading; `/context/` already held all 9
-  required Standard-tier files) — migrated via Section 3.2's explicit
-  sequence, previewed and confirmed by Madrid before any file was touched.
-- Complexity rubric re-confirmed Standard tier at 5/5 yes, matching the
-  shape already in place.
-- Migration applied: `AGENTS.md` created as the new schema-2 canonical
-  authority (this project's real Persona/Critical-context content carried
-  over, not placeholder text); `CLAUDE.md` reduced to the one-line
-  `@AGENTS.md` import shim; `IDEA-SCOPE.md` backfilled from the existing
-  `context/project-overview.md`/`architecture.md`/`build-plan.md` as the
-  permanent origin record; all 9 `context/*.md` files (plus the extra
-  `redesign-plan-v1.1.md`, not one of the required 9) left untouched.
-- Skills decision: Madrid chose to switch from this project's prior local
-  skill set (`/architect`, `/review`, `/recover`, `/remember`, `/imprint`)
-  to Banka's canonical Skills Kit (`charter`, `survey`, `dredge`, `remember`,
-  `moor`, `scale`, `delegate`, `watershed`, `linis`) — installed at
-  `~/.claude/skills/` from `/Users/madridj1689/Code/projects/Banka/skills-kit/`
-  in this same session. The older skill names are retired for this project.

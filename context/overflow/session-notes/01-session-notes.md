@@ -4,7 +4,7 @@ Full narrative build history for v1 (Phases 1-5, `build-plan.md`), split out
 of `context/progress-tracker.md` on 2026-08-24 to keep the live tracker
 readable. This is historical record — read on demand via `grep`, not loaded
 by default on `/remember restore`. See `context/progress-tracker.md`'s
-Archive Index and Decisions Made for the settled facts that came out of this
+Overflow Index and Decisions Made for the settled facts that came out of this
 work; come here only when you need the full story behind one of them.
 
 Light `linis` cleanup applied (direct quotes paraphrased into settled
