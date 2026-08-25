@@ -101,17 +101,17 @@ async function autoAssignVesperTableReadings(
   sections: TemplateSection[]
 ): Promise<void> {
   const readings = getVesperTableReadings(serviceDate);
-  // Great Commission is deliberately excluded here even though the
-  // Handbook's table gives it its own 4-week rotation too -- "The Great
-  // Commission" Section is currently a Formula (fixed text), not a
-  // Selection, so it can't hold a rotating citation without a scope
-  // decision (convert the Section to Selection, or something else) that
-  // wasn't part of what was asked for this pass. Flagged, not silently
-  // built.
+  // 2026-08-26: Great Commission Text now gets the same auto-assignment as
+  // Words of Institution (Madrid's explicit call -- both are fixed purely
+  // by Sunday-of-month, same 4-week shape). "The Great Commission" Section
+  // was previously Formula-only; it now also accepts a reference-only
+  // Selection (see REFERENCE_ONLY_SECTIONS/VESPER_TABLE_SECTIONS), same
+  // treatment as Words of Institution.
   const targets: [string, string][] = [
     ["The Lord's Discourses", readings.discourse.citation],
     ["Words of Institution", readings.wordsOfInstitution],
     ["Closing of the Table", readings.closingOfTable],
+    ["The Great Commission", readings.greatCommission],
   ];
 
   // Same independent-rows reasoning as seedMorningVerbalCues above --

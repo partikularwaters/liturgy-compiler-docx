@@ -56,7 +56,12 @@ const FORMULA_EXCLUDED_SECTIONS = ["Benediction"];
 // as a separate constant since this is a client component and can't import
 // the "use server" action file's top-level constant directly (same pattern
 // as ReaderClient.tsx).
-const REFERENCE_ONLY_SECTIONS = ["The Lord's Discourses", "Words of Institution", "Closing of the Table"];
+const REFERENCE_ONLY_SECTIONS = [
+  "The Lord's Discourses",
+  "Words of Institution",
+  "Closing of the Table",
+  "The Great Commission",
+];
 
 // Confession of Sin's Call-to-Confession cue is the only Verbal Cue that
 // needs a second-language toggle -- every other cue keeps the single-text
@@ -761,16 +766,25 @@ export default function SectionCard({
             <Link href={`/reader?liturgyId=${liturgyId}&sectionIndex=${sectionIndex}`} className={addButtonClass}>
               <PlusIcon size={13} /> Scripture
             </Link>
-            <button
-              type="button"
-              onClick={() => {
-                setError(null);
-                setIsAddingExistingSelection((prev) => !prev);
-              }}
-              className={addButtonClass}
-            >
-              <PlusIcon size={13} /> From Library
-            </button>
+            {/* 2026-08-26: "+ From Library" removed for the four
+                VESPER_TABLE_SECTIONS -- their content is fully enumerable by
+                the fixed rotation list "+ Reading" already exposes, so the
+                general cross-Section Scripture Library picker was pure
+                redundancy here, not a second real option. "+ Scripture"
+                (the Reader) stays as the genuine escape hatch for a real
+                pastoral exception outside the fixed list. */}
+            {!VESPER_TABLE_SECTIONS.includes(section.name) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setIsAddingExistingSelection((prev) => !prev);
+                }}
+                className={addButtonClass}
+              >
+                <PlusIcon size={13} /> From Library
+              </button>
+            )}
             {VESPER_TABLE_SECTIONS.includes(section.name) && (
               <button
                 type="button"

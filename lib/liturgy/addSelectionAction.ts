@@ -17,7 +17,12 @@ import type { SelectionItem, TextMark } from "@/types/liturgy";
 // blank), reusing Selection's existing citation/dedup/hover-preview
 // machinery instead of a parallel item type for what's really the same
 // content, just displayed differently.
-const REFERENCE_ONLY_SECTIONS = ["The Lord's Discourses", "Words of Institution", "Closing of the Table"];
+const REFERENCE_ONLY_SECTIONS = [
+  "The Lord's Discourses",
+  "Words of Institution",
+  "Closing of the Table",
+  "The Great Commission",
+];
 
 export async function addSelection(
   liturgyId: string,

@@ -8,6 +8,7 @@ import {
   VESPER_DISCOURSE_OPTIONS,
   VESPER_WORDS_OF_INSTITUTION_OPTIONS,
   VESPER_CLOSING_OF_TABLE_OPTIONS,
+  VESPER_GREAT_COMMISSION_OPTIONS,
 } from "@/lib/liturgy/vesperTableRotation";
 
 interface VesperReadingOption {
@@ -21,6 +22,9 @@ function optionsForSection(sectionName: string): VesperReadingOption[] {
   }
   if (sectionName === "Closing of the Table") {
     return VESPER_CLOSING_OF_TABLE_OPTIONS.map((citation) => ({ citation, label: citation }));
+  }
+  if (sectionName === "The Great Commission") {
+    return VESPER_GREAT_COMMISSION_OPTIONS.map((citation) => ({ citation, label: citation }));
   }
   // "Words of Institution"
   return VESPER_WORDS_OF_INSTITUTION_OPTIONS.map((citation) => ({ citation, label: citation }));

@@ -24,7 +24,12 @@ import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 // Feature 22: mirrors addSelectionAction.ts's REFERENCE_ONLY_SECTIONS -- kept
 // as a separate constant since the Reader is a client component and can't
 // import the "use server" action file's top-level constant directly.
-const REFERENCE_ONLY_SECTIONS = ["The Lord's Discourses", "Words of Institution", "Closing of the Table"];
+const REFERENCE_ONLY_SECTIONS = [
+  "The Lord's Discourses",
+  "Words of Institution",
+  "Closing of the Table",
+  "The Great Commission",
+];
 
 interface ReaderClientProps {
   books: BibleBook[];

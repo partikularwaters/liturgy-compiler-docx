@@ -104,11 +104,20 @@ function getDiscourseQuarterIndex(date: Date): 0 | 1 | 2 {
 export const VESPER_DISCOURSE_OPTIONS: readonly DiscourseReading[] = DISCOURSE_CYCLE;
 export const VESPER_WORDS_OF_INSTITUTION_OPTIONS: readonly string[] = WORDS_OF_INSTITUTION_CYCLE;
 export const VESPER_CLOSING_OF_TABLE_OPTIONS: readonly string[] = Object.values(CLOSING_OF_TABLE_BY_GROUP);
+// 2026-08-26: Great Commission Text gets the same treatment as Words of
+// Institution (Madrid's explicit call -- both are fixed purely by
+// Sunday-of-month, same 4-week shape, no reason to treat them differently).
+export const VESPER_GREAT_COMMISSION_OPTIONS: readonly string[] = GREAT_COMMISSION_CYCLE;
 
-// The three Sections this rotation actually assigns to -- shared so
+// The four Sections this rotation actually assigns to -- shared so
 // SectionCard.tsx's "+ Reading" button and its option-source lookup can't
 // drift apart from each other.
-export const VESPER_TABLE_SECTIONS = ["The Lord's Discourses", "Words of Institution", "Closing of the Table"];
+export const VESPER_TABLE_SECTIONS = [
+  "The Lord's Discourses",
+  "Words of Institution",
+  "Closing of the Table",
+  "The Great Commission",
+];
 
 export function getVesperTableReadings(serviceDate: string): VesperTableReadings {
   const date = parseLocalDate(serviceDate);
