@@ -63,6 +63,7 @@ export async function actionName(input: InputType): Promise<{ success: boolean; 
 - Every Server Action validates its input before processing
 - Always return `{ success: boolean, data?, error? }` — never throw across the server/client boundary
 - Never expose raw database or provider error messages to the client — translate to a human-readable message first
+- **Placement and editing of a shared Library entry (Formula/Prayer/Song) are separate authorized operations — a picker component must never assume selecting an existing entry implies consent to edit it.** `AddFormulaPanel.tsx` got this right from the start (an override is a per-instance snapshot, never a write to the shared row). `AddSongPanel.tsx`/`AddPrayerPanel.tsx` didn't (2026-08-25 bug) — their `handleSave()` routed every pick through the Curator-gated `updateSong()`/`updatePrayer()` before placement, even when nothing was edited, so a Compiler picking any unmodified Shared entry was rejected before ever reaching placement. Any future "pick existing vs. write new" picker for a new item type must compare the picked entry's current field values against what's actually being submitted, and only call the edit action when something changed (see `lib/liturgy/pickedLibraryEntryUnchanged.ts` for the extracted, reusable comparison).
 
 ---
 
