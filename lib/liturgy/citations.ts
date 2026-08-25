@@ -1,4 +1,4 @@
-import { bookNameTagalog } from "@/lib/bible/bookNamesTagalog";
+import { bookNameTagalog, parseVerseSpec } from "@/lib/bible/bookNamesTagalog";
 
 // Shared by buildCitation and lib/selections/companionTranslation.ts (which
 // needs the identical verse-range formatting when constructing the other
@@ -63,24 +63,5 @@ export function parseCitationVerses(
   if (!citation.startsWith(prefix)) return null;
 
   const versesPart = citation.slice(prefix.length);
-  // Parses per comma-separated segment now, since formatVerseSpec can mix
-  // ranges and singles in one citation ("1–3, 7") -- the old version only
-  // handled a citation that was ENTIRELY one dash-range or ENTIRELY
-  // comma-separated singles, never both. Still accepts a plain hyphen
-  // alongside the en dash, so citations typed by hand or saved before that
-  // change still parse.
-  const verses: number[] = [];
-  for (const rawSegment of versesPart.split(",")) {
-    const segment = rawSegment.trim();
-    if (segment.includes("–") || segment.includes("-")) {
-      const [start, end] = segment.split(/[–-]/).map(Number);
-      if (Number.isNaN(start) || Number.isNaN(end)) return null;
-      for (let n = start; n <= end; n++) verses.push(n);
-    } else {
-      const n = Number(segment);
-      if (Number.isNaN(n)) return null;
-      verses.push(n);
-    }
-  }
-  return verses;
+  return parseVerseSpec(versesPart);
 }

@@ -158,6 +158,32 @@ export interface ParsedCitation {
   verses: number[];
 }
 
+// Shared by parseCitationReference below and lib/liturgy/citations.ts's
+// parseCitationVerses -- both need to parse a verse spec like "1–2, 10"
+// back into [1, 2, 10]. Parses per comma-separated segment (each either a
+// single number or a dash range), not "does the whole string contain a
+// dash" -- that earlier approach mis-took a mixed range-plus-single citation
+// ("1–2, 10") for a single range spanning "1" to the unparseable "2, 10"
+// and failed the whole parse. Accepts a plain hyphen alongside the en dash
+// so hand-typed citations still parse. Returns null on any malformed
+// segment, same "whole citation invalid" contract both callers expect.
+export function parseVerseSpec(versesPart: string): number[] | null {
+  const verses: number[] = [];
+  for (const rawSegment of versesPart.split(",")) {
+    const segment = rawSegment.trim();
+    if (segment.includes("–") || segment.includes("-")) {
+      const [start, end] = segment.split(/[–-]/).map(Number);
+      if (Number.isNaN(start) || Number.isNaN(end)) return null;
+      for (let n = start; n <= end; n++) verses.push(n);
+    } else {
+      const n = Number(segment);
+      if (Number.isNaN(n)) return null;
+      verses.push(n);
+    }
+  }
+  return verses;
+}
+
 // v2 (BSB): the general form of parseCitationVerses in lib/liturgy/
 // citations.ts -- that one requires the caller to already know the book and
 // chapter (the Reader's own use case). This one works from the citation
@@ -180,15 +206,8 @@ export function parseCitationReference(citation: string): ParsedCitation | null 
 
     const chapter = Number(match[1]);
     const versesPart = match[2];
-    let verses: number[];
-    if (versesPart.includes("–") || versesPart.includes("-")) {
-      const [start, end] = versesPart.split(/[–-]/).map(Number);
-      if (Number.isNaN(start) || Number.isNaN(end)) continue;
-      verses = Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    } else {
-      verses = versesPart.split(",").map(Number);
-      if (verses.some(Number.isNaN)) continue;
-    }
+    const verses = parseVerseSpec(versesPart);
+    if (verses === null) continue;
 
     return { book: candidate.english, chapter, verses };
   }
