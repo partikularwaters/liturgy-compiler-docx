@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { addPrayer } from "@/lib/liturgy/addPrayerAction";
 import { createPrayer, updatePrayer } from "@/lib/prayers/prayerActions";
+import { prayerEntryUnchanged } from "@/lib/liturgy/pickedLibraryEntryUnchanged";
 import { shiftMarksForEdit } from "@/lib/text/marks";
 import { XIcon } from "@/components/liturgy/icons";
 import type { Prayer } from "@/types/liturgy";
@@ -88,13 +89,24 @@ export default function AddPrayerPanel({
         }
       });
     } else {
+      // Placing an existing entry unmodified is not the same operation as
+      // editing it -- only route through updatePrayer (Curator-only for a
+      // Shared row) when the text actually differs from what was picked.
+      // Previously this always called updatePrayer first, so a Compiler
+      // picking any unmodified Shared prayer was rejected before ever
+      // reaching placement.
+      const original = activeList.find((p) => p.id === prayerId);
+      if (prayerEntryUnchanged(original, text)) {
+        finish(prayerId);
+        return;
+      }
+
       // This panel has no marking toolbar (Bold/Congregation/etc. are edited
       // from the Library instead) -- shift whatever marks the library entry
       // already has to match this text edit, rather than defaulting to `[]`
       // and silently wiping them. Editing a Shared entry here only succeeds
       // for a Curator (prayerActions.ts's own gate) -- a Compiler editing a
       // shared entry gets a clear error instead, same as everywhere else.
-      const original = activeList.find((p) => p.id === prayerId);
       const shiftedMarks = shiftMarksForEdit(original?.text ?? "", text, original?.marks ?? []);
       updatePrayer(prayerId, sectionName, text, undefined, shiftedMarks).then((result) => {
         if (result.success) {

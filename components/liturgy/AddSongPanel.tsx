@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { addSong } from "@/lib/liturgy/addSongAction";
 import { createSong, updateSong } from "@/lib/songs/songActions";
+import { songEntryUnchanged } from "@/lib/liturgy/pickedLibraryEntryUnchanged";
 import { XIcon } from "@/components/liturgy/icons";
 import type { Song } from "@/types/liturgy";
 
@@ -97,6 +98,18 @@ export default function AddSongPanel({
         }
       });
     } else {
+      // Placing an existing entry unmodified is not the same operation as
+      // editing it -- only route through updateSong (Curator-only for a
+      // Shared row) when the fields actually differ from what was picked.
+      // Previously this always called updateSong first, so a Compiler
+      // picking any unmodified Shared song was rejected before ever
+      // reaching placement.
+      const original = activeList.find((s) => s.id === songId);
+      if (songEntryUnchanged(original, { title, attribution, yearPublished, notes })) {
+        finish(songId);
+        return;
+      }
+
       // Editing a Shared entry here only succeeds for a Curator
       // (songActions.ts's own gate) -- a Compiler gets a clear error.
       updateSong(songId, sectionName, kind, title, attribution, yearPublished, notes).then((result) => {
