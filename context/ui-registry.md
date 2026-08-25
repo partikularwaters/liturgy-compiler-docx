@@ -159,7 +159,7 @@ When compiling, `app/reader/ReaderClient.tsx` uses the sticky composition panel 
 
 ### Modal
 
-`components/ui/Modal.tsx` is the shared visual overlay. It closes through its close button or an outside click and uses the tokenized modal surface. Full dialog accessibility remains open: add dialog semantics, Escape dismissal, initial focus, focus containment, and focus restoration before treating it as an accessible dialog primitive.
+`components/ui/Modal.tsx` is the shared visual overlay. It closes through its close button, an outside click, or Escape, and uses the tokenized modal surface. Full dialog accessibility (2026-08-25): `role="dialog"`/`aria-modal`/`aria-labelledby`, initial focus on the close button, Tab/Shift+Tab focus containment within the dialog, and focus restored to whatever triggered it on close — live-verified in a browser, not just typechecked.
 
 ---
 
