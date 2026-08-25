@@ -12,7 +12,7 @@ Read the relevant section before implementing any feature that touches these lib
 
 Before implementing any feature that uses a third party library:
 
-1. **Check CLAUDE.md** at the project root — it lists every skill installed for this project. Skills contain up-to-date API documentation and usage patterns specific to this codebase.
+1. **Check AGENTS.md through the root CLAUDE.md shim** — it defines the project protocol and installed skills.
 2. **Check if an MCP server is configured** for that library. If one is available — use it before falling back to general knowledge.
 3. **Read this file** for project-specific patterns that override general library knowledge.
 
@@ -55,6 +55,8 @@ context; they never receive the service-role key.
 
 - Never import the service-role client into a Client Component
 - Never assume RLS protects a service-role write
+- Every client-reachable application mutation using the service-role client calls `getCurrentUser()` and completes its role/ownership check before the first application-data read or write. Authentication bootstrap actions are the only exception.
+- Keep internal privileged helpers server-only. A Client Component calls a purpose-built Server Action, never a privileged query helper.
 - Public reads remain available without login; authenticated authority is required for mutations
 
 ---
@@ -81,12 +83,28 @@ const result = await insertSectionItem(sectionId, item);
 - Always handle the error return — never assume success
 - Use `.single()` when expecting exactly one row
 - Section Items live as individual `section_items` rows. Read and write them only through `lib/liturgy/sectionItems.ts`, which converts storage rows to the shared `Item` type.
+- Preserve failure separately from emptiness on artifact-producing reads: return `null` for a failed required query and `[]` for a valid empty collection. Section-Item/Liturgy readers follow this contract. Formula, Prayer, and Song library readers do not yet; that remaining export-hardening work is tracked as open.
+- Omit `section_items.position` on insert. Its database trigger assigns the next value atomically per Section; do not reproduce `max + 1` in application code.
 
 ---
 
-## @react-pdf/renderer (PDF Generation)
+## `docx` (Word Generation)
 
-Generates the Leader Guide and Congregation Bulletin from one compiled Liturgy. **Implemented 2026-07-14 (Phase 4, Features 11-12)** — `lib/pdf/LiturgyDocument.tsx` matches the pattern below closely, with three additions the original proposal didn't anticipate: (1) fonts are loaded from real font files under `public/fonts/` via `lib/pdf/fonts.ts`'s `registerPdfFonts()`, since react-pdf renders outside the DOM/CSS pipeline and can't use `next/font/google` — Old Standard TT's static weights came straight from the `google/fonts` GitHub repo, but Ibarra Real Nova only ships as a variable font there, so its regular/bold statics were pulled from Google's font-serving CDN instead (`fonts.googleapis.com/css2?family=...` with an old-Android user agent to force a `.ttf` response instead of `.woff2`); (2) colors are literal hex in `lib/pdf/tokens.ts` (the one necessary exception to "never hardcode hex," since react-pdf has no Tailwind/CSS-variable access at all); (3) Item resolution (Formula override-vs-default, Prayer lookup, visibility) goes through `lib/liturgy/resolveItemText.ts` — the same function the Compile View's `SectionCard` uses — so the PDF can never silently drift from what's shown on screen.
+This is the active Leader Guide and Congregation Bulletin generator for both Morning and Vesper. `lib/docx/LiturgyDocx.ts` owns one document implementation parameterized by `audience`; do not fork separate Guide and Bulletin templates.
+
+**Rules:**
+
+- Resolve Item text and Section layout through the shared `lib/liturgy` helpers before creating Word nodes.
+- Use Word's continuous multi-column flow. A Section's `column_break_before` is an explicit authoring override, not a computed pagination result.
+- Generate files on demand and stream/download them directly; never persist generated artifacts.
+- Keep the export route unified: `format=docx` is the default, `audience=guide|bulletin` selects visibility, and `format=pdf` is legacy compatibility only.
+- Treat missing or failed required reads as an export failure, not as an empty document. This is the target contract; reusable Formula/Prayer/Song catalog failures can still arrive as empty arrays and remain open for correction.
+
+---
+
+## @react-pdf/renderer (Legacy PDF Generation)
+
+The PDF renderer is buried cold and unlinked from the UI. It is reached only through explicit `format=pdf` and carries no supported present-tense product contract. Direct all artifact work to `docx`. PDF tokens remain literal hex in `lib/pdf/tokens.ts` because react-pdf cannot consume CSS variables.
 
 **Italic weights, sourced 2026-07-18 the same way, with a wrinkle:** requesting Ibarra Real Nova's italic weights from the same css2 API (`family=Ibarra+Real+Nova:ital,wght@1,400;1,700`, old-Android user agent) returned `.woff`, not `.ttf` this time — Google's static-instancing/format negotiation isn't perfectly deterministic across requests. **`Font.register` accepts `.woff` directly** (fontkit, react-pdf's underlying parser, supports it) — no conversion needed, just register the `.woff` path like any other font file. Confirmed real embedding (not silent fallback) the same way as the original two weights: grep the exported PDF's raw bytes for `BaseFont` entries.
 
@@ -186,7 +204,7 @@ export async function getChapter(translation: 'AB1905' | 'BSB', book: string, ch
 
 ## BibleGateway RefTag/BGLinks Widget (AB2001/MBB Hover Preview)
 
-Licensed, display-only hover preview for AB2001 and MBB — no text stored in this app. **Implemented 2026-07-14 (Phase 5, Feature 14).** Fetched and read the real `bglinks.js` source before building (rather than trusting this doc's proposed pattern blind) — confirmed accurate: it auto-scans visible page text itself for citation patterns (no per-reference markup needed; "Psalms 95:1-2" as plain text is enough) and skips already-wrapped/`<a>`/heading nodes on repeat scans. One real constraint the original proposal didn't call out: `window.BGLinks.version` is a single global, not per-citation — the widget can only show one translation at a time, not a live AB2001/MBB toggle. Asked Madrid; **AB2001 is the fixed default** in v1, no switcher built. `components/layout/ScriptureLinker.tsx` mounts once in `app/layout.tsx`, injects the script once, sets the version, and re-runs `linkVerses()` on every client-side route change (`usePathname()`) since Next's App Router doesn't full-reload between pages. Verified live: hovering a real citation renders BibleGateway's own tooltip with real AB2001 text fetched directly from their servers — confirmed via the DOM (`#bg_popup-container`'s content), never touching this app's Server Actions or database.
+BibleGateway BGLinks provides licensed, display-only AB2001 hover text; the application stores none of it. `components/layout/ScriptureLinker.tsx` loads the script once and reruns `linkVerses()` after client-side route changes. The widget scans visible citation text and skips content it has already linked. `window.BGLinks.version` is global rather than per citation, so AB2001 is the fixed default and no AB2001/MBB switcher is provided.
 
 ### Usage Pattern 1 — Script Injection
 

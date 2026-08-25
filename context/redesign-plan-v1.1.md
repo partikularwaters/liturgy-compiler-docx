@@ -1,8 +1,8 @@
-<!-- Consolidated, fully-approved redesign plan from the 2026-07-15/16 architecture review session. Not yet applied to the other context/*.md files or code — this is the source-of-truth staging document for that implementation pass. Read this alongside architecture.md/ui-rules.md/ui-tokens.md/project-overview.md/build-plan.md, which it will supersede in the sections it covers once implementation lands. -->
+<!-- Historical implementation-plan snapshot from the 2026-07-15/16 review. Its implementation pass is complete and later decisions supersede parts of it. It is not present-tense authority: use project-overview.md, architecture.md, build-plan.md, ui-rules.md, ui-tokens.md, and ui-registry.md. In particular, Vesper Compile View is now intentionally flat, DOCX is the active default output, and the current floating navigation pill supersedes the staged top-bar design below. -->
 
 # Liturgy Compiler — Consolidated Redesign Plan (v1.1)
 
-Everything decided across the 2026-07-15/16 review, organized by what actually changes. Nothing has been written to the other `context/*.md` files or code yet — this is the full approved package staged for that implementation pass. **All items are resolved — no open questions remain.**
+Everything decided across the 2026-07-15/16 review, preserved as the implementation plan that existed at that milestone. Later state files record what actually shipped and which decisions changed afterward.
 
 ---
 
@@ -71,7 +71,7 @@ Structure: Page 1 / Page 2 divisions, each split into 3 columns, each Section it
 
 There's never been a physical Vesper bulletin, so the 3-column print-mimicking rationale doesn't automatically transfer. **Vesper's output becomes a shareable, mobile-first responsive web view instead of a PDF** — built now, as part of this same pass.
 
-- **Editing (Compile View) stays consistent across both templates** — Vesper uses the same 2-page/3-column shape as Morning while compiling. Only the *final output* differs between templates.
+- **Superseded after implementation:** this plan proposed the same 2-page/3-column Compile View for both templates. Current behavior intentionally keeps Morning on that fixed grid and Vesper in flat template order; see `ui-rules.md`.
 - **Vesper's PDF export (Guide/Bulletin) is deferred to v3/v4** — not built in this pass. Morning keeps its existing PDF export (Features 11/12) unchanged.
 - **New deliverable:** a public-facing, mobile-first responsive Liturgy Web View (e.g. `app/liturgy/[id]/view/page.tsx`) — distinct from the `lib/pdf/` pipeline, no download, shareable by URL. Scoped to Vesper for now; Morning could gain the same view later but that's not required by this pass.
 

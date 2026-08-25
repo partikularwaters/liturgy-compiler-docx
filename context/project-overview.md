@@ -21,9 +21,9 @@ Liturgy is currently compiled in Docs/Sheets with no unified view of the whole s
 /liturgies               → Liturgy Compiler page: full Liturgy History list + "New Liturgy" CTA (v1's old dashboard, moved here)
 /reader                  → Bible reader: browse book/chapter, highlight, save Selections
 /liturgy/new             → Start a liturgy: pick Morning/Vesper template + date (Lord's Day auto-computed)
-/liturgy/[id]            → Compile view: all Sections of the chosen template, 2-page/3-column layout, items per Section
-/liturgy/[id]/export     → Generate Leader Guide / Congregation Bulletin as .docx files, continuous-flow multi-column layout with manual column-break overrides (both templates). The route also still serves the legacy PDF (?format=pdf, Morning only, 13in×8in landscape) — frozen, no longer linked from the UI.
-/liturgy/[id]/view       → Public, mobile-first responsive Liturgy Web View, no app nav chrome — shareable by URL, works for both templates (Vesper as primary output in place of PDF; Morning alongside its PDF buttons)
+/liturgy/[id]            → Compile view: all Sections of the chosen template — Morning uses its fixed 2-page/3-column map; Vesper uses flat template order
+/api/liturgy/[id]/export → Generate Leader Guide / Congregation Bulletin as .docx files, continuous-flow multi-column layout with manual column-break overrides (both templates). DOCX is the default. An explicit `?format=pdf` still reaches the buried legacy renderer, which is unlinked and carries no current product-support promise.
+/liturgy/[id]/view       → Public, mobile-first responsive Liturgy Web View, no app nav chrome — shareable by URL and available for both templates alongside their DOCX exports
 /library                 → Browse Library: Formulas, Prayers (+ Prayer Guides), Songs (Psalm/Hymn), Existing Selections — one merged page, superseding the old separate /formulas and /prayers
 ```
 
@@ -33,7 +33,7 @@ One route per distinct user activity — reading, compiling, exporting, managing
 
 ## Navigation
 
-**v1.1 change — reverses the original "no top navbar" decision.** A single top bar replaces the left sidebar: **Liturgies** · **Bible Reader** · one contextual CTA slot that reads **Create Liturgy** on the homepage and swaps to **Browse Library** while inside the Liturgy Compiler page. No Sign In/Account item in v1 (that arrives with v3 auth). See `ui-rules.md` for the bar's visual spec and `context/redesign-plan-v1.1.md` §A for the full reasoning.
+The application uses a floating navigation pill with permanent links to **Home**, **Liturgies**, **Bible Reader**, and **Library**, plus a **Create Liturgy** action and the signed-in account menu. It collapses to a mobile menu and is intentionally absent from the public Liturgy Web View. See `ui-rules.md` for the visual and responsive rules.
 
 ---
 
@@ -41,7 +41,7 @@ One route per distinct user activity — reading, compiling, exporting, managing
 
 ### Flow 1 — Starting a Liturgy
 
-User opens `/liturgy/new`, selects Morning Worship or Vesper Worship, picks a date via calendar. Lord's Day number computes automatically (count of Sundays since the first Sunday of that calendar year, no skips). **v1.1:** picking a non-Sunday date shows a warning immediately and again beside the Start button; the user must click "Proceed anyway" to save it, and the resulting liturgy never displays a Lord's Day number (LD# is only ever shown for a date that's actually a Sunday). User lands on the compile view with all Sections of the chosen template empty, laid out across 2 pages of 3 columns each (both templates share this editing layout).
+User opens `/liturgy/new`, selects Morning Worship or Vesper Worship, and picks a date. Lord's Day number computes automatically (count of Sundays since the first Sunday of that calendar year, no skips). A non-Sunday date warns immediately and requires explicit confirmation; the resulting liturgy never displays a Lord's Day number. The Compile View uses Morning's fixed two-page/three-column map and Vesper's flat template-order layout.
 
 ### Flow 2 — Compiling a Section
 
@@ -49,7 +49,7 @@ User browses the Bible reader (AB1905 or BSB, full text) or hovers a reference e
 
 ### Flow 3 — Exporting
 
-`/liturgy/[id]/export` generates two `.docx` files from the same data: the Leader Guide (every item, including leader-only Verbal Cues) and the Congregation Bulletin (everything except leader-only Verbal Cues). Word's own continuous-flow multi-column layout replaces the old fixed 2-page/3-column PDF shape, with a manual "start new column" override per Section where needed — works for both Morning and Vesper now, since neither template needs a fixed per-Section page/column assignment anymore. `/liturgy/[id]/view` remains available for either template as a shareable, mobile-first responsive web page.
+`/api/liturgy/[id]/export` generates two `.docx` files from the same data: the Leader Guide (every item, including leader-only material) and the Congregation Bulletin (leader-only material excluded). Word's own continuous-flow multi-column layout uses a manual "start new column" override per Section where needed and works for both templates. `/liturgy/[id]/view` remains available for either template as a shareable, mobile-first responsive web page.
 
 ---
 
@@ -58,7 +58,7 @@ User browses the Bible reader (AB1905 or BSB, full text) or hovers a reference e
 ### Liturgy
 - Lives in Postgres (Supabase), one row per compiled service instance
 - Changes each time a Section's items are added, edited, or reordered within v1's fixed structure
-- Used for: compiling, history, both PDF exports
+- Used for: compiling, history, both DOCX audiences, the public Web View, and the frozen legacy PDF route
 - Must never be silently overwritten by editing a Formula's master default (see Formula below)
 
 ### Template
@@ -79,7 +79,7 @@ User browses the Bible reader (AB1905 or BSB, full text) or hovers a reference e
 
 ### Prayer (library)
 - Per-Section collection of prior entries (e.g., 2–3 existing Confession of Sin prayers) — picked, edited, or added to, no canon status
-- v1.1 adds a `guide` variant in the same library — a fixed structural checklist (e.g. Invocation's Adoration → Humble Approach → Acceptance → Thanksgiving → Trinitarian Conclusion) shown as reference next to "Add Prayer" on Sections that have one, not stored as liturgy content
+- `is_guide` independently identifies a fixed structural checklist (e.g. Invocation's Adoration → Humble Approach → Acceptance → Thanksgiving → Trinitarian Conclusion) shown as reference next to "Add Prayer" on Sections that have one, never stored as placed liturgy content
 
 ### Songs — Psalm and Hymn (library, v1.1)
 - One shared library, tagged by kind (`psalm` | `hymn`), scoped per-Section like Formula/Prayer
@@ -92,7 +92,7 @@ User browses the Bible reader (AB1905 or BSB, full text) or hovers a reference e
 
 ---
 
-## Features In Scope — all shipped as of 2026-07-18
+## Shipped Product
 
 - Bible reader: AB1905 + BSB, full text, book/chapter navigation, verse highlighting
 - Hover preview for AB2001/MBB via BibleGateway's RefTag/BGLinks widget (licensed display, not extracted text)
@@ -101,23 +101,22 @@ User browses the Bible reader (AB1905 or BSB, full text) or hovers a reference e
 - Fixed Morning Worship / Vesper Worship templates, posture shown as a trailing asterisk, dynamic Psalm/Hymn Section naming; Morning's "Charge & Benediction" and "Offertory & Thanksgiving" both split into two Sections each
 - Computed Lord's Day numbering (auto, resets each January, never skips); non-Sunday dates require explicit confirmation and never display an LD#
 - Liturgy history, with a dedicated homepage separate from the full list
-- Morning: dual PDF export (Leader Guide, Congregation Bulletin), 13in×8in landscape 3-column layout matching the physical bulletin
-- Both templates: a shareable, mobile-first, nav-free public Liturgy Web View (Vesper's primary output in place of PDF; Morning's alongside its PDF export)
+- Both templates: dual DOCX export (Leader Guide and Congregation Bulletin), using continuous-flow Word columns with optional manual Section breaks
+- Both templates: a shareable, mobile-first, nav-free public Liturgy Web View
+- Morning only: a frozen legacy PDF export, still served by the export route but no longer linked from the UI
 - Leader/Congregation/Minister/Small-Caps responsive-reading tool — Congregation/Minister on the Sections that alternate speaking parts, Small Caps available anywhere a Selection can go; reaches both Selection and Formula content
 - Prayer Guides — fixed structural checklists for extemporaneous prayers, shown as reference on Sections that have one, and included in the exported Leader Guide
-- Trinitarian Seal — a Benediction-only toggle appending Madrid's exact Filipino/English closing wording, bolded, in the same flowing paragraph as the Selection's own text
+- Trinitarian Seal — a Benediction toggle for Selection or Formula content, appending the approved Filipino/English closing wording in the same flowing paragraph
 
 ## Features Out of Scope (v1)
 
-- Section reordering, renaming, or creation beyond the Morning content-model corrections already made — v2
+- Section reordering, renaming, or creation beyond the Morning content-model corrections already made — v3
 - Verse tags, coherence score, universal search, cross-day duplicate flagging — v3+
 - Reformed Life PowerPoint Builder integration — v3+
-- Role-based access control on Formula edits — v3+ (item-type groundwork laid now)
-- Automated rotation-cycle assignment for Vesper's recurring readings — v3+ (stays a manual, handbook-referenced lookup)
-- Vesper's PDF export (Guide/Bulletin) — deferred to v3/v4; Vesper uses the web view instead
+- Complete Vesper recurring-reading automation — partially shipped in v2 and still open for the canonical scheduling/placement corrections described in the roadmap below
+- New PDF development — the PDF path is frozen; active output development uses DOCX
 - An MBB hover-preview toggle alongside AB2001 — the widget only supports one active translation at a time; a real toggle needs its own design work, not scoped yet
 - Extraction/storage of AB2001 or MBB text into the app's own database — pending Philippine Bible Society response; hover-widget display only until then
-- Full Library management (deleting a Formula, editing/adding a Scripture entry, bringing the marking toolbar into `/library`) and a real Songs Library management UI — see `Roadmap` below, planned for v2
 
 ---
 
@@ -125,10 +124,10 @@ User browses the Bible reader (AB1905 or BSB, full text) or hovers a reference e
 
 - **Frontend:** Next.js
 - **Backend:** Next.js (API routes / server actions)
-- **Database:** Supabase (Postgres), hybrid schema — relational tables for Liturgies/Templates/Formulas, structured JSON for Items within a Section
-- **Auth:** None in v1 (single user); Supabase Auth available when v3's access control is built
+- **Database:** Supabase (Postgres) — relational Liturgies/Templates/Sections and one polymorphic `section_items` child table with typed JSON payloads
+- **Auth:** Supabase Auth with Curator and Compiler roles; public reading remains anonymous while mutations require a trusted account
 - **Word (.docx) export:** the `docx` npm library — continuous-flow, multi-column layout with manual column-break overrides, both templates. Replaces the original PDF export as the active mechanism.
-- **PDF export (legacy, frozen):** @react-pdf/renderer — still present and working, Morning only, 13in×8in landscape 3-column layout, no longer linked from the UI
+- **PDF export (legacy, buried cold):** @react-pdf/renderer — reachable only through explicit `format=pdf`, unlinked from the UI, and not a supported source of current product requirements
 - **Styling:** Tailwind CSS v4
 - **Bible text:** AB1905 + BSB self-hosted/API for the reader; BibleGateway RefTag/BGLinks widget for AB2001/MBB hover preview
 
@@ -136,50 +135,50 @@ User browses the Bible reader (AB1905 or BSB, full text) or hovers a reference e
 
 ## Analytics Events
 
-None in v1 — solo-user internal tool, no audience for engagement/growth metrics.
+No application analytics events are defined. Optional platform performance telemetry does not track product-domain actions.
 
 ---
 
-## Target User
+## Target Users
 
-John Madrid (solo build and initial use), and eventually the RLCC roles who prepare or lead worship — presider, deacon, preacher — compiling Morning or Vesper liturgies.
+Trusted RLCC Curators and Compilers prepare Morning or Vesper liturgies. Congregation members and other anonymous visitors can read public Home, Library, Reader, and Liturgy Web View pages without an account.
 
 ---
 
 ## Success Criteria
 
-- Madrid personally compiles a real Sunday liturgy end to end — selecting/adapting Scripture, assigning Selections/Formulas/Verbal Cues/Prayers to Sections, across either template
-- Both Leader Guide and Congregation Bulletin PDFs export correctly from that one compiled liturgy in a single sitting
+- A trusted Compiler can compile a real Sunday liturgy end to end — selecting or adapting Scripture and assigning Selections, Formulas, Verbal Cues, Prayers, Sermon text, and Songs across either template
+- Leader Guide and Congregation Bulletin DOCX files export correctly from the same compiled liturgy, and the public Web View presents the same content without compiler navigation
 
 ---
 
 ## Roadmap — v2 and v3
 
-**Scoped through direct rounds of decisions with Madrid on 2026-07-20** (the same discipline `redesign-plan-v1.1.md` got before v1.1 became build-ready phases) — approved, not draft. See `build-plan.md`'s "v2"/"v3" sections for the full implementation-level breakdown; this is the narrative version.
+This is the approved roadmap. See `build-plan.md`'s v2 and v3 sections for the implementation-level breakdown.
 
 ### v2 — Translation Breadth, Output, & Library Completeness
 
-The throughline shifted from the original draft: Section/Template editing turned out to need its own scoping pass regardless of phase, so it moved to v3 alongside the item-table migration it would have gated. v2 instead became about giving the app a second Scripture translation (BSB/English, alongside AB1905/Filipino), replacing the PDF export pipeline with docx, and finally closing out library completeness.
+Template/Section editing belongs to v3 because it requires independent scoping and builds on row-based Item storage. v2 delivered a second Scripture translation (BSB/English alongside AB1905/Filipino), DOCX output, and library completeness.
 
 1. **Docx export — ✅ done, shipped 2026-07-22.** Replaced `@react-pdf/renderer` as the active export mechanism, built in this repo (the clone that item was scoped for). PDF export is frozen, not deleted — still present, no longer linked from the UI.
-2. **Continuous-flow authoring with manual column-break overrides — ✅ done, shipped alongside #1.** Resolved the old fixed-vs-continuous layout question in favor of continuous flow — Word's native multi-column layout already behaves this way, and a manual override is just a real column-break, no custom pagination engine needed. Resolved Vesper's 3-column layout as a side effect too: no per-Section page/column assignment table needed for either template anymore.
-3. **BSB (English) as a real second Selection source.** Includes Reader translation-switcher UI (never built — Feature 02 shipped without one), a dual-translation Scripture Library (Filipino/English tagged, auto-paired by canonical verse reference — saving a Selection in one language silently fetches and saves the other language's unmodified companion if it doesn't exist yet, with a small note in the save confirmation), a backfill migration for every existing (all-Filipino) library entry, and a Filipino/English toggle plus alternate-translation hover-preview in the Compile View's existing-Scripture picker. Runs from both the Reader and the Library's direct-add flow.
-4. **Automated rotation-cycle assignment** for Vesper's recurring readings, replacing the current manual handbook-referenced lookup.
-5. **Library-level marking toolbar** — `formulas`/`scripture_selections` gain a `marks` column and the same Congregation/Minister/Small-Caps toolbar the placed-item edit forms already have; placement copies marks onto the new instance as a starting point, same freeze-on-placement convention `overrideText` already follows.
-6. **Default Verbal Cue seeding — ✅ done, shipped 2026-07-22** with real content Madrid supplied. Legacy Formula-text cleanup (Absolution's manually-typed "Minister:"/"Congregation:" prefixes) remains open, still gated on Madrid's own cleanup pass, no longer blocking anything.
+2. **Continuous-flow authoring with manual column-break overrides — ✅ done, shipped alongside #1.** Resolved the old fixed-vs-continuous DOCX question in favor of continuous flow — Word's native multi-column layout already behaves this way, and a manual override is just a real column-break, no custom pagination engine needed. Vesper's DOCX uses that same continuous multi-column model without changing its flat Compile View.
+3. **BSB (English) as a real second Selection source — ✅ done.** The Reader, Scripture Library, companion-translation flow, and Compile View picker are translation-aware.
+4. **Automated rotation-cycle assignment — partially shipped, corrections open.** The canonical `Vesper Service and Lord's Table.docx` defines the 12 Lord's Discourses and their Closing texts, the four Words of Institution readings, and a separate four-Sunday Great Commission Text cycle. Current code auto-places the Discourse, Words of Institution, and Closing selections and provides an override path. It computes but does not place the Great Commission Text, while the calendar-quarter anchor and fifth-Sunday behavior are not stated in the canonical document and require a deliberate decision before this item can close.
+5. **Library-level marking toolbar — ✅ done.** Formula and Scripture Library marks copy onto a new placement as an editable starting point.
+6. **Default Verbal Cue seeding — ✅ done, shipped 2026-07-22** with approved cue content. Legacy Formula-text cleanup of Absolution's manually typed "Minister:"/"Congregation:" prefixes remains an open, non-blocking manual content task.
 
-**Shelved cold until v2/v3 above is built and stable:** the MBB hover-preview toggle, alongside PDF export itself.
+**Shelved cold:** an MBB hover-preview toggle and any further development of the frozen PDF path.
 
 ### v3 — Structure, Multi-User, & Discovery
 
-The throughline: v1/v2 assume a fixed Template structure and a single liturgist. v3 makes Sections themselves editable, migrates Items to a real queryable shape, and opens the tool to the other RLCC roles plus the discovery features that need enough historical data to search across.
+The remaining v3 throughline is editable Template structure and discovery. Multi-user authorization and queryable Item storage shipped ahead of the remaining work.
 
-1. **Item storage migration** — `sections.items` jsonb array → a proper child table, one row per item. Moved here from the original v2 draft since both of its real justifications (pairing with Section editing, enabling search/tagging) now live in v3.
+1. **Item storage migration — ✅ done.** `section_items` is the live storage model; the old `sections.items` column has been removed.
 2. **Template/Section editing** — reorder, rename, create Sections within a Template. Moved from v2; still needs its own scoping pass before any code, given how every past structural Template change needed a hand-written re-indexing migration.
-3. **Items tagging**, depending on #1 — useful for #4 below.
-4. **Universal search + cross-day duplicate flagging**, depending on #1 and #3.
+3. **Items tagging** — useful for #4 below.
+4. **Universal search + cross-day duplicate flagging**, depending on #3.
 5. **Coherence score**, depending on #3-4's query layer.
-6. **Supabase Auth + role-based access control** — the `formulas.access_level` column has sat unused since Feature 08, reserved exactly for this. Independent of the rest of v3.
+6. **Supabase Auth + Curator/Compiler access control — ✅ done.** Trusted mutations are authorized server-side; anonymous reading remains public.
 7. **Reformed Life PowerPoint Builder integration** — external system, needs its own scoping conversation with whoever owns that tool. Confirmed for after v2 completes.
 8. **AB2001/MBB text extraction into this app's own database** — still gated on Philippine Bible Society's reply to the adaptation-rights request. A separate tool for personal-use extraction is known to exist, but personal use and this app storing/serving that text to a congregation are different situations — the former doesn't resolve the latter's actual gate.
 

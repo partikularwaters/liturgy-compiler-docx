@@ -12,17 +12,14 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// v2 item 1: docx export, added alongside the existing PDF branch --
-// ?format=docx|pdf, mirroring the established "one route, one param" shape
-// this file already used for ?audience=guide|bulletin (library-docs.md).
-// PDF stays the default (format param omitted) since it's still the
-// working, unremoved export path -- lib/pdf/ is frozen, not deleted, until
-// docx is proven stable (see build-plan.md's v2 item 1 scoping note).
+// DOCX is the active export. The frozen PDF path is buried compatibility
+// behavior and must be requested explicitly with `format=pdf`; an omitted or
+// unknown format therefore resolves to DOCX.
 export async function GET(request: Request, { params }: RouteParams): Promise<Response> {
   const { id } = await params;
   const url = new URL(request.url);
   const audience = url.searchParams.get("audience") === "bulletin" ? "bulletin" : "guide";
-  const format = url.searchParams.get("format") === "docx" ? "docx" : "pdf";
+  const format = url.searchParams.get("format") === "pdf" ? "pdf" : "docx";
 
   // BA-004: fail closed on any unexpected error during document assembly
   // (a read that throws instead of returning an error object, a rendering

@@ -42,12 +42,13 @@ imports → types → component/function → exports
 
 - No inline styles — all styling via design tokens from ui-tokens.md
 - No business logic inside UI components — components render and call functions from `lib/`, they don't contain Lord's Day math, dedup checks, or PDF logic themselves
+- Server Components own initial reads; Client Components own interaction. Never pass a privileged database helper across that boundary.
 
 ---
 
 ## API / Backend Conventions
 
-**Decided, confirmed by the shipped codebase:** Next.js Server Actions for all data mutations (creating a Liturgy, saving an Item, editing a Formula, deleting an Item via `removeItemAction.ts`) — this is an internal single-user tool with no public API surface to expose, so Server Actions avoid the extra boilerplate of a REST-shaped route for every mutation. The one API route in the codebase is `app/api/liturgy/[id]/export/route.ts` (PDF streaming) — the sole case needing raw HTTP semantics a Server Action can't provide.
+Use Next.js Server Actions for application mutations. The artifact export route is the deliberate exception because file responses need raw HTTP semantics; it serves active DOCX downloads and the frozen PDF compatibility format.
 
 ```typescript
 // Server Action structure
@@ -63,6 +64,8 @@ export async function actionName(input: InputType): Promise<{ success: boolean; 
 - Every Server Action validates its input before processing
 - Always return `{ success: boolean, data?, error? }` — never throw across the server/client boundary
 - Never expose raw database or provider error messages to the client — translate to a human-readable message first
+- Any client-reachable action that uses the service-role client must resolve the current user and enforce role/ownership before its first application-data read or write. Authentication bootstrap actions are exempt.
+- Internal privileged helpers include `server-only` protection and are called only by authorized server entry points.
 - **Placement and editing of a shared Library entry (Formula/Prayer/Song) are separate authorized operations — a picker component must never assume selecting an existing entry implies consent to edit it.** `AddFormulaPanel.tsx` got this right from the start (an override is a per-instance snapshot, never a write to the shared row). `AddSongPanel.tsx`/`AddPrayerPanel.tsx` didn't (2026-08-25 bug) — their `handleSave()` routed every pick through the Curator-gated `updateSong()`/`updatePrayer()` before placement, even when nothing was edited, so a Compiler picking any unmodified Shared entry was rejected before ever reaching placement. Any future "pick existing vs. write new" picker for a new item type must compare the picked entry's current field values against what's actually being submitted, and only call the edit action when something changed (see `lib/liturgy/pickedLibraryEntryUnchanged.ts` for the extracted, reusable comparison).
 
 ---
@@ -70,8 +73,10 @@ export async function actionName(input: InputType): Promise<{ success: boolean; 
 ## Database
 
 - Never query the DB directly from a component — always through `lib/liturgy` or `lib/bible`
-- **No `user_id` scoping in v1** — this is a single-user tool with no auth. Do not add a `user_id` column speculatively; that arrives with Supabase Auth when v3's access control is built, not before.
+- Shared/owned library authorization follows the shipped Curator/Compiler model; do not invent additional roles or ownership semantics.
+- Read and write Section Items through `lib/liturgy/sectionItems.ts`. Application inserts omit `position`; the database assigns it atomically and protects `(section_id, position)` with a unique constraint.
 - Use a transaction for any operation touching more than one table — e.g., creating a `liturgies` row and its `sections` rows together
+- A Template migration that inserts, removes, or reorders slots must migrate affected `sections.template_section_index` values transactionally, using collision-safe staging and verification.
 
 ---
 
@@ -80,6 +85,23 @@ export async function actionName(input: InputType): Promise<{ success: boolean; 
 - Never use empty catch blocks — always log or handle
 - User-facing errors must be human-readable, not raw exception text
 - Log errors with a context prefix: `[module/function]` — e.g., `[lib/liturgy/dedup] citation already exists in this Section`
+- Required artifact reads must fail closed. Model query failure separately from a valid empty result (`null` versus `[]`) and return a non-success export response when required data failed to load. Full-Liturgy/Section-Item reads comply; Formula, Prayer, and Song catalog readers remain a tracked production-hardening gap.
+- Graceful empty fallback is allowed only on non-artifact surfaces where failure and empty state are intentionally equivalent, such as a recent-items preview.
+
+---
+
+## Testing
+
+- Extract decision logic into pure helpers when it can be tested without framework or database setup.
+- Add focused regression tests for authorization branching, picked-entry change detection, render preparation, ordering contracts, and previously reproduced failures.
+- Test the behavior boundary, not private implementation detail.
+
+---
+
+## React Effects and Refreshes
+
+- Treat object and array props as identity-unstable after `router.refresh()`. An Effect must not reset local edit/form state merely because a refreshed Server Component produced an equivalent new reference.
+- Depend on stable scalar keys or compare the specific fields that govern the Effect. Keep refresh-triggered synchronization separate from user-triggered reset behavior.
 
 ---
 
@@ -124,11 +146,11 @@ Approved dependencies for this project:
 
 - `next`, `react`, `typescript` — framework and language
 - `@supabase/supabase-js` — database client
-- `@react-pdf/renderer` — PDF generation (frozen; retained until docx export is proven stable, see build-plan.md v2 item 1)
-- `docx` — .docx generation (v2 item 1), replacing `@react-pdf/renderer` as the export mechanism going forward
+- `@react-pdf/renderer` — frozen Morning PDF compatibility generation
+- `docx` — active `.docx` generation for both templates and audiences
 - `tailwindcss` (v4) — styling
-- `@tabler/icons-react` — shared icon set (2026-07-25: replaced the hand-rolled SVGs in `components/liturgy/icons.tsx`; that file still owns the exported names/props every call site uses, just backed by Tabler now)
-- `@supabase/ssr` — v3 Curator/Compiler auth (2026-07-25), cookie-backed session handling for Server Components/Actions and middleware. Distinct from `lib/db/supabase.ts`'s existing service-role client (bypasses RLS by design, used for every trusted server-side write) -- `lib/auth/supabaseServer.ts`/`supabaseBrowser.ts` carry the actual signed-in user's session so `auth.uid()` resolves inside RLS policies.
+- `@tabler/icons-react` — shared icon source behind `components/liturgy/icons.tsx`
+- `@supabase/ssr` — cookie-backed Curator/Compiler sessions for Server Components, Server Actions, and middleware; distinct from the server-only privileged application client
 - `@vercel/speed-insights` — optional performance telemetry on the Vercel Hobby allowance; it never gates an application feature
 - `supabase` (development) — free local Supabase CLI used to replay migrations against a disposable database
 - `vitest` (development) — focused unit and regression tests
@@ -139,16 +161,16 @@ Do not install any other packages without updating this list first.
 
 ## Shared Helpers Over Per-Surface Reimplementation
 
-This project renders the same compiled Liturgy content across three surfaces (Compile View, PDF export, Web View) that must never visually drift from each other. The established pattern: when a rendering rule is shared by two or more surfaces, put it in one function in `lib/liturgy/` or `lib/text/` and have every surface call it — never reimplement the same logic three times with three chances to diverge. Concrete precedents: `resolveItemText.ts` ("what does this item display"), `sectionTitle.ts` (dynamic Section naming), `applyMarks()` (mark-segment splitting), `prepareSectionRender.ts` (header-reference/merge layout), `resolveVerbalCueTemplate.ts` (v2 — resolving a Verbal Cue's `{{scripture}}`/`{{song}}`/`{{creed}}` tokens against whatever's actually placed in its Section, called from `resolveItemText.ts` itself so it reaches all three renderers automatically). When a genuinely new per-surface constraint shows up (e.g. react-pdf can't render arbitrary React components, so `MarkedText.tsx` can't be imported into the PDF), the fallback is each surface implementing the same branch logic independently against the same shared low-level helper (`applyMarks()`) — not three independent implementations of the whole rule from scratch.
+This project renders the same compiled Liturgy content across Compile View, DOCX, the frozen PDF, and Web View. When a rendering rule is shared by two or more surfaces, put it in `lib/liturgy/` or `lib/text/` and call it from each surface. Established helpers include `resolveItemText.ts`, `sectionTitle.ts`, `applyMarks()`, `prepareSectionRender.ts`, and `resolveVerbalCueTemplate.ts`. Where a platform cannot share the component layer, share the pure decision helper and test each adapter against it.
 
 ## Icon Components
 
-Shared icon set lives in `components/liturgy/icons.tsx` — one named export per icon (`PencilIcon`, `TrashIcon`, `ClearIcon`, `NoteIcon`, `DownloadIcon`, `CopyLinkIcon`, `CheckIcon`), each a small inline SVG, `strokeWidth="2"`, accepting `size`/`className` props. Check this file before hand-rolling a new inline `<svg>` in a component — most icon needs in this app are already covered, and a new one-off icon should be added here rather than inlined at its call site, so future icon-weight/style changes stay a one-file edit.
+Shared icon exports live in `components/liturgy/icons.tsx` and are backed by Tabler icons with the project's common props and weight. Add missing icons to that wrapper rather than importing or hand-rolling them at individual call sites.
 
 ## Deployment (Vercel)
 
-The Vercel project is connected to this repo's `main` branch and auto-deploys on push. Two things worth knowing from the first real deploy (2026-07-18):
+The Vercel project is connected to this repo's `main` branch and auto-deploys on push. Deployment requirements and diagnostics:
 
-- **Environment variables must be set in Vercel's Project Settings → Environment Variables** (same two values as `.env.local` — see Environment Variables above) before the first build; missing them causes a build-time crash (`Failed to collect page data for /api/...`), not a runtime error, since `lib/db/supabase.ts` creates its client at module-load time.
-- **If a deployment looks stale after a fix**, check the specific deployment's **Source** line (commit SHA) before assuming the code is wrong — Vercel's "Redeploy" on an old failed build re-deploys *that build's commit*, not necessarily your latest push. When in doubt, push a fresh commit (an empty one is fine — `git commit --allow-empty`) to force a new deployment unambiguously tied to the current `main` HEAD.
-- **Every page that reads library/liturgy data from Supabase and can be revisited after a save must export `export const dynamic = "force-dynamic"`.** Without it, Next can serve a cached fetch response after `router.refresh()` instead of re-querying the database — the save genuinely succeeds, but the page the user sees doesn't reflect it, which looks exactly like a lost edit (found live 2026-07-22 on `/library`, the Compile View, the liturgy Web View, and the Reader — all missing this, now fixed). `app/page.tsx` had it from the start for the same reason. Check for this explicitly on any new `async function ...Page()` added later.
+- **All three environment variables above must be set in Vercel's Project Settings → Environment Variables** before the first build; missing them fails the pre-build environment check.
+- **If a deployment looks stale after a fix**, check its **Source** commit SHA. Vercel redeploys the selected deployment's commit, which may not be the latest push. Push a new commit when a deployment must target the current `main` HEAD.
+- **Every page that reads library/liturgy data from Supabase and can be revisited after a save must export `export const dynamic = "force-dynamic"`.** Without it, `router.refresh()` can receive a cached response after a successful save and present stale data. Check this explicitly on every new asynchronous page that reads mutable project data.

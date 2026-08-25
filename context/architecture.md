@@ -7,10 +7,10 @@
 | Layer | Tool | Purpose |
 | --- | --- | --- |
 | Framework | Next.js | Full-stack framework — pages, API routes, server actions |
-| Database | Supabase (Postgres) | Primary data store — hybrid relational + JSON |
-| Auth | None in v1 | Single user; Supabase Auth available for v3 access control |
+| Database | Supabase (Postgres) | Primary data store — relational entities plus polymorphic `section_items.data` payloads |
+| Auth | Supabase Auth (`@supabase/ssr`) | Curator/Compiler authorization for trusted mutations; anonymous public reads |
 | Word export | `docx` | Leader Guide / Congregation Bulletin export — **active mechanism as of v2**, both templates, continuous-flow multi-column layout with manual column-break overrides |
-| PDF (legacy, frozen) | @react-pdf/renderer | Original Leader Guide / Congregation Bulletin export, Morning only — still present and working (`app/api/liturgy/[id]/export?format=pdf`) but no longer linked from the UI |
+| PDF (legacy, buried cold) | @react-pdf/renderer | Unlinked compatibility renderer, reachable only through explicit `format=pdf`; not a supported source of present-tense output requirements |
 | Styling | Tailwind CSS v4 | UI, via `@theme` tokens (see ui-tokens.md) |
 | Language | TypeScript strict | Throughout |
 | Bible text | Self-hosted AB1905 + BSB datasets; BibleGateway RefTag/BGLinks widget for AB1905→AB2001 hover cross-check; self-hosted expanded-context hover for BSB citations (`/api/bible/context`) | Reader + licensed hover preview + self-hosted context preview |
@@ -28,7 +28,7 @@
 │   ├── reader/                  # Bible reader
 │   ├── liturgy/
 │   │   ├── new/                 # Template + date picker, Lord's Day auto-calc
-│   │   └── [id]/                 # Compile view (continuous-flow, v2) + /export (.docx, both templates; legacy PDF still served, unlinked) + /view (web view, both templates)
+│   │   └── [id]/                 # Compile view (Morning fixed grid; Vesper flat) + /export (DOCX default; explicit buried PDF) + /view (both templates)
 │   ├── library/                  # Browse Library — Formulas, Prayers/Guides, Songs, Existing Selections; replaces app/formulas/ + app/prayers/
 │   └── api/                     # Route handlers (Lord's Day calc, docx/PDF generation, etc.)
 ├── components/
@@ -37,6 +37,8 @@
 │                                 # (shared icon set — pencil/trash/clear/note/download/copy-link/check, stroke-width 2)
 ├── lib/
 │   ├── bible/                   # Bible-provider abstraction (single interface; AB1905/BSB/AB2001/MBB behind it)
+│   ├── auth/                    # Session/user/role resolution; server-only authorization helpers
+│   ├── db/                      # Server-only Supabase access, including the privileged application client
 │   ├── liturgy/                 # Lord's Day calculation, dedup logic, template definitions, Section-context resolution,
 │   │                             # item removal (removeItemAction.ts), item ordering (sortSectionItems.ts), citation
 │   │                             # en-dash formatting (formatCitation.ts), Trinitarian Seal text (trinitarianSeal.ts),
@@ -54,8 +56,7 @@
 │   ├── text/                    # Typographic normalization, markdown bold parsing, span-tag (marks) handling
 │   │                             # (applyMarks/shiftMarksForEdit in marks.ts), bold-toggle (toggleBold.ts),
 │   │                             # textarea autosize (autosize.ts)
-│   └── pdf/                     # Legacy PDF generation (frozen, v1.1-era) — Morning's 3-column layout only; still
-│                                 # functional at ?format=pdf but no longer linked from the UI (see docx/ above)
+│   └── pdf/                     # Buried legacy PDF generation, explicit opt-in only; unlinked and outside current output scope
 └── types/                       # Shared TypeScript types (Liturgy, Section, Item, Formula, Prayer, Song, TextMark)
 ```
 
@@ -68,10 +69,13 @@
 | `app/` | Pages and route handlers only. No business logic. |
 | `components/` | UI only. No direct DB calls. |
 | `lib/bible/` | The Bible-provider abstraction — the only place that knows which translation source is active. Nothing outside this folder calls a translation source directly. |
-| `lib/liturgy/` | Lord's Day computation, Selection dedup rule, template/Section definitions, Section item-type whitelist (v1.1), item removal/ordering, citation formatting, and `prepareSectionRender.ts` (the single source of truth for header-reference/multi-Selection-merge layout, shared by the PDF and Web View). No UI concerns. |
+| `lib/auth/` | Session, current-user, and role resolution. Client-callable mutations authorize here before privileged database access. |
+| `lib/db/` | Server-only database clients and query helpers. A privileged helper must never be imported into a Client Component. |
+| `lib/liturgy/` | Lord's Day computation, Selection dedup, template/Section definitions, item validation/removal/ordering, citation formatting, and shared render preparation for DOCX, legacy PDF, and Web View. No UI concerns. |
+| `lib/docx/` | Active Word generation for both templates and both audiences; no data mutation. |
 | `lib/songs/` | Psalm/Hymn ("Songs") library reads/writes (v1.1). |
 | `lib/selections/` | Scripture Text Library reads/writes (v1.1) — auto-save on every Selection submission, independent of whether the parent liturgy is saved. |
-| `lib/pdf/` | PDF generation only, reading compiled Liturgy data — no data mutation. Morning only as of v1.1. |
+| `lib/pdf/` | Buried compatibility generation only, reading compiled Liturgy data with no mutation. It does not define current output behavior. |
 | `types/` | TypeScript types shared across the project. |
 
 ---
@@ -97,39 +101,43 @@ is ever saved
 Reader UI updates with the "already saved" marker for that citation
 ```
 
-### Flow 2 — Exporting a Morning Liturgy
+### Flow 2 — Exporting a Liturgy
 
 ```
-User requests export from /liturgy/[id]/export
+User requests an audience-specific DOCX from /api/liturgy/[id]/export
         ↓
 API route reads full Liturgy (Template → Sections → Items) from Postgres
         ↓
-lib/pdf builds two views: all items (Guide) / items minus leader-only Verbal Cues (Bulletin)
+Shared resolution and Section-render preparation produce the selected audience
         ↓
-@react-pdf/renderer generates both PDFs, 2-page/3-column layout (v1.1)
+lib/docx generates a continuous-flow multi-column Word document for either template
         ↓
-User downloads both files
+User downloads the file; only an explicit ?format=pdf selects the buried legacy renderer
 ```
 
-### Flow 3 — Sharing a Vesper Liturgy (v1.1)
+### Flow 3 — Sharing a Liturgy
 
 ```
 User requests /liturgy/[id]/view
         ↓
 Page reads full Liturgy (Template → Sections → Items) from Postgres —
-same read path as the PDF flow, no separate data model
+same read and resolution path as the generated artifacts, no separate data model
         ↓
 Renders a public, mobile-first responsive page (not a download) —
-distinct from the lib/pdf/ pipeline entirely
+with no compiler navigation, for either template
         ↓
-User shares the URL directly; no PDF generated for Vesper in v1
+User shares the URL directly
 ```
+
+### Flow 4 — Seeding Vesper recurring readings
+
+`Vesper Service and Lord's Table.docx` is the canonical content source for the 12 Lord's Discourses and their Closing texts, the four Words of Institution readings, and the four Great Commission Text readings. `lib/liturgy/vesperTableRotation.ts` holds the transcribed options and computes all four results. New Vesper liturgies currently place only the Discourse, Words of Institution, and Closing selections; Great Commission placement remains open because that Section is modeled as a Formula. The canonical document does not state the calendar-quarter anchor or fifth-Sunday behavior, so those scheduling rules remain explicit open decisions rather than canonical facts.
 
 ---
 
 ## Database Schema
 
-All tables below are live and shipped. The hybrid relational/jsonb split (decided in the CTP planning stage) has held up through v1 and all of v1.1 without needing revision — see the "Decided" note near the end of this section.
+All tables below are live and shipped. Liturgy Items are rows in `section_items`; type-specific fields remain in the row's typed JSON payload.
 
 ### `templates`
 
@@ -137,11 +145,11 @@ All tables below are live and shipped. The hybrid relational/jsonb split (decide
 | --- | --- | --- |
 | id | uuid | Primary key |
 | name | text | "Morning Worship" / "Vesper Worship" |
-| sections | jsonb | Ordered array: `{ name, posture: 'standing'\|'seated', dynamic_naming: boolean, page: 1\|2, column: 1\|2\|3, item_types: ItemType[] }` — fixed in v1, editable in v2. `page`/`column` and `item_types` added v1.1 (see below); `page`/`column` apply to both templates even though only Morning currently renders them into a PDF — Vesper's Compile View uses the same layout, its *output* just differs (see `redesign-plan-v1.1.md` §F). |
+| sections | jsonb | Ordered Template slots: `{ name, posture, dynamic_naming, page?, column?, item_types }`. Morning page/column values drive its fixed Compile View grid; Vesper's absent mapping selects the flat layout. Template editing remains roadmap work. |
 
-**v1.1 structural change:** Morning Worship's "Charge & Benediction" Section splits into two separate Sections — "Charge" and "Benediction" — inserted where the combined Section sat, immediately before Doxology. Morning goes from 17 to 18 Sections. **One real liturgy already exists in the database** — this insertion must recheck the live liturgy count first and migrate that liturgy's `sections` rows correctly (re-indexing `template_section_index` for every row after the insertion point), not assume a clean insert. Same precaution as the earlier Call to Confession insertion (see Session Memory Bank in `progress-tracker.md`).
+Morning Worship contains separate "Charge" and "Benediction" slots immediately before Doxology. Structural changes never assume an empty database; the migration invariant below governs all future slot insertion, removal, or reordering.
 
-**`item_types` values, corrected to match the actual `Item['type']` union shipped in `types/liturgy.ts`:** `'selection' | 'formula' | 'verbal_cue' | 'prayer' | 'sermon' | 'song'` — the per-Section whitelist of which "Add X" buttons a Section actually offers. (Psalm/Hymn are not separate item types — both are `'song'`, tagged by the `songs` table's own `kind` column; `'sermon'` is real and used on the Sermon Section, both corrections to what this line previously said.) See `redesign-plan-v1.1.md` §Y for the full Section-by-Section mapping across both templates.
+**Allowed `item_types`:** `'selection' | 'formula' | 'verbal_cue' | 'prayer' | 'sermon' | 'song'`. This is the per-Section whitelist of available add controls. Psalm and Hymn both use `'song'` and are distinguished by `songs.kind`; `'sermon'` is used by the Sermon Section. See `redesign-plan-v1.1.md` §Y for the full mapping across both templates.
 
 ### `liturgies`
 
@@ -174,13 +182,13 @@ Replaces `sections.items`'s jsonb array — one row per item instead of one arra
 | --- | --- | --- |
 | id | uuid | Primary key — same id the item had inside the old jsonb array |
 | section_id | uuid | References `sections`, `on delete cascade` |
-| position | integer | Explicit render order (a table has no inherent order the way an array element did) — new items go at the end; `lib/liturgy/sortSectionItems.ts` still applies its own promotion rules on top of this at render time |
+| position | integer | Explicit storage order. Inserts omit the value: the database serializes each Section with an advisory lock and assigns `max(position) + 1`; a unique `(section_id, position)` constraint prevents collisions. Render-time promotion rules remain separate. |
 | type | text | `Item['type']` union, `check` constraint |
 | data | jsonb | Every field an item has today except `id`/`type` (citation, text, marks, formulaId, overrideText, prayerId, songId, etc.) — unchanged shape, just moved off the array |
 
 `lib/liturgy/sectionItems.ts` is the single place that converts a `section_items` row back into the `Item` shape (`{ id, type, ...data }`) and the only place that writes to this table — every read chokepoint (`getSectionContext.ts`, `getLiturgy.ts`, `getLiturgies.ts`, `getTargetSection.ts`) and every mutation action calls through it, so nothing downstream (`SectionCard.tsx`, `prepareSectionRender.ts`, `resolveItemText.ts`, the docx/PDF/Web View renderers) needed to change at all — they only ever consumed `Item[]`, never the storage shape underneath it.
 
-**Cutover status: complete (2026-07-28).** Madrid ran `20260728010000_section_items_table.sql` and the backfill script; a read-only verification script confirmed all 69 existing items landed with zero missing. Live pass confirmed: Compile View renders correctly (all six item types), a real add/reload/remove round-trip on a live liturgy persisted correctly through a full page reload, both docx exports (`?audience=guide`/`?audience=bulletin`) return 200 with real content, and the public Web View renders correctly. `20260728020000_drop_sections_items.sql` (needs Madrid to run it in the Supabase SQL editor) removes the now-fully-unused `sections.items` column.
+**Cutover status: complete.** The data was backfilled and verified across all six Item types, mutations, both DOCX audiences, and the public Web View; the superseded `sections.items` column has been removed.
 
 **Item shape (within `section_items.data`) — as actually shipped, `types/liturgy.ts`:**
 ```json
@@ -189,7 +197,7 @@ Replaces `sections.items`'s jsonb array — one row per item instead of one arra
   "text": "markdown string (selection only — blank for long-reading Sections that store only a citation)",
   "citation": "Ps 95:1-3 (selection only, en-dash-normalized via lib/liturgy/formatCitation.ts)",
   "amenExpected": "boolean, optional (selection only, song-slot Sections)",
-  "trinitarianSeal": "'en' | 'fil', optional (selection only, Benediction) — appended as plain text after `text` at display time (never folded into the stored string), with an accompanying `bold` mark over the appended range",
+  "trinitarianSeal": "'en' | 'fil', optional (selection or formula, Benediction) — appended after displayed text at resolution time, with a bold mark over the appended range",
   "marks": "TextMark[], optional (selection, formula, and prayer — see Invariants)",
   "translation": "'fil' | 'en', optional (selection only, v2 — BSB support; absent means 'fil')",
   "formulaId": "uuid (formula only, references formulas table)",
@@ -209,7 +217,7 @@ Replaces `sections.items`'s jsonb array — one row per item instead of one arra
 }
 ```
 
-**Fully implemented as of 2026-07-18.** `Item = SelectionItem | FormulaItem | VerbalCueItem | PrayerItem | SermonItem | SongItem`. Two corrections to the original proposal, both confirmed live: `PrayerItem` is `{ id, type: 'prayer', prayerId }` only — no `overrideText`, no `visibility` (Prayer has no override mechanic and always shows in both Guide and Bulletin, unlike Formula/Verbal Cue). And `formulas` gained `section_name` — Formula turned out to need the same per-Section scoping as Prayer, a retrofit applied 2026-07-13. `PsalmItem`/`HymnItem` from the original v1.1 proposal were consolidated into one `SongItem { songId }` referencing the shared `songs` table's `kind` column, rather than two separate item types — simpler, and `kind` was already the established pattern from `prayers`.
+The live union is `SelectionItem | FormulaItem | VerbalCueItem | PrayerItem | SermonItem | SongItem`. Prayer and Song placements carry display snapshots while retaining their library IDs for provenance; pre-snapshot records use the documented compatibility fallback until edited.
 
 ### `formulas`
 
@@ -233,7 +241,7 @@ Replaces `sections.items`'s jsonb array — one row per item instead of one arra
 | text | text | The prayer itself, or the guide's checklist text if `is_guide = true` |
 | kind | text | `'corporate'` \| `'leader'` — redesigned 2026-07-23 (was `'prayer'` \| `'guide'`, v1.1). Now purely audience: `'corporate'` means the whole church prays it (both Bulletin + Guide, same as before); `'leader'` means it's the leader/minister's own material (Guide only — `resolveItemText.ts`'s `leaderOnly` is now derived from this, the same pattern Formula/Verbal Cue's `visibility` already used). Meaningless when `is_guide` is true. |
 | is_guide | boolean | Added 2026-07-23 (`20260723020000_prayer_kind_redesign.sql`), replacing the old `kind = 'guide'` value — placeability is now independent of audience. A `true` row is a fixed structural checklist (e.g. Invocation's Adoration → Humble Approach → Acceptance → Thanksgiving → Trinitarian Conclusion) shown as reference next to "Add Prayer," never stored as liturgy content itself. Defaults `false`. |
-| marks | jsonb | 2026-07-23 (`20260723010000_prayer_marks.sql`) — library-level marking, same convention as `formulas.marks`/`scripture_selections.marks`. A placed `PrayerItem` has no per-instance override of its own (unlike Formula), so it always reflects this row's current marks directly, same as it already does for `text`. Defaults `[]`. |
+| marks | jsonb | Library-level marking, same convention as `formulas.marks`/`scripture_selections.marks`. Copied into a new placement snapshot; defaults `[]`. |
 | translation | text | Added 2026-07-25 (`20260725010000_bilingual_tagging.sql`) — same shape/reasoning as `formulas.translation` above. |
 | paired_id | uuid | Added same migration — same shape/reasoning as `formulas.paired_id` above. |
 
@@ -266,7 +274,7 @@ Congregation-facing output shows `title` only (Psalm: title case, italic, `text-
 | translation | text | v2 — `'fil'` (AB1905) or `'en'` (BSB). A Filipino/English pair for the same passage is linked by canonical verse reference, not a foreign key. |
 | marks | jsonb | v2 — library-level marking, same as `formulas.marks` above. Defaults `[]`. |
 
-Written to on **every** Selection submission via the Reader's `+` marker, regardless of whether the parent liturgy is ever saved — auto-save-always was a deliberate choice (see `redesign-plan-v1.1.md` §I), not an oversight. No cleanup/retention logic in v1; orphaned entries from abandoned liturgies are an accepted tradeoff, flagged for a future manual review tool.
+Written on every Selection submission via the Reader's `+` marker, regardless of whether the parent liturgy is later retained. There is no automated orphan cleanup; a future manual review tool may address that accepted tradeoff.
 
 ### `bible_verses`
 
@@ -292,11 +300,9 @@ Unique on `(translation, book, chapter, verse)`. Seeded once from public-domain 
 | color | text | `'accent'` \| `'success'` \| `'info'` \| `'warning'` |
 | updated_at | timestamptz | |
 
-Unique on `(book, chapter, verse)` — keyed by citation only, not translation, so a highlight persists across a translation switch (decided 2026-07-12). No `user_id` (single-user v1).
+Unique on `(book, chapter, verse)` — keyed by citation only, not translation, so a highlight persists across a translation switch. Highlights are currently shared rather than user-scoped.
 
-This keeps dedup and Formula/Prayer/Song/Selection-reuse queryable directly in SQL (citation and the various `*_id` fields are real columns/keys), while Item content stays flexible in jsonb since its shape varies by type — the hybrid split we already agreed on.
-
-**Decided:** jsonb for v1 and v2 both. Simpler to build, and neither v1 nor v2 needs to query across items — v2's docx export reads a whole liturgy in one shot, exactly like the legacy PDF export did, which jsonb handles fine. Migrating Items to their own child table (one row per item, tagged by Section) is **v3 item 1** — corrected here 2026-07-22, this line previously said "v2," which had drifted out of sync with `build-plan.md`'s actual 2026-07-20 v2/v3 scoping. v3 is where Sections become editable/reorderable and where search/tagging/coherence-score all need real per-item rows, so that's the natural point to revisit the storage shape, not before. **Shipped 2026-07-28 — see `section_items` above.**
+The relational child rows make order, deletion, and future cross-item queries explicit while preserving the established discriminated-union payload shape.
 
 ---
 
@@ -308,9 +314,9 @@ No file storage — `.docx` files (and the legacy PDF, still served at `?format=
 
 ## Authentication
 
-**v3, in progress (2026-07-25) — supersedes the v1 "no auth" note below.** Supabase Auth via `@supabase/ssr` (`lib/auth/`); `middleware.ts` refreshes the session on every request. Two roles only, `user_roles` table — **Curator** and **Compiler**, not the three liturgical roles (presider/deacon/preacher are all "Compiler" here; this is about who's trusted not to accidentally destroy curated Library work, not liturgical seniority). `owner_id` on `formulas`/`prayers`/`songs` (`NULL` = shared/canonical, Curator-controlled; a real user id = a Compiler's own fork/proposal) is the actual enforcement mechanism, checked in the Server Actions themselves — **every existing write path uses `lib/db/supabase.ts`'s service-role client, which bypasses RLS entirely by design**, so the RLS policies on these tables are defense-in-depth against someone bypassing the app, not the primary gate. Formula is locked down completely: a Compiler can propose a brand-new Formula (their own `owner_id`) but can never edit an existing shared one — verified live. Anonymous/no-account visitors remain fully read-only (public liturgies, Bible Reader, Library browsing) — not yet wired up (see `progress-tracker.md`).
+Supabase Auth via `@supabase/ssr` is fully deployed. `middleware.ts` refreshes sessions; `user_roles` distinguishes **Curator** and **Compiler**. Shared library rows (`owner_id IS NULL`) are Curator-controlled, while Compilers may create and manage their permitted owned material. Public Home, Library, Reader, and Liturgy Web View reads remain anonymous.
 
-~~None in v1 — single user, no login screen.~~ Superseded by the above.
+Application mutations use a server-only privileged database client, so RLS is defense in depth rather than the primary application gate. Every client-reachable privileged mutation must resolve and authorize the current user before its first database read or write; only authentication bootstrap actions are exempt.
 
 ---
 
@@ -332,7 +338,7 @@ interface BibleProvider {
 
 **Citation hover behavior (`components/liturgy/ScriptureCitationLink.tsx`), split by translation:**
 - **AB1905 citations** link to BibleGateway's AB2001 (a genuine cross-translation check against a newer Filipino translation this project doesn't self-host) — unchanged, existing behavior.
-- **BSB citations** use a self-hosted expanded-context hover instead — showing this passage's own self-hosted BSB text is redundant with what's already displayed, but showing *more of it* (surrounding verses) has real value, and doesn't require any external service since BSB is already self-hosted. `app/api/bible/context/route.ts` parses the citation, fetches the chapter via `getChapter("BSB", ...)`, and slices out a ~5-verse window via `lib/bible/contextWindow.ts` (short citations get padded outward to the window size, shifting instead of truncating at a chapter boundary; citations already at or above the window size pass through untouched). The tooltip persists (hover tracking on the whole group, not just the citation link) with a dedicated "View in Reader" button (styled as a solid red pill) opening `/reader` at that chapter, in a new tab, for full context.
+- **BSB citations** use a self-hosted expanded-context hover. `app/api/bible/context/route.ts` parses the citation, fetches the BSB chapter, and uses `lib/bible/contextWindow.ts` to return an approximately five-verse window. Short citations are padded outward and shifted at chapter boundaries; citations already at or above the window size remain unchanged. The persistent tooltip includes a "View in Reader" action that opens the chapter in a new tab.
 
 ---
 
@@ -344,15 +350,19 @@ Rules the AI agent must never violate:
 - AB2001 or MBB text is never fetched, stored, or persisted anywhere in this codebase — display only, via the licensed BibleGateway widget, until Philippine Bible Society grants adaptation rights.
 - Selection dedup (exact citation match within a Section) is enforced at the `lib/liturgy` layer, not left to UI validation alone.
 - Editing a Formula's `default_text` must never retroactively change a Liturgy that used an `override_text` for that instance.
-- **A placed Prayer or Song item's displayed content is always its own snapshot, never a live lookup against the library row.** Before 2026-07-25, Prayer/Song were resolved via `prayers.find()`/`songs.find()` by ID on every render/export (`resolveItemText.ts`, plus duplicated header-building logic in `SectionCard.tsx`, `prepareSectionRender.ts`, `sectionTitle.ts`, `resolveVerbalCueTemplate.ts`) — editing an existing Prayer/Song's text in the Library silently rewrote every past liturgy that ever used it, with no warning, unlike Selection (own text/marks) and Formula (`overrideText`). Fixed by snapshotting `text`/`marks`/`leaderOnly` (Prayer) or `title`/`kind`/`attribution`/`yearPublished`/`notes` (Song) onto the item itself at placement time (`addPrayerAction.ts`/`addSongAction.ts`); `prayerId`/`songId` are kept for provenance only, never for display. A liturgy placed before this fix has no snapshot fields and falls back to the old live-lookup behavior until the item is next edited (`updatePrayerItem`, new — editing a placed Prayer no longer touches the shared Library row at all, mirroring `updateSelectionItem`'s existing shape).
+- **A placed Prayer or Song displays its placement snapshot, never a current library lookup.** `prayerId`/`songId` remain provenance only. Records created before snapshot fields existed retain a compatibility lookup until that placed item is edited.
 - All liturgical text content (Selection, Formula, Prayer, Verbal Cue) is normalized to typographic quotation marks and apostrophes (' ' " ") at write-time, in `lib/text/typographic.ts` — never left as straight marks (' ") in storage. This runs once, on save, so the Compile View, Leader Guide, and Congregation Bulletin all inherit correct typography automatically rather than each needing to re-apply it. **Implemented 2026-07-14** — `normalizeTypography()` is wired into all six write paths (`addSelectionAction`, `addFormulaAction`'s override text, `formulaActions.createFormula`/`updateFormula`, `prayerActions.createPrayer`/`updatePrayer`, `verbalCueActions.addVerbalCue`/`updateVerbalCue`). This invariant was documented since the CTP planning stage but had zero implementation until a `/review` audit caught it.
-- A Formula or Prayer placed into a Section must belong to that Section (`section_name` match) — enforced server-side in `addFormulaAction`/`addPrayerAction` via `lib/liturgy/getSectionContext.ts`, not just by the Add panel filtering which entries it shows. Added 2026-07-14 after a `/review` audit found the 2026-07-13 Section-scoping retrofit was only enforced in the UI — a Server Action called directly (bypassing the filtered picker) would have silently written a mismatched pair. **This pattern extends to Songs and Existing Selections (v1.1) — apply the same server-side check when those write actions are built, not just UI filtering.**
+- Formula, Prayer, and Song placement actions independently validate the selected library row's Section scope. The existing-Scripture picker filters candidates by Section in the UI, while `addSelection()` validates the destination Section, citation, and deduplication; it does not re-fetch the selected library row or independently verify that row's original `section_name`.
 - No hardcoded hex values or raw Tailwind color classes in components — use tokens from ui-tokens.md.
 - Leader/Congregation/Minister/Small-Caps/Bold span tags are never baked into an item's raw saved `text`/`overrideText`/`default_text` — always stored separately, as the `marks` field on `SelectionItem`, `FormulaItem`, `Formula`, `Prayer`, and `ScriptureSelection`. Un-marking a span is a clean, lossless operation that never mutates the underlying prose. Editing the text after marks exist no longer wipes them (as it did through 2026-07-18's earlier passes) — `lib/text/marks.ts`'s `shiftMarksForEdit()` diffs old vs. new text and resizes/shifts only the marks actually touched by the edit. **Overlap rule (2026-07-23, corrected same day):** only `congregation`/`minister` are mutually exclusive with each other (a span can't be both at once — `leader` is the implicit default, never actually stored). `bold` and `small_caps` are both independent overlays that may freely combine with a Congregation/Minister span, with each other, or stand alone. Small Caps was originally grouped in with the exclusive set too, which was wrong: it's a typographic convention (reverential capitalization of a divine name), orthogonal to *who's speaking*, not a competing claim on the same range — treating it as exclusive meant marking a word inside an existing Congregation span split that span into two separate rendered blocks with the word visually isolated onto its own line between them (Congregation/Minister render as their own block-level element, so an inline word sandwiched between two blocks gets forced onto its own line by the surrounding breaks). Moving Small Caps into the same overlay treatment Bold already has removes this failure mode the same way promoting Bold off `**markdown**` did. `lib/text/marks.ts`'s `applyMarks()` is the single place that resolves all three layers (the exclusive Congregation/Minister split, plus the two independent overlays) together.
 - A Section only offers the Item types listed in its `templates.sections[].item_types` whitelist — "Add Selection" etc. must not appear on a Section that doesn't list it. Governs adding only; an already-placed item never disappears if its type later drops off the whitelist.
 - A non-Sunday `service_date` never displays a Lord's Day number anywhere in the app (Compile View, PDF, Liturgy History, naming convention) — `getLordsDayNumber()`'s computation itself is unchanged, this is purely a display suppression rule.
 - **Citations are always run through `lib/liturgy/formatCitation()` before being displayed** — converts a verse-range hyphen to an en dash (e.g. "47:5-9" → "47:5–9"). Applied centrally in `resolveItemText.ts` (Selection labels, Song titles) and in the header-reference builders (`prepareSectionRender.ts`, `SectionCard.tsx`), not re-applied ad hoc per renderer — this is what let the fix apply retroactively to already-saved citations with no migration.
-- **`prepareSectionRender.ts` is the single source of truth for how a Section's items lay out** (header-reference text — Selection citations, a Creed/Church-Covenant Formula's name, or a lone Song's title — plus the multi-Selection merged-paragraph text/marks), shared by the PDF export and the Web View. `SectionCard.tsx` (Compile View) keeps its own parallel logic rather than importing this helper, since it alone needs editing-state awareness (falling back to per-item rendering while a Selection is being edited) that the two read-only surfaces never need — but any change to the header-reference or merge rules must be applied in both places, or the three surfaces will drift.
+- **`prepareSectionRender.ts` is the read-only source of truth for Section layout** across DOCX, legacy PDF, and Web View. `SectionCard.tsx` keeps parallel editing-aware behavior; changes to header references or merged-Selection rules must be applied and regression-tested in both paths.
 - Deleting an item (any of the six types) goes through one generic action, `lib/liturgy/removeItemAction.ts`'s `removeItem()` — never a per-type delete function. As of the `section_items` migration (v3 item 1), this is a single untyped `delete from section_items where id = $1` — even more clearly type-agnostic than the old array-filter it replaced, and the direct reason that table's shape is one polymorphic table rather than six per-type ones.
 - Small Caps marking is available on every Section that can hold a Selection (`lib/liturgy/markableSections.ts`'s `getSelectionMarks()`) — it's a per-word reverential-capitalization convention (divine names), not scoped like the Leader/Congregation/Minister dialogue treatment, which stays genuinely restricted to Sections that alternate speaking parts.
 - The public Liturgy Web View (`/liturgy/[id]/view`) never shows the app's own top nav bar — `TopNavLinks.tsx` returns `null` for that route. A page meant to be shared by URL with a congregation member has no business exposing internal compiler navigation.
+- Client-reachable mutations that use the service-role client authorize the current user before any application-data access. Privileged helpers are server-only and must not cross a Client Component boundary.
+- Full-Liturgy and Section-Item reads fail closed: query failure is distinct from a valid empty result, and the export route rejects a failed Liturgy read. Formula, Prayer, and Song library readers still collapse query failure into `[]`; closing that remaining artifact-read gap is open production-hardening work. Dashboard-style previews may continue to degrade gracefully only where failed and empty states are intentionally equivalent.
+- `section_items.position` is database-owned. Application inserts omit it; the database serializes assignment per Section and the unique `(section_id, position)` constraint remains intact.
+- Any migration that inserts, removes, or reorders Template slots must transactionally migrate affected `sections.template_section_index` values (with collision-safe staging and verification) rather than changing template JSON alone.

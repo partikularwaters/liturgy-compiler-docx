@@ -88,11 +88,10 @@ className="bg-purple-500 text-gray-600"
   --color-error-light: #EBD4D2;
   --color-error-foreground: #FFFFFF;
 
-  /* v1.1 redesign tokens — both explicitly provisional, revisited later in v1
-     per Madrid's own note when he approved them (see redesign-plan-v1.1.md §A/K) */
+  /* Narrowly scoped v1.1 redesign tokens; see redesign-plan-v1.1.md §A/K. */
 
-  /* CTA yellow — the top nav bar's "Create Liturgy"/"Browse Library" button,
-     chosen for contrast against the burgundy nav bar, not a semantic warning */
+  /* CTA yellow — the floating nav pill's "Create Liturgy" button,
+     chosen for contrast against the burgundy nav surface, not a semantic warning */
   --color-cta-yellow: #F0B429;
   --color-cta-yellow-foreground: #3A2B00;
 
@@ -156,13 +155,15 @@ Used for: primary buttons, active nav items, focus rings, the "already saved" ci
 | Error (solid, e.g. buttons) | `bg-error` | `text-error-foreground` |
 | Error (light, e.g. markers/badges) | `bg-error-light` | `text-error` |
 
+These rows are exact foreground/background pairings, not interchangeable token families. A semantic suffix such as `-foreground` does not guarantee contrast against every light or solid variant. Use the documented pair and verify computed contrast in the rendered control, especially after changing size, weight, or disabled opacity.
+
 ### v1.1 redesign colors
 
 | Element | Token |
 | --- | --- |
-| Top nav bar background | `bg-accent` (the existing burgundy accent, applied as a full bar fill — the one deliberate exception to "color goes inside cards/bars via badges and text, never on the surface itself," since this is chrome, not a card) |
-| Top nav bar CTA background | `bg-cta-yellow` |
-| Top nav bar CTA text | `text-cta-yellow-foreground` |
+| Floating nav pill background | `bg-accent` |
+| Floating nav pill CTA background | `bg-cta-yellow` |
+| Floating nav pill CTA text | `text-cta-yellow-foreground` |
 | Scripture citation text (small caps) | `text-citation` |
 
 ---
@@ -179,7 +180,7 @@ Used for: primary buttons, active nav items, focus rings, the "already saved" ci
 
 Body text is set at 15px rather than the more common 14px default — this app displays long bilingual Filipino/English Scripture passages with diacritics, where slightly larger body copy meaningfully helps readability.
 
-Font family: **Inter** — import via `next/font/google`, never use a fallback system font. (Corrected 2026-07-12 — this line previously said "IBM Plex Sans," which conflicted with this file's own `@theme` block and with ui-rules.md; Inter is correct and matches what's implemented.)
+Font family: **Inter** — import via `next/font/google`, never use a fallback system font.
 
 ---
 
@@ -268,9 +269,9 @@ font-weight:   font-medium
 ## Invariants
 
 - Never use hex values directly in components — always use CSS variables via Tailwind tokens
-- Font is **Inter** — always import via `next/font/google`, never use a fallback system font. (This line previously said "IBM Plex Sans," a stale leftover that conflicted with this file's own `@theme` block and the Typography section above; corrected 2026-07-16.)
+- Font is **Inter** — always import via `next/font/google`, never use a fallback system font.
 - Never use raw Tailwind color classes like `bg-purple-500` or `text-gray-600` — use project tokens only
 - The burgundy accent (`--color-accent`) is the only *primary* accent color — never use Tailwind's built-in color scale for it. `--color-cta-yellow` and `--color-citation` (added v1.1) are narrowly-scoped exceptions for the top nav CTA and Scripture citations specifically, not general-purpose accents — don't reach for them outside those two uses.
 - All borders default to `--color-border` — never use `border-gray-*`
 - `lib/pdf/tokens.ts` mirrors this file's hex values for react-pdf, which has no Tailwind/CSS-variable access — update both together if a token changes (see `library-docs.md`). As of 2026-07-18, `pdfColors` also has a `surfaceSecondary: "#F1EFE9"` entry (mirroring `--color-surface-secondary`), added when the PDF's Prayer Guide reference panel needed it — check `pdfColors` for a token before assuming it's missing from the PDF side.
-- Shared icons (`components/liturgy/icons.tsx`) use `strokeWidth="2"` uniformly — bumped up from an earlier `1.5` per Madrid's "increase the weight of icons" request (2026-07-18); any new icon added to that file should match.
+- Shared icons (`components/liturgy/icons.tsx`) use `strokeWidth="2"` uniformly; any new icon added to that file must match.

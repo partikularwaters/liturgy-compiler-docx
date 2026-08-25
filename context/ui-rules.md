@@ -24,7 +24,7 @@ Apply all three font variable classes to the `<html>` tag in root layout. Never 
 - **Old Standard TT (`--font-serif-display`)** — liturgy and Section display headings *outside the Compile View/export surfaces* (e.g. the Reader's chapter heading) — see the exception below, this is no longer used inside the Compiler itself
 - **Ibarra Real Nova (`--font-serif-body`)** — the actual displayed Scripture/liturgical body text (Selections, Formulas, Prayers) — chosen specifically for its strong multilingual diacritic support, which bilingual Filipino/English liturgical text needs
 
-**Exception, Feature 28 Part A (2026-07-16): the Compile View and PDF export use Ibarra Real Nova exclusively, no Old Standard TT.** Per Madrid's direct spec — "every typeface in the Compiler and export" is Ibarra Real Nova, distinguishing headings from body by weight/size/case (bold, uppercase, larger) rather than by switching families. `SectionCard`'s Section names, the Compile View's bulletin title/metadata, and `LiturgyDocument`'s title/column-title/section-heading styles were all switched from `font-serif-display`/`"Old Standard TT"` to `font-serif-body`/`"Ibarra Real Nova"`. Old Standard TT remains the correct choice for the Reader (`VerseDisplay`'s chapter heading) and `LiturgyWebView` (the public mobile reading page, a deliberately different surface from the Compiler/export) — this exception is scoped narrowly to the Compile View and its PDF, not a project-wide font swap.
+**Compiled-output exception:** Compile View, DOCX, and the frozen PDF use Ibarra Real Nova for headings and body, distinguishing hierarchy by weight, size, and case rather than switching families. Old Standard TT remains appropriate for deliberately separate reading surfaces such as the Reader and public Web View.
 
 **Invariant (2026-07-15): any serif text rendered `italic` must use a real italic font file, never a browser-synthesized oblique.** Both `Old_Standard_TT` and `Ibarra_Real_Nova` loaders must include `style: ["normal", "italic"]` — omitting it (the original state of this codebase until this fix) means the browser fakes italics by skewing the upright glyphs, which drops the font's actual italic design (proper ligatures, swashes, distinct letterforms). Verified via `document.fonts`: with `style` set, a genuine `italic` weight-700 Ibarra Real Nova face loads and reports `status: "loaded"` rather than being synthesized. Check this whenever adding a new serif font or a new italic usage — an `italic` class with no matching `style` entry in the loader is the bug pattern to watch for.
 
@@ -35,21 +35,19 @@ Apply all three font variable classes to the `<html>` tag in root layout. Never 
 - Page max-width: 960px, centered — narrower than a typical dashboard, since content here is reading-focused prose (liturgical text), not dense data grids
 - Main content area padding: 32px on all sides
 - Gap between page-level sections: 32px
-- **v1.1: top bar, not a sidebar** — see Top Bar below. Content area sits below the bar at full width, still centered/capped per-page as needed (the Compile View's 2-page/3-column layout is the one exception — see Compile View Layout below).
+- Use the floating navigation pill below, never a sidebar.
 - The Reader's reading column narrows on wide screens to open real left-margin space for the sticky Citation/Text panel (see Sticky Citation/Text Panel below) — not an overlay.
 
 ---
 
-## Top Bar (v1.1 — replaces the Sidebar)
+## Floating Navigation Pill
 
-**Reverses the original "no top navbar" decision** (`project-overview.md`'s Navigation section). Full-width horizontal bar, `bg-accent` (the existing burgundy accent used as a full chrome fill — the one deliberate exception to Cards' "never a colored surface" rule below, since this is navigation chrome, not a card).
+Desktop navigation is a centered, floating surface rather than a full-width colored bar. It contains permanent Home, Liturgies, Bible Reader, and Library destinations, a Create Liturgy action, and `AccountMenu`. Active state uses weight/color within the pill; it never uses a sidebar-style border.
 
-- All items — **Liturgies** · **Bible Reader** · one contextual CTA slot — sit **grouped together on the right side** of the bar with uniform spacing between all three (not split with the nav links on the left and the CTA pushed to the far right — that read as "too far apart" and was corrected 2026-07-15).
-- **The bar's inner content is wrapped in the same `max-w-[960px] mx-auto px-8` container every page uses**, so the CTA's right edge lines up exactly with the right edge of the page content below it (verified pixel-for-pixel: content left/right edges both land at the same x-coordinate as the nav's). Never let the bar's content span the full viewport independent of the page's own margin — that was the original bug.
-- The CTA slot reads **Create Liturgy** on the homepage (`/`) and swaps to **Browse Library** while inside the Liturgy Compiler page (`/liturgies`) or a Compile View (`/liturgy/[id]`) — same slot, different label/destination depending on route, not two separate items
-- CTA styling: `bg-cta-yellow` / `text-cta-yellow-foreground`, `rounded-md` — the one place a yellow token is used
-- No Sign In/Account item in v1 — that arrives with v3 auth, not before
-- Active item (Liturgies/Bible Reader): distinguish from inactive via text weight/opacity against the bar fill, not a left-border indicator (that pattern was Sidebar-specific and doesn't read the same way on a horizontal bar)
+- Collapse to a hamburger-driven menu on mobile while preserving every destination and account action.
+- The pill auto-hides after a downward scroll and reappears near the top of the page or after an upward scroll. Route changes close the mobile menu; they do not otherwise reset the pill's scroll-hidden state.
+- The public `/liturgy/[id]/view` surface renders no application navigation.
+- Navigation chrome uses the established surface, border, shadow, radius, and accent tokens; it does not create page-specific contextual destinations.
 
 ---
 
@@ -65,24 +63,25 @@ padding:       24px
 box-shadow:    0px 1px 3px rgba(34, 32, 28, 0.08)
 ```
 
-Never use colored card backgrounds — always `bg-surface`. Color goes inside cards via badges and text, never on the card surface itself. (The Top Bar's solid `bg-accent` fill is chrome, not a card, and is the one place this rule doesn't apply — see Top Bar above.)
+Never use colored card backgrounds — always `bg-surface`. Color goes inside cards via badges and text, never on the card surface itself.
 
-**Exception, Feature 28 Part A (2026-07-16): `SectionCard` no longer uses the card box.** Per Madrid's direct spec, Morning's Compile View is meant to "look plain as it should look in the printed bulletin" — the card border/shadow/background were stripped entirely (`bg-surface border rounded-lg shadow` → plain `flex flex-col gap-2`). This is the one other deliberate departure from "every Section lives in a card," alongside the Top Bar's chrome exception above.
+`SectionCard` deliberately does not use the generic card box. The Compile View follows the plain printed-bulletin treatment (`flex flex-col gap-2`) without a border, shadow, or colored surface.
 
 ---
 
 ## Compile View Layout (v1.1)
 
-**Morning Worship** (built, Feature 17, 2026-07-15): **2 pages, 3 columns each**, mimicking the physical bulletin's real page/column structure. Each Section is still its own card, placed inside its assigned Page/Column per `context/redesign-plan-v1.1.md` §F's fixed assignment table — Section→column placement is data (`templates.sections.page`/`.column`), not a layout the user rearranges in v1. Container widens to `max-w-[1400px]` (up from the standard 960px) to give three columns of reading-focused card content room to breathe; each physical page is a `grid grid-cols-3 gap-6` with a "Page N" muted uppercase label above it. Page 1, Column 1 carries the bulletin's own title/date/Lord's Day heading (`font-serif-display` 22px) above its first Section card — this is page furniture, not a Section, and only ever renders there. The Download Leader Guide/Bulletin buttons sit in a persistent toolbar above both pages, outside the print-mimicking area.
+**Morning Worship:** the Compile View mirrors the fixed two-page/three-column bulletin structure. Section placement comes from Template page/column data, the container widens to accommodate the spread, and artifact/share controls remain in a toolbar outside the content surface.
 
-**Vesper Worship** (deferred to Feature 18): no Section→column assignment exists yet, so Vesper's Compile View still renders the original flat single-column list (`max-w-[960px]`), same as before this feature. `lib/liturgy/groupSectionsByPageColumn.ts` is the fallback switch — it returns `null` whenever any Section is missing `page`/`column` data, and both `app/liturgy/[id]/page.tsx` and `lib/pdf/LiturgyDocument.tsx` render the flat layout in that case. This isn't a temporary hack to remove later — it's the intended mechanism for Vesper to adopt the same layout once Feature 18 defines its column table, with zero code changes needed at that point (just data).
+**Vesper Worship:** without page/column assignments, the Compile View uses the established flat single-column layout. `groupSectionsByPageColumn.ts` returns `null` for that data shape and the page deliberately selects the flat renderer.
 
 This 2-page/3-column shape is the one deliberate exception to the 960px-centered-single-column Layout principle above — reading-focused prose still applies *within* each Section card, but the page as a whole now mirrors a real two-page bulletin spread rather than a single scrolling list.
 
-## Output Format — Morning vs. Vesper (v1.1)
+## Output Formats
 
-- **Morning:** both the Compile View and the PDF export (Leader Guide/Congregation Bulletin) use the 2-page/3-column shape — verified via `pdftotext -layout`, both physical PDF pages present with Sections in the exact column order `redesign-plan-v1.1.md` §F specifies. PDF column text runs smaller than the flat layout's (11px → 8.5px body, 14px → 10.5px heading) since each column is roughly a third of the page width; the Compile View's on-screen cards keep their normal size since there's no print-width constraint there.
-- **Vesper:** the Compile View uses the same flat single-column shape it always has (see above — the 3-column shape is deferred, not yet "the same shape as Morning" in practice), and there is no PDF in v1 — Vesper liturgies get a shareable, mobile-first responsive Liturgy Web View instead (Feature 18, built 2026-07-15: `app/liturgy/[id]/view`, `components/liturgy/LiturgyWebView.tsx`; single-column, standard responsive patterns, not the 3-column shape). Vesper's PDF export is deferred to v3/v4. The Compile View's "Download Leader Guide/Bulletin" buttons are replaced with a single "View / Share Liturgy" link (opens in a new tab) whenever the liturgy has no `page`/`column` data — i.e. Vesper today. **The Web View component itself is template-agnostic** (reads the same `CompiledLiturgy` shape as the PDF path, ignores `page`/`column` entirely, always renders in template order) — it already works correctly for Morning liturgies too when navigated to directly, deliberately built that way so extending it to Morning later (per `redesign-plan-v1.1.md`'s "Morning could gain the same view later" note) is just adding a visible link, not new component work.
+- Both templates expose Leader Guide and Congregation Bulletin DOCX downloads plus the public, responsive Web View.
+- DOCX uses continuous Word columns and optional authored Section breaks; it does not reproduce the Compile View's fixed screen grid.
+- The PDF renderer is buried, explicit-opt-in compatibility behavior. Do not derive current UI or new output requirements from it.
 
 ---
 
@@ -104,10 +103,10 @@ Muted / timestamp: 12px / 400 / 16px / text-text-muted
 22px / 600 / 30px line-height / text-text-primary
 ```
 
-**Liturgical body text (Ibarra Real Nova)** — Selections, Formulas, Prayers as displayed. **Corrected 2026-07-18: 16px / 1.6, not the original 17px / 1.75** — dropped a size at Feature 28 Part A (matching the reference bulletin's real body size) and this doc's own Typography Hierarchy was never updated to match at the time; confirmed current across `SectionCard`'s `BodyText`/`MarkedText`, the PDF (`fontSize: 12` = 12pt ≈ 16px at screen DPI), and `LiturgyWebView` (brought into alignment 2026-07-18 after drifting since Feature 28 — see Fonts section):
+**Liturgical body text (Ibarra Real Nova)** — Selections, Formulas, and Prayers use 16px / 1.6 across `SectionCard`, the public Web View, and the equivalent compiled-output treatment. The legacy PDF uses 12pt, approximately 16px at screen density.
 
 ```
-16px / 400 / 1.6 line-height / text-text-primary / text-justify (justified 2026-07-18, all three surfaces)
+16px / 400 / 1.6 line-height / text-text-primary / text-justify across compiled-content surfaces
 Congregational/unison lines (bold markdown): 16px / 700 / 1.6
 ```
 
@@ -214,6 +213,8 @@ font-weight:   600 (primary) / 500 (secondary)
 
 Same `bg-accent`/`bg-surface` background pairing as standard Primary/Secondary otherwise.
 
+**Small-control geometry:** choose radius with the control's actual height. Compact square controls (including 24px verse markers) use `rounded-sm`; compact text controls use `rounded-md`; pill geometry is reserved for badges or explicitly pill-shaped controls. Do not apply a large default radius to a small control and assume the token name guarantees the intended shape.
+
 **Add-item outline (Feature 28 Part A, 2026-07-16)** — the "+ Selection"/"+ Formula"/"+ Cue"/"+ Prayer"/"+ Sermon" triggers inside `SectionCard`, ~25% smaller than Secondary and transparent-fill instead of `bg-surface`, matching the reference bulletin's compact plus-icon buttons:
 
 ```
@@ -223,7 +224,7 @@ border-radius: 6px (rounded-md)
 padding:       6px 12px
 font-size:     11px
 color:         text-accent-dark
-hover:         bg-accent-dark, text-accent-foreground, border-accent-dark (box+text color invert — changed 2026-07-18 from the original hover:bg-surface-secondary, per Madrid's direct request for these specific buttons)
+hover:         bg-accent-dark, text-accent-foreground, border-accent-dark (box and text colors invert)
 ```
 
 Sits in its own row below the Section name (not beside it, per the same spec) — see `SectionCard` in `ui-registry.md`. Labels are now "+ Scripture" (not "+ Selection" — UI-facing wording only, changed 2026-07-18; the underlying type/table/action names are all still `selection`/`Selection`, deliberately not renamed).
@@ -261,7 +262,7 @@ Used in the Browse Library page (Formulas, Prayers, Songs, Existing Selections �
 
 ## Empty States
 
-Every list that can be empty needs one — the homepage's recent-liturgies preview, the Liturgy Compiler page's history list, a freshly-started Section with no Items yet, an empty library category on the Browse Library page.
+Every true list that can be empty needs one — the homepage's recent-liturgies preview, the Liturgy Compiler page's history list, and library categories.
 
 - Short descriptive text in `text-text-muted`
 - Optional icon above the text
@@ -269,13 +270,13 @@ Every list that can be empty needs one — the homepage's recent-liturgies previ
 
 **Heading-only Sections (v1.1):** Prayer Meeting and The Lord's Table (Vesper) intentionally show no item picker at all — just their Section heading, and for The Lord's Table, a single administrator-name field beneath it. This isn't a not-yet-built empty state; it's the deliberate final behavior for these two Sections.
 
-**Removed 2026-07-18: an empty Section's "No items yet" text.** A freshly-started Section (no items placed) now shows only its heading, no placeholder line, in all three renderers (Compile View, PDF, Web View) — per Madrid's direct "just a line break" preference. This is the one exception to "every list that can be empty needs [short descriptive text]" above — a Section isn't a list in the same sense a library/history page is, and the Add-button row right below the heading already makes clear there's nothing there yet.
+An empty Section shows only its heading and available add controls across Compile View and read-only outputs. It is not treated as a list empty state.
 
 ---
 
-## Trinitarian Seal (Benediction, added 2026-07-18)
+## Trinitarian Seal
 
-A Selection-only toggle, available exclusively on Benediction (`lib/liturgy/trinitarianSeal.ts`'s `TRINITARIAN_SEAL_SECTIONS`): None / Filipino / English. The exact wording came from Madrid, not authored by the agent — liturgically significant text this project never fabricates, same discipline as Formula/Prayer's empty seed data. Appends the chosen text as plain text immediately after the Selection's own text (not folded into the stored string — resolved at display time in `resolveItemText.ts`), plus a real `bold` mark over the appended range (2026-07-23: was `**bold**` markdown before Bold became a real mark type), so it reuses the same mark-rendering path everywhere rather than a new one. UI: a radio group (None/Filipino/English) plus a live preview identical in shape to the Congregation/Minister tool's, on both `AddSelectionPanel` (add-time) and `SelectionEditForm` (edit-time).
+The None/Filipino/English toggle is available for Selection and Formula content in Benediction, as defined by `TRINITARIAN_SEAL_SECTIONS`. The wording is approved domain content and is never improvised. It is appended at resolution time, remains separate from the raw stored prose, and receives a real `bold` mark through the shared rendering path. Add/edit forms use the same control and live-preview treatment.
 
 ## Item Deletion
 
@@ -285,7 +286,7 @@ Every item type (Selection, Formula, Verbal Cue, Prayer, Sermon, Song) can be re
 
 Shared icons live in `components/liturgy/icons.tsx` (see `code-standards.md`) — `PencilIcon` for every "Edit" affordance (replaced plain-text "Edit" links project-wide, 2026-07-18), `TrashIcon` for delete, `ClearIcon` (a circled X) for the marking toolbar's Clear action, `NoteIcon` for the marking toolbar's collapsible how-it-works help, `DownloadIcon` prefixing the Guide/Bulletin download buttons (which now read just "Guide"/"Bulletin", not "Download Leader Guide"/"Download Congregation Bulletin"), `CopyLinkIcon`/`CheckIcon` for `CopyLinkButton.tsx` (replaced the old "View / Share Liturgy" text link — click copies the Web View URL to the clipboard, shows a "Copy Link" hover tooltip, and briefly swaps to a checkmark on success). All stroke-width 2.
 
-## PDF Export — Page Format (2026-07-18)
+## Legacy PDF — Frozen Page Format
 
 Morning's 3-column PDF: **13in × 8in landscape** (`[936, 576]` points — replaced A4 portrait, gives the 3 columns a wider page), margins **0.3in top/bottom, 0.25in left/right** (tightened from a uniform 48pt to maximize page use), and pagination moved from a top-left "Page N" label to a **fixed bottom-right footer** (`position: "absolute", bottom, right`). Vesper's fallback flat-layout PDF (unused, no link points to it — see Compile View Layout below) still uses A4 portrait, unaffected.
 
