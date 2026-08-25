@@ -108,7 +108,7 @@ async function autoAssignVesperTableReadings(
   // Selection (see REFERENCE_ONLY_SECTIONS/VESPER_TABLE_SECTIONS), same
   // treatment as Words of Institution.
   const targets: [string, string][] = [
-    ["The Lord's Discourses", readings.discourse.citation],
+    ["The Lord’s Discourses", readings.discourse.citation],
     ["Words of Institution", readings.wordsOfInstitution],
     ["Closing of the Table", readings.closingOfTable],
     ["The Great Commission", readings.greatCommission],

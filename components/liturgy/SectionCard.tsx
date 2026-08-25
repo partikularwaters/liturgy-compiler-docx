@@ -57,7 +57,7 @@ const FORMULA_EXCLUDED_SECTIONS = ["Benediction"];
 // the "use server" action file's top-level constant directly (same pattern
 // as ReaderClient.tsx).
 const REFERENCE_ONLY_SECTIONS = [
-  "The Lord's Discourses",
+  "The Lord’s Discourses",
   "Words of Institution",
   "Closing of the Table",
   "The Great Commission",

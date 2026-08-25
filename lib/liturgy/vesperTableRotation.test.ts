@@ -16,7 +16,7 @@ describe("getVesperTableReadings", () => {
 describe("VESPER_TABLE_SECTIONS", () => {
   it("includes The Great Commission alongside the other three auto-assigned readings", () => {
     expect(VESPER_TABLE_SECTIONS).toEqual([
-      "The Lord's Discourses",
+      "The Lord’s Discourses",
       "Words of Institution",
       "Closing of the Table",
       "The Great Commission",

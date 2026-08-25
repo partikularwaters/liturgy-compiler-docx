@@ -17,7 +17,7 @@ interface VesperReadingOption {
 }
 
 function optionsForSection(sectionName: string): VesperReadingOption[] {
-  if (sectionName === "The Lord's Discourses") {
+  if (sectionName === "The Lord’s Discourses") {
     return VESPER_DISCOURSE_OPTIONS.map((d) => ({ citation: d.citation, label: `${d.citation} — ${d.title}` }));
   }
   if (sectionName === "Closing of the Table") {

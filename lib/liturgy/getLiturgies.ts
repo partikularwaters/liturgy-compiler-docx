@@ -49,7 +49,7 @@ export async function getLiturgies(): Promise<LiturgySummary[]> {
     // date). `sermonPassage` carries either value; the field wasn't renamed
     // since every consumer already treats it as "whatever goes in that
     // slot," not literally "a Sermon."
-    const sectionName = template.name === "Vesper Worship" ? "The Lord's Discourses" : "Sermon";
+    const sectionName = template.name === "Vesper Worship" ? "The Lord’s Discourses" : "Sermon";
     const sectionIndex = template.sections.findIndex((s) => s.name === sectionName);
     const sectionRow = sectionRows?.find(
       (s) => s.liturgy_id === row.id && s.template_section_index === sectionIndex

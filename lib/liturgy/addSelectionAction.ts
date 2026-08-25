@@ -18,7 +18,7 @@ import type { SelectionItem, TextMark } from "@/types/liturgy";
 // machinery instead of a parallel item type for what's really the same
 // content, just displayed differently.
 const REFERENCE_ONLY_SECTIONS = [
-  "The Lord's Discourses",
+  "The Lord’s Discourses",
   "Words of Institution",
   "Closing of the Table",
   "The Great Commission",

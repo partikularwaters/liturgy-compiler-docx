@@ -113,7 +113,7 @@ export const VESPER_GREAT_COMMISSION_OPTIONS: readonly string[] = GREAT_COMMISSI
 // SectionCard.tsx's "+ Reading" button and its option-source lookup can't
 // drift apart from each other.
 export const VESPER_TABLE_SECTIONS = [
-  "The Lord's Discourses",
+  "The Lord’s Discourses",
   "Words of Institution",
   "Closing of the Table",
   "The Great Commission",
