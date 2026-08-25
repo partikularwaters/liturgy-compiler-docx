@@ -29,5 +29,17 @@ export default async function LiturgyViewPage({ params }: LiturgyViewPageProps):
     );
   }
 
+  // Same read/resolution path as the generated artifacts (architecture.md's
+  // Flow 3) -- a library read failure here shouldn't silently render a
+  // congregation-facing page missing real content any more than it should
+  // silently produce an incomplete export.
+  if (formulas === null || prayers === null || songs === null) {
+    return (
+      <div className="max-w-[640px] mx-auto px-6 py-10">
+        <p className="text-sm text-text-muted">Unable to load this liturgy’s content right now. Please try again.</p>
+      </div>
+    );
+  }
+
   return <LiturgyWebView liturgy={liturgy} formulas={formulas} prayers={prayers} songs={songs} />;
 }

@@ -2,7 +2,11 @@ import { supabase } from "@/lib/db/supabase";
 import { getSectionOrderIndex } from "@/lib/liturgy/canonicalOrder";
 import type { Formula, TextMark } from "@/types/liturgy";
 
-export async function getFormulas(sectionName?: string): Promise<Formula[]> {
+// `null` means the read failed -- distinct from `[]`, a genuinely empty
+// library -- so a caller that must not silently proceed on missing Formula
+// data (the export route) can fail closed instead of treating the two the
+// same, matching getItemsForSection's contract (BA-004).
+export async function getFormulas(sectionName?: string): Promise<Formula[] | null> {
   let query = supabase
     .from("formulas")
     .select("id, section_name, name, default_text, marks, translation, paired_id, owner_id, kind");
@@ -23,12 +27,12 @@ export async function getFormulas(sectionName?: string): Promise<Formula[]> {
     error = fallback.error;
   }
 
-  if (error || !data) {
-    console.error("[lib/formulas/getFormulas]", error?.message);
-    return [];
+  if (error) {
+    console.error("[lib/formulas/getFormulas]", error.message);
+    return null;
   }
 
-  const formulas = data.map((row) => ({
+  const formulas = (data ?? []).map((row) => ({
     id: row.id,
     sectionName: row.section_name,
     name: row.name,

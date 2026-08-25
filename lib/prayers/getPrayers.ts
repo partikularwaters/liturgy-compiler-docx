@@ -2,7 +2,11 @@ import { supabase } from "@/lib/db/supabase";
 import { getSectionOrderIndex } from "@/lib/liturgy/canonicalOrder";
 import type { Prayer, TextMark } from "@/types/liturgy";
 
-export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
+// `null` means the read failed -- distinct from `[]`, a genuinely empty
+// library -- so a caller that must not silently proceed on missing Prayer
+// data (the export route) can fail closed instead of treating the two the
+// same, matching getItemsForSection's contract (BA-004).
+export async function getPrayers(sectionName?: string): Promise<Prayer[] | null> {
   let query = supabase
     .from("prayers")
     .select("id, section_name, text, kind, marks, is_guide, translation, paired_id, owner_id");
@@ -47,12 +51,12 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[]> {
     error = fallback.error;
   }
 
-  if (error || !data) {
-    console.error("[lib/prayers/getPrayers]", error?.message);
-    return [];
+  if (error) {
+    console.error("[lib/prayers/getPrayers]", error.message);
+    return null;
   }
 
-  const prayers = data.map((row) => ({
+  const prayers = (data ?? []).map((row) => ({
     id: row.id,
     sectionName: row.section_name,
     text: row.text,

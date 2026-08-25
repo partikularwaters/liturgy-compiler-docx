@@ -23,7 +23,7 @@ interface CompileViewPageProps {
 
 export default async function CompileViewPage({ params }: CompileViewPageProps): Promise<React.ReactElement> {
   const { id } = await params;
-  const [liturgy, formulas, prayers, songs, scriptureSelections, currentUser] = await Promise.all([
+  const [liturgy, formulasResult, prayersResult, songsResult, scriptureSelections, currentUser] = await Promise.all([
     getLiturgy(id),
     getFormulas(),
     getPrayers(),
@@ -31,6 +31,13 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
     getScriptureSelections(),
     getCurrentUser(),
   ]);
+  // Compile View degrades gracefully on a library read failure (empty Add
+  // pickers, everything else on the page still works) rather than failing
+  // the whole page -- unlike the export/Web View artifact paths, there's no
+  // downloadable or shareable output at stake here.
+  const formulas = formulasResult ?? [];
+  const prayers = prayersResult ?? [];
+  const songs = songsResult ?? [];
 
   if (!liturgy) {
     return (

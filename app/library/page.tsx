@@ -22,17 +22,31 @@ import type { Formula, Prayer, ScriptureSelection, Song } from "@/types/liturgy"
 export const dynamic = "force-dynamic";
 
 export default async function LibraryPage(): Promise<React.ReactElement> {
-  const [allFormulas, allPrayers, scriptureSelections, allSongs, formulaSectionNames, prayerSectionNames, songSectionNames, currentUser] =
-    await Promise.all([
-      getFormulas(),
-      getPrayers(),
-      getScriptureSelections(),
-      getSongs(),
-      getSectionNames("formula"),
-      getSectionNames("prayer"),
-      getSectionNames("song"),
-      getCurrentUser(),
-    ]);
+  const [
+    allFormulasResult,
+    allPrayersResult,
+    scriptureSelections,
+    allSongsResult,
+    formulaSectionNames,
+    prayerSectionNames,
+    songSectionNames,
+    currentUser,
+  ] = await Promise.all([
+    getFormulas(),
+    getPrayers(),
+    getScriptureSelections(),
+    getSongs(),
+    getSectionNames("formula"),
+    getSectionNames("prayer"),
+    getSectionNames("song"),
+    getCurrentUser(),
+  ]);
+  // A dashboard-style browse page -- degrades gracefully on a library read
+  // failure (that one category shows empty) rather than failing the whole
+  // page, matching the existing precedent for getLiturgies.ts.
+  const allFormulas = allFormulasResult ?? [];
+  const allPrayers = allPrayersResult ?? [];
+  const allSongs = allSongsResult ?? [];
 
   // This page is the public, browse-anywhere Shared Library -- everyone's
   // own unpromoted drafts/forks (ownerId set) belong in /my-library instead,

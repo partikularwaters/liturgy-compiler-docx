@@ -39,6 +39,18 @@ export async function GET(request: Request, { params }: RouteParams): Promise<Re
       });
     }
 
+    // Formula/Prayer/Song reads collapsing failure into an empty library was
+    // the one remaining gap BA-004 didn't close -- an export built against a
+    // library read that actually failed (not genuinely empty) would render
+    // as a plausible, successful document missing real content, same failure
+    // shape BA-004 fixed for section_items. `null` here means the read
+    // failed; fail closed rather than generate a document from it.
+    if (formulas === null || prayers === null || songs === null) {
+      return new Response("Unable to load this liturgy's library content right now. Please try again.", {
+        status: 502,
+      });
+    }
+
     const filenameBase = `${liturgy.templateName.replace(/\s+/g, "-")}-${liturgy.serviceDate}-${audience}`;
 
     if (format === "docx") {

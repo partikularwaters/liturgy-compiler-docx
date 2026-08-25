@@ -1,7 +1,11 @@
 import { supabase } from "@/lib/db/supabase";
 import type { Song } from "@/types/liturgy";
 
-export async function getSongs(sectionName?: string): Promise<Song[]> {
+// `null` means the read failed -- distinct from `[]`, a genuinely empty
+// library -- so a caller that must not silently proceed on missing Song
+// data (the export route) can fail closed instead of treating the two the
+// same, matching getItemsForSection's contract (BA-004).
+export async function getSongs(sectionName?: string): Promise<Song[] | null> {
   let query = supabase
     .from("songs")
     .select("id, section_name, kind, title, attribution, year_published, notes, translation, paired_id, owner_id");
@@ -24,12 +28,12 @@ export async function getSongs(sectionName?: string): Promise<Song[]> {
     error = fallback.error;
   }
 
-  if (error || !data) {
-    console.error("[lib/songs/getSongs]", error?.message);
-    return [];
+  if (error) {
+    console.error("[lib/songs/getSongs]", error.message);
+    return null;
   }
 
-  return data.map((row) => ({
+  return (data ?? []).map((row) => ({
     id: row.id,
     sectionName: row.section_name,
     kind: row.kind as "psalm" | "hymn",

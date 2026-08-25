@@ -13,7 +13,8 @@ export default async function NewPrayerPage(): Promise<React.ReactElement> {
     );
   }
 
-  const [sectionNames, allPrayers] = await Promise.all([getSectionNames("prayer"), getPrayers()]);
+  const [sectionNames, allPrayersResult] = await Promise.all([getSectionNames("prayer"), getPrayers()]);
+  const allPrayers = allPrayersResult ?? [];
 
   return (
     <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-6">

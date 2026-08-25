@@ -13,7 +13,8 @@ export default async function NewSongPage(): Promise<React.ReactElement> {
     );
   }
 
-  const [sectionNames, allSongs] = await Promise.all([getSectionNames("song"), getSongs()]);
+  const [sectionNames, allSongsResult] = await Promise.all([getSectionNames("song"), getSongs()]);
+  const allSongs = allSongsResult ?? [];
 
   return (
     <div className="max-w-[960px] mx-auto p-8 flex flex-col gap-6">
