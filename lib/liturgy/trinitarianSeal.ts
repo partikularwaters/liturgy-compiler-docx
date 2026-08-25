@@ -21,6 +21,19 @@ export const TRINITARIAN_SEAL_TEXT: Record<"en" | "fil", string> = {
 // Minister/Congregation mark tool already expresses who speaks what.
 export const TRINITARIAN_SEAL_SECTIONS = ["Benediction"];
 
+// Shared three-state cycle + labels for the Seal toggle -- originally
+// MarkEditor-local, promoted here (2026-08-25) so AddExistingSelectionPanel
+// can offer the same control without depending on MarkEditor's textarea-
+// bound marking toolbar (a "+ From Library" placement has no live textarea
+// to mark against -- the text/marks are inherited from the picked Library
+// entry unchanged).
+export const SEAL_CYCLE: ("en" | "fil" | null)[] = [null, "fil", "en"];
+export const SEAL_BUTTON_LABELS: Record<"en" | "fil" | "off", string> = {
+  off: "Seal",
+  fil: "Seal: Filipino",
+  en: "Seal: English",
+};
+
 // Single source of truth for "what does text+marks look like once a seal is
 // appended" -- used both for the live edit-time preview (MarkEditor) and the
 // final saved render (resolveItemText), so they can never drift. Appends the

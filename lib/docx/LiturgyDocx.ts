@@ -347,6 +347,21 @@ function renderSection({ section, formulas, prayers, songs, audience }: RenderSe
 
     for (const { item, resolved } of visibleItems) {
       if (item.type === "song") {
+        if (audience === "guide" && item.amenExpected) {
+          paragraphs.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "[Amen]",
+                  bold: true,
+                  size: LABEL_SIZE,
+                  font: DOCX_FONT_FAMILY,
+                  color: docxColors.accentDark,
+                }),
+              ],
+            })
+          );
+        }
         paragraphs.push(
           new Paragraph({
             children: [

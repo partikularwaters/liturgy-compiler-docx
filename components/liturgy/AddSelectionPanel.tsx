@@ -6,6 +6,7 @@ import { autosizeTextarea } from "@/lib/text/autosize";
 import { shiftMarksForEdit } from "@/lib/text/marks";
 import CitationField from "@/components/liturgy/CitationField";
 import MarkEditor from "@/components/liturgy/MarkEditor";
+import type { AmenPolicy } from "@/lib/liturgy/amenPolicy";
 
 interface AddSelectionPanelProps {
   targetLabel: string;
@@ -26,11 +27,11 @@ interface AddSelectionPanelProps {
   // stored -- lets the user clear the text field instead of it being a
   // silent server-side rejection.
   textOptional?: boolean;
-  // Feature 27: Amen Rule (redesign-plan-v1.1.md §X) -- true only when the
-  // target Section is dynamic-naming (a "Psalm/Hymn of ..." song slot),
-  // since the question "does this piece end in a sung Amen" is meaningless
-  // for a Scripture reading.
-  isSongSlot?: boolean;
+  // Amen Rule (2026-08-25 revision of Feature 27) -- see
+  // lib/liturgy/amenPolicy.ts for what each policy value means and which
+  // Sections get which. Defaults to "none" (no checkbox) for any caller
+  // that doesn't pass one.
+  amenPolicy?: AmenPolicy;
   // Feature 25: which marks this Section's Scripture text can carry --
   // empty/omitted means no marking toolbar at all.
   availableMarks?: Exclude<TextMark["type"], "bold">[];
@@ -48,13 +49,13 @@ export default function AddSelectionPanel({
   saveError,
   onSave,
   textOptional = false,
-  isSongSlot = false,
+  amenPolicy = "none",
   availableMarks = [],
   allowTrinitarianSeal = false,
 }: AddSelectionPanelProps): React.ReactElement {
   const [citation, setCitation] = useState(initialCitation);
   const [text, setText] = useState(initialText);
-  const [amenExpected, setAmenExpected] = useState(false);
+  const [amenExpected, setAmenExpected] = useState(amenPolicy === "default-on");
   const [marks, setMarks] = useState<TextMark[]>([]);
   const [trinitarianSeal, setTrinitarianSeal] = useState<"en" | "fil" | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -105,7 +106,7 @@ export default function AddSelectionPanel({
             trinitarianSeal={trinitarianSeal}
             onTrinitarianSealChange={setTrinitarianSeal}
           />
-          {isSongSlot && (
+          {amenPolicy !== "none" && (
             <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">
               <input
                 type="checkbox"

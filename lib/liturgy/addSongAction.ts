@@ -9,7 +9,8 @@ import type { SongItem } from "@/types/liturgy";
 export async function addSong(
   liturgyId: string,
   sectionIndex: number,
-  songId: string
+  songId: string,
+  amenExpected: boolean = false
 ): Promise<{ success: boolean; error?: string }> {
   if (!songId.trim()) {
     return { success: false, error: "A Song must be selected." };
@@ -57,6 +58,7 @@ export async function addSong(
     attribution: song.attribution,
     yearPublished: song.year_published,
     notes: song.notes,
+    amenExpected,
   };
 
   const { success, error: updateError } = await insertSectionItem(section.id, newItem);
@@ -81,6 +83,7 @@ export async function updateSongItem(
   attribution: string,
   yearPublished: string,
   notes: string,
+  amenExpected: boolean,
   saveToPersonalLibrary: boolean = false
 ): Promise<{ success: boolean; error?: string; savedToPersonalLibrary?: boolean }> {
   const requester = await getCurrentUser();
@@ -107,6 +110,7 @@ export async function updateSongItem(
     attribution: attributionValue,
     yearPublished: yearPublishedValue,
     notes: notesValue,
+    amenExpected,
   });
 
   if (!success) {

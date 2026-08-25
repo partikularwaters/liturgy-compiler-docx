@@ -17,6 +17,7 @@ import type { BibleBook, BibleChapter, HighlightColor, VerseHighlights } from "@
 import type { TargetSection } from "@/lib/liturgy/getTargetSection";
 import { getSelectionMarks } from "@/lib/liturgy/markableSections";
 import { TRINITARIAN_SEAL_SECTIONS } from "@/lib/liturgy/trinitarianSeal";
+import { getAmenPolicy } from "@/lib/liturgy/amenPolicy";
 import type { LiturgySummary, TextMark } from "@/types/liturgy";
 import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
@@ -255,7 +256,7 @@ export default function ReaderClient({
               saveError={saveError}
               onSave={handleSaveSelection}
               textOptional={REFERENCE_ONLY_SECTIONS.includes(targetSection.sectionName)}
-              isSongSlot={targetSection.dynamicNaming ?? false}
+              amenPolicy={getAmenPolicy(targetSection.sectionName)}
               availableMarks={getSelectionMarks(targetSection.sectionName)}
               allowTrinitarianSeal={TRINITARIAN_SEAL_SECTIONS.includes(targetSection.sectionName)}
             />

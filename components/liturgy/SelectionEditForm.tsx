@@ -7,6 +7,7 @@ import { shiftMarksForEdit } from "@/lib/text/marks";
 import CitationField from "@/components/liturgy/CitationField";
 import MarkEditor from "@/components/liturgy/MarkEditor";
 import { XIcon } from "@/components/liturgy/icons";
+import type { AmenPolicy } from "@/lib/liturgy/amenPolicy";
 
 interface SelectionEditFormProps {
   initialCitation: string;
@@ -15,7 +16,7 @@ interface SelectionEditFormProps {
   initialMarks: TextMark[];
   initialTrinitarianSeal: "en" | "fil" | null;
   textOptional: boolean;
-  isSongSlot: boolean;
+  amenPolicy: AmenPolicy;
   availableMarks: Exclude<TextMark["type"], "bold">[];
   allowTrinitarianSeal: boolean;
   isSaving: boolean;
@@ -41,7 +42,7 @@ export default function SelectionEditForm({
   initialMarks,
   initialTrinitarianSeal,
   textOptional,
-  isSongSlot,
+  amenPolicy,
   availableMarks,
   allowTrinitarianSeal,
   isSaving,
@@ -91,7 +92,7 @@ export default function SelectionEditForm({
         onTrinitarianSealChange={setTrinitarianSeal}
       />
 
-      {isSongSlot && (
+      {amenPolicy !== "none" && (
         <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">
           <input
             type="checkbox"

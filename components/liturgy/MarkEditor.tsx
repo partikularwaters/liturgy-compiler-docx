@@ -3,7 +3,7 @@
 import { useState, type RefObject } from "react";
 import type { TextMark } from "@/types/liturgy";
 import MarkedText from "@/components/liturgy/MarkedText";
-import { applyTrinitarianSeal } from "@/lib/liturgy/trinitarianSeal";
+import { applyTrinitarianSeal, SEAL_CYCLE, SEAL_BUTTON_LABELS } from "@/lib/liturgy/trinitarianSeal";
 import { ClearIcon, NoteIcon } from "@/components/liturgy/icons";
 
 type ExclusiveMark = "leader" | "congregation" | "minister";
@@ -35,13 +35,6 @@ const EXCLUSIVE_MARK_LABELS: Record<ExclusiveMark, string> = {
 const OVERLAY_MARK_LABELS: Record<OverlayMark, string> = {
   bold: "B",
   small_caps: "Small Caps",
-};
-
-const SEAL_CYCLE: ("en" | "fil" | null)[] = [null, "fil", "en"];
-const SEAL_BUTTON_LABELS: Record<"en" | "fil" | "off", string> = {
-  off: "Seal",
-  fil: "Seal: Filipino",
-  en: "Seal: English",
 };
 
 // Shared Leader/Congregation/Minister/Small-Caps/Bold toolbar + always-

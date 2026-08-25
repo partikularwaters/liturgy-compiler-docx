@@ -5,6 +5,7 @@ import { useState } from "react";
 import { addSong } from "@/lib/liturgy/addSongAction";
 import { createSong, updateSong } from "@/lib/songs/songActions";
 import { songEntryUnchanged } from "@/lib/liturgy/pickedLibraryEntryUnchanged";
+import { getAmenPolicy } from "@/lib/liturgy/amenPolicy";
 import { XIcon } from "@/components/liturgy/icons";
 import type { Song } from "@/types/liturgy";
 
@@ -50,6 +51,9 @@ export default function AddSongPanel({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const amenPolicy = getAmenPolicy(sectionName);
+  const [amenExpected, setAmenExpected] = useState(amenPolicy === "default-on");
+
   const attributionLabel = kind === "psalm" ? "Versification" : "Author";
 
   const applySong = (song: Song | undefined): void => {
@@ -77,7 +81,7 @@ export default function AddSongPanel({
     setError(null);
 
     const finish = (id: string): void => {
-      addSong(liturgyId, sectionIndex, id).then((result) => {
+      addSong(liturgyId, sectionIndex, id, amenExpected).then((result) => {
         setIsSaving(false);
         if (result.success) {
           router.refresh();
@@ -206,6 +210,17 @@ export default function AddSongPanel({
           className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
         />
       </div>
+
+      {amenPolicy !== "none" && (
+        <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">
+          <input
+            type="checkbox"
+            checked={amenExpected}
+            onChange={(e) => setAmenExpected(e.target.checked)}
+          />
+          Customarily ends in a sung Amen (Leader Guide only)
+        </label>
+      )}
 
       {error && <p className="text-sm text-error">{error}</p>}
 

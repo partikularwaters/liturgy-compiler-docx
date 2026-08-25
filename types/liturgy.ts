@@ -258,6 +258,13 @@ export interface SongItem {
   attribution?: string | null;
   yearPublished?: string | null;
   notes?: string | null;
+  // Amen Rule (2026-08-25 revision of Feature 27) -- Feature 27 originally
+  // put this only on SelectionItem, from before Song existed as its own
+  // item type; a real placed Song had no Amen control anywhere. See
+  // lib/liturgy/amenPolicy.ts for which Sections gate this and their
+  // default. Optional/defensive, same pattern as SelectionItem.amenExpected
+  // -- absent means "no," correct for every Song placed before this existed.
+  amenExpected?: boolean;
 }
 
 // Feature 20: "Existing Selections" library -- auto-populated by

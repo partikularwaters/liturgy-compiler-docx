@@ -7,12 +7,21 @@ import { toEnglishCitation } from "@/lib/bible/bookNamesTagalog";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
 import { TranslateIcon, XIcon } from "@/components/liturgy/icons";
 import MarkedText from "@/components/liturgy/MarkedText";
+import { applyTrinitarianSeal, SEAL_CYCLE, SEAL_BUTTON_LABELS } from "@/lib/liturgy/trinitarianSeal";
+import type { AmenPolicy } from "@/lib/liturgy/amenPolicy";
 import type { ScriptureSelection } from "@/types/liturgy";
 
 interface AddExistingSelectionPanelProps {
   scriptureSelections: ScriptureSelection[];
   liturgyId: string;
   sectionIndex: number;
+  // 2026-08-25 fix: this panel previously hardcoded amenExpected: false and
+  // trinitarianSeal: null on every placement, silently dropping both flags
+  // for a citation placed here instead of through the Reader -- the same
+  // citation could end up different depending on which "+" button was
+  // clicked. See lib/liturgy/amenPolicy.ts.
+  amenPolicy?: AmenPolicy;
+  allowTrinitarianSeal?: boolean;
   onDone: () => void;
 }
 
@@ -34,6 +43,8 @@ export default function AddExistingSelectionPanel({
   scriptureSelections,
   liturgyId,
   sectionIndex,
+  amenPolicy = "none",
+  allowTrinitarianSeal = false,
   onDone,
 }: AddExistingSelectionPanelProps): React.ReactElement {
   const router = useRouter();
@@ -42,6 +53,8 @@ export default function AddExistingSelectionPanel({
   const [selectionId, setSelectionId] = useState(filtered[0]?.id ?? "");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [amenExpected, setAmenExpected] = useState(amenPolicy === "default-on");
+  const [trinitarianSeal, setTrinitarianSeal] = useState<"en" | "fil" | null>(null);
   // The Compile View's 3-column layout means this panel can sit anywhere
   // from the far left to the far right of a wide (up to 1400px) page --
   // a tooltip fixed to always open "on the right" would run off-screen for
@@ -89,9 +102,9 @@ export default function AddExistingSelectionPanel({
       sectionIndex,
       selected.citation,
       selected.text,
-      false,
+      amenExpected,
       selected.marks ?? [],
-      null,
+      trinitarianSeal,
       selected.translation
     ).then((result) => {
       setIsSaving(false);
@@ -184,12 +197,42 @@ export default function AddExistingSelectionPanel({
           </div>
 
           {selected && (selected.text ? (
-            <MarkedText text={selected.text} marks={selected.marks} />
+            <MarkedText
+              text={applyTrinitarianSeal(selected.text, selected.marks ?? [], trinitarianSeal).text}
+              marks={applyTrinitarianSeal(selected.text, selected.marks ?? [], trinitarianSeal).marks}
+            />
           ) : (
             <p className="font-serif-body text-[16px] leading-[1.6] text-text-primary whitespace-pre-wrap">
               (citation only)
             </p>
           ))}
+
+          {allowTrinitarianSeal && (
+            <button
+              type="button"
+              onClick={() =>
+                setTrinitarianSeal(SEAL_CYCLE[(SEAL_CYCLE.indexOf(trinitarianSeal) + 1) % SEAL_CYCLE.length])
+              }
+              className={
+                trinitarianSeal
+                  ? "self-start rounded-md border border-accent-dark px-2.5 py-1 text-[12px] font-medium text-accent-foreground bg-accent-dark"
+                  : "self-start rounded-md border border-border px-2.5 py-1 text-[12px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground"
+              }
+            >
+              {SEAL_BUTTON_LABELS[trinitarianSeal ?? "off"]}
+            </button>
+          )}
+
+          {amenPolicy !== "none" && (
+            <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">
+              <input
+                type="checkbox"
+                checked={amenExpected}
+                onChange={(e) => setAmenExpected(e.target.checked)}
+              />
+              Customarily ends in a sung Amen (Leader Guide only)
+            </label>
+          )}
 
           {error && <p className="text-sm text-error">{error}</p>}
 

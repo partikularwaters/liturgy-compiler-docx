@@ -29,6 +29,7 @@ import { getSelectionMarks, getFormulaMarks } from "@/lib/liturgy/markableSectio
 import { VESPER_TABLE_SECTIONS } from "@/lib/liturgy/vesperTableRotation";
 import { toEnglishCitation } from "@/lib/bible/bookNamesTagalog";
 import { TRINITARIAN_SEAL_SECTIONS } from "@/lib/liturgy/trinitarianSeal";
+import { getAmenPolicy, type AmenPolicy } from "@/lib/liturgy/amenPolicy";
 import { SILENT_CONFESSION_SECTION, SILENT_CONFESSION_RUBRIC_TEXT } from "@/lib/liturgy/silentConfessionRubric";
 import { applyMarks, shiftMarksForEdit } from "@/lib/text/marks";
 import { updatePrayerItem } from "@/lib/liturgy/addPrayerAction";
@@ -40,6 +41,16 @@ import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 import type { CompiledSection, Formula, Item, Prayer, ScriptureSelection, Song, TextMark } from "@/types/liturgy";
 
 const ALL_ITEM_TYPES: Item["type"][] = ["selection", "formula", "verbal_cue", "prayer", "sermon", "song"];
+
+// 2026-08-25: Benediction's Formula slot only ever existed to hand-author
+// the Trinitarian closing line -- the Selection's own Trinitarian Seal
+// toggle (trinitarianSeal.ts) already appends that exact text, and having
+// both meant TRINITARIAN_SEAL_SECTIONS ambiguously applied to either item
+// type in the same Section (the same problem Assurance of Pardon hit and
+// resolved by dropping the toggle there instead -- see that file's
+// comment). Benediction takes the opposite fix: drop Formula, keep the
+// toggle scoped to the one item type that's actually left.
+const FORMULA_EXCLUDED_SECTIONS = ["Benediction"];
 
 // Feature 22: mirrors addSelectionAction.ts's REFERENCE_ONLY_SECTIONS -- kept
 // as a separate constant since this is a client component and can't import
@@ -271,6 +282,8 @@ interface SongEditFormProps {
   initialAttribution: string;
   initialYearPublished: string;
   initialNotes: string;
+  initialAmenExpected: boolean;
+  amenPolicy: AmenPolicy;
   isSaving: boolean;
   error: string | null;
   offerPersonalLibrarySave: boolean;
@@ -279,6 +292,7 @@ interface SongEditFormProps {
     attribution: string,
     yearPublished: string,
     notes: string,
+    amenExpected: boolean,
     saveToPersonalLibrary: boolean
   ) => void;
   onCancel: () => void;
@@ -293,6 +307,8 @@ function SongEditForm({
   initialAttribution,
   initialYearPublished,
   initialNotes,
+  initialAmenExpected,
+  amenPolicy,
   isSaving,
   error,
   offerPersonalLibrarySave,
@@ -303,6 +319,7 @@ function SongEditForm({
   const [attribution, setAttribution] = useState(initialAttribution);
   const [yearPublished, setYearPublished] = useState(initialYearPublished);
   const [notes, setNotes] = useState(initialNotes);
+  const [amenExpected, setAmenExpected] = useState(initialAmenExpected);
   const [saveToPersonalLibrary, setSaveToPersonalLibrary] = useState(false);
 
   return (
@@ -355,6 +372,16 @@ function SongEditForm({
       <p className="text-[13px] text-text-muted">
         Editing here only changes this one placement -- the shared Library entry is never touched.
       </p>
+      {amenPolicy !== "none" && (
+        <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">
+          <input
+            type="checkbox"
+            checked={amenExpected}
+            onChange={(e) => setAmenExpected(e.target.checked)}
+          />
+          Customarily ends in a sung Amen (Leader Guide only)
+        </label>
+      )}
       {offerPersonalLibrarySave && (
         <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">
           <input
@@ -369,7 +396,7 @@ function SongEditForm({
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(title, attribution, yearPublished, notes, saveToPersonalLibrary)}
+          onClick={() => onSubmit(title, attribution, yearPublished, notes, amenExpected, saveToPersonalLibrary)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
@@ -638,11 +665,22 @@ export default function SectionCard({
     attribution: string,
     yearPublished: string,
     notes: string,
+    amenExpected: boolean,
     saveToPersonalLibrary: boolean
   ): void => {
     setIsSaving(true);
     setError(null);
-    updateSongItem(liturgyId, sectionIndex, itemId, title, attribution, yearPublished, notes, saveToPersonalLibrary).then(
+    updateSongItem(
+      liturgyId,
+      sectionIndex,
+      itemId,
+      title,
+      attribution,
+      yearPublished,
+      notes,
+      amenExpected,
+      saveToPersonalLibrary
+    ).then(
       (result) => {
         setIsSaving(false);
         if (result.success) {
@@ -747,7 +785,7 @@ export default function SectionCard({
             )}
           </>
         )}
-        {allowedTypes.includes("formula") && (
+        {allowedTypes.includes("formula") && !FORMULA_EXCLUDED_SECTIONS.includes(section.name) && (
           <button type="button" onClick={() => setIsAddingFormula((prev) => !prev)} className={addButtonClass}>
             <PlusIcon size={13} /> Formula
           </button>
@@ -831,6 +869,8 @@ export default function SectionCard({
             scriptureSelections={sectionScriptureSelections}
             liturgyId={liturgyId}
             sectionIndex={sectionIndex}
+            amenPolicy={getAmenPolicy(section.name)}
+            allowTrinitarianSeal={TRINITARIAN_SEAL_SECTIONS.includes(section.name)}
             onDone={() => setIsAddingExistingSelection(false)}
           />
         </div>
@@ -994,7 +1034,7 @@ export default function SectionCard({
                     initialMarks={item.marks ?? []}
                     initialTrinitarianSeal={item.trinitarianSeal ?? null}
                     textOptional={REFERENCE_ONLY_SECTIONS.includes(section.name)}
-                    isSongSlot={section.dynamic_naming}
+                    amenPolicy={getAmenPolicy(section.name)}
                     availableMarks={getSelectionMarks(section.name)}
                     allowTrinitarianSeal={TRINITARIAN_SEAL_SECTIONS.includes(section.name)}
                     isSaving={isSaving}
@@ -1065,11 +1105,13 @@ export default function SectionCard({
                     initialAttribution={item.attribution ?? resolved.song?.attribution ?? ""}
                     initialYearPublished={item.yearPublished ?? resolved.song?.yearPublished ?? ""}
                     initialNotes={item.notes ?? resolved.song?.notes ?? ""}
+                    initialAmenExpected={item.amenExpected ?? false}
+                    amenPolicy={getAmenPolicy(section.name)}
                     isSaving={isSaving}
                     error={error}
                     offerPersonalLibrarySave={currentUser?.role === "compiler"}
-                    onSubmit={(title, attribution, yearPublished, notes, saveToPersonalLibrary) =>
-                      handleSaveSongEdit(item.id, title, attribution, yearPublished, notes, saveToPersonalLibrary)
+                    onSubmit={(title, attribution, yearPublished, notes, amenExpected, saveToPersonalLibrary) =>
+                      handleSaveSongEdit(item.id, title, attribution, yearPublished, notes, amenExpected, saveToPersonalLibrary)
                     }
                     onCancel={() => {
                       setError(null);

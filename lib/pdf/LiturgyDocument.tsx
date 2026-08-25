@@ -391,6 +391,11 @@ function RenderedSection({
           {visibleItems.map(({ item, resolved }, itemIndex) =>
             item.type === "song" ? (
               <View key={itemIndex} style={styles.item}>
+                {audience === "guide" && item.amenExpected && (
+                  <View style={styles.itemLabelRow}>
+                    <Text style={styles.amenBadge}>Amen</Text>
+                  </View>
+                )}
                 <Text
                   style={[styles.songTitle, resolved.song?.kind === "psalm" ? styles.songTitlePsalm : {}]}
                 >
