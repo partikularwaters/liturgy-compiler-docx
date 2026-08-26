@@ -1,10 +1,15 @@
 import Link from "next/link";
 import { getLiturgies } from "@/lib/liturgy/getLiturgies";
-import { formatLiturgyName } from "@/lib/liturgy/formatLiturgyName";
+import { groupLiturgiesByDate } from "@/lib/liturgy/groupLiturgiesByDate";
+import LiturgyDateRow from "@/components/liturgy/LiturgyDateRow";
 import { ArrowRightIcon, PlusIcon } from "@/components/liturgy/icons";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
-const RECENT_COUNT = 5;
+// "Recent" means recent service dates, not recent liturgy rows -- a paired
+// Morning+Vesper Sunday is one date and can surface up to 10 liturgies here,
+// matching /liturgies' own groupLiturgiesByDate/LiturgyDateRow pairing
+// (2026-07-29) that this preview never picked up until now.
+const RECENT_DATE_COUNT = 5;
 
 // Always reads the live liturgy list — otherwise a newly created liturgy can
 // be missing from this page until the next deploy if Next statically caches it.
@@ -12,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Home(): Promise<React.ReactElement> {
   const [liturgies, currentUser] = await Promise.all([getLiturgies(), getCurrentUser()]);
-  const recent = liturgies.slice(0, RECENT_COUNT);
+  const recentDateGroups = groupLiturgiesByDate(liturgies).slice(0, RECENT_DATE_COUNT);
 
   return (
     <>
@@ -105,20 +110,17 @@ export default async function Home(): Promise<React.ReactElement> {
           Recent Liturgies
         </h2>
 
-        {recent.length === 0 ? (
+        {recentDateGroups.length === 0 ? (
           <p className="text-sm text-text-muted">No liturgies yet.</p>
         ) : (
           <div className="bg-surface border border-border rounded-lg overflow-hidden">
-            {recent.map((liturgy, index) => (
-              <Link
-                key={liturgy.id}
-                href={`/liturgy/${liturgy.id}`}
-                className={`block px-6 py-3 text-sm text-text-primary hover:bg-surface-secondary ${
-                  index < recent.length - 1 ? "border-b border-border" : ""
-                }`}
-              >
-                {formatLiturgyName(liturgy)}
-              </Link>
+            {recentDateGroups.map((group, index) => (
+              <LiturgyDateRow
+                key={group.serviceDate}
+                group={group}
+                isLast={index === recentDateGroups.length - 1}
+                currentUser={currentUser}
+              />
             ))}
           </div>
         )}

@@ -102,7 +102,7 @@ Marks remain structured offsets separate from raw prose. Congregation and Minist
 
 - `components/liturgy/CopyLinkButton.tsx` — copies the public Web View URL and exposes success feedback.
 - `components/liturgy/EndNoteToggle.tsx` — controls the authored output end note.
-- `components/liturgy/LiturgyDateRow.tsx` — shared liturgy date/status row.
+- `components/liturgy/LiturgyDateRow.tsx` — shared liturgy date/status row, pairing a Morning + Vesper liturgy on the same service_date into one row with the Lord's Day # between them. Used by both `/liturgies` (since 2026-07-29) and the Homepage's "Recent Liturgies" preview (since 2026-08-27) — the two must stay on this one shared component/grouping helper rather than drift into separate implementations again.
 - `components/liturgy/LordsDayDatePicker.tsx` — date selection with Sunday warning and Lord's Day display suppression.
 - `components/liturgy/PrayerGuidePanel.tsx` — reference-only guide display; never a placed Prayer.
 - `components/liturgy/ScriptureCitationLink.tsx` — translation-aware citation/context link.
