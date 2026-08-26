@@ -46,15 +46,8 @@ Note: this project previously referenced a different local skill set
 adoption, Madrid chose to switch to the canonical Skills Kit above instead —
 the older names are retired for this project.
 
-## Commit attribution
-As of 2026-08-25, this project follows Banka's own `CONTRIBUTING.md`
-convention: every commit materially shaped by an AI assistant gets an
-`Assisted-by: <product> (<model>)` trailer in the commit body (e.g.
-`Assisted-by: Anthropic Claude Code (Sonnet 5)` — "Claude" dropped from the
-model name itself since it's redundant with the product name), not a
-`Co-Authored-By` trailer — overrides the default git-commit convention for
-this repository specifically. RELEASE-GOVERNANCE.md was considered and
-deliberately **not** adopted — it's built for a multi-repo published-protocol
-ecosystem with external SemVer consumers, which this project isn't; see
-`progress-tracker.md`'s Decisions Made for the reasoning.
+## Contributing
+Before proposing, creating, amending, or squashing a commit, read and follow
+`CONTRIBUTING.md`. It is the canonical commit-message and AI-attribution policy
+for this repository.
 <!-- BANKA:END -->
