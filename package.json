@@ -15,7 +15,9 @@
     "db:status": "supabase status",
     "db:reset": "supabase db reset",
     "db:verify-contract": "node --env-file=.env.local scripts/verify-db-contract.mjs",
-    "seed:bible": "node --env-file=.env.local scripts/seed-bible.ts"
+    "seed:bible": "node --env-file=.env.local scripts/seed-bible.ts",
+    "db:pull-library": "node scripts/pull-library.mjs",
+    "db:restore-library": "node --env-file=.env.local scripts/restore-library.mjs"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

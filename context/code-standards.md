@@ -125,6 +125,16 @@ instead of a Supabase module-load failure. The anon key is public by design;
 the service-role key is not and must never reach a browser bundle, log, commit,
 fixture, or chat.
 
+Dev-tooling-only, not required by the app itself: `PROD_SUPABASE_URL` /
+`PROD_SUPABASE_SERVICE_ROLE_KEY`, read only from the shell environment (never
+a file) by `scripts/pull-library.mjs` — a one-way, read-only pull of the
+shared Library (`owner_id is null`) from Production into a local JSON
+snapshot, restored into local Supabase only by `scripts/restore-library.mjs`
+(`npm run db:pull-library` / `npm run db:restore-library`). Both scripts
+refuse to run if their target URL doesn't match the direction they're meant
+to go (Production-looking for the restore script, local-looking for the pull
+script).
+
 ---
 
 ## Comments
