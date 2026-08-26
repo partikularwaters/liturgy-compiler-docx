@@ -154,7 +154,7 @@ Ranked list, confirmed by Madrid 2026-08-24 (adoption-assessment backlog re-veri
 | `npm run db:start`/`db:reset` fails on a genuinely fresh local Docker volume — the CLI's own `INSERT INTO supabase_migrations.schema_migrations` for the very first migration (`20260712000000`) hits a duplicate-key conflict before any of this project's migrations run | Medium (local dev only, no Production impact) | **Resolved 2026-08-26.** Root cause: this project's local ports (54321/54323/54324) collided with an unrelated `oykon-local` Supabase project running under Docker Desktop at the same time — Docker Desktop won the OS socket, so local requests silently hit the wrong project's database. Fixed by moving this project's local ports to a dedicated 5532x block in `supabase/config.toml`. The duplicate-key symptom itself never reproduced across two fresh resets post-fix — treated as the same collision, not a separate bug. See Completed entry above for full detail. |
 | Clean local replay formerly depended on different Supabase defaults than Production | Critical | Resolved locally and in Production by the explicit database contract migration |
 | Production was missing the `notifications` table present in migration `20260728050000` and used by current code | High | Resolved by the idempotent Production contract migration |
-| A Section/item combination that had `amenExpected: true` set before the 2026-08-25 Amen Rule revision (specifically: any Selection ever placed in "Affirmation of Faith," which incorrectly inherited the Amen checkbox pre-fix) has no UI path to clear it now that the checkbox is policy-gated and Affirmation of Faith's policy is "none" | Critical, unverified | **Open, 2026-08-25.** Whether this is a live risk depends on unconfirmed production `item_types` state for that Section (see the Amen Rule Completed entry above) — needs a direct query (`section_items` rows where the parent Section is "Affirmation of Faith" and `data->>'amenExpected' = 'true'`) once local Supabase or direct DB access is available. |
+| A Section/item combination that had `amenExpected: true` set before the 2026-08-25 Amen Rule revision (specifically: any Selection ever placed in "Affirmation of Faith," which incorrectly inherited the Amen checkbox pre-fix) has no UI path to clear it now that the checkbox is policy-gated and Affirmation of Faith's policy is "none" | ~~Critical, unverified~~ | **Resolved 2026-08-26 — confirmed never a live risk.** Madrid ran the join query (`section_items` → `sections` → `liturgies` → `templates`, resolving each item's real Section name) directly against Production: zero rows matched "Affirmation of Faith" with `amenExpected: true`. No cleanup needed; closed with no code change. |
 
 ---
 
@@ -193,6 +193,9 @@ Ranked list, confirmed by Madrid 2026-08-24 (adoption-assessment backlog re-veri
 ---
 
 ## Session Notes
+
+**2026-08-26 — Amen Rule "Affirmation of Faith" residue check closed**
+- Last open item from this session's punch list. Drafted the join query needed to check Production directly (`section_items` has no Section name of its own — resolved via `sections` → `liturgies` → `templates`); Madrid ran it against Production himself, same established pattern as prior sessions' direct-SQL checks. Zero rows — the risk documented in Known Issues since the 2026-08-25 Amen Rule revision never materialized. Closed with no code change.
 
 **2026-08-26 — Webapp-audit gaps #4/#5 fixed (Reader → Library, anonymous exposure)**
 - Continued the "resolve open issues" session after the port-collision fix (previous Session Notes entry), now that local Supabase actually works for live verification.
