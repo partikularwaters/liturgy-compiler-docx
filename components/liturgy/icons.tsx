@@ -45,7 +45,7 @@ function wrap(Tabler: TablerIcon) {
 
 export const PencilIcon = wrap(IconPencil);
 // The "alt translation" badge icon (AddExistingSelectionPanel) -- previously
-// hand-drawn from Madrid-supplied artwork (docs/Translate.svg); replaced
+// hand-drawn from supplied source artwork; replaced
 // with Tabler's own language glyph as part of the full icon-set migration.
 export const TranslateIcon = wrap(IconLanguage);
 export const HomeIcon = wrap(IconHome);

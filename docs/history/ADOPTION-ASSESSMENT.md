@@ -1,5 +1,9 @@
 # Adoption Assessment — liturgy-compiler-docx
 
+> Historical adoption audit completed 2026-08-24. Relocated from the
+> repository root to `docs/history/` on 2026-08-26; the original evidence and
+> assessment conclusions below are preserved.
+
 ## 0. Document control
 
 - Assessment date: 2026-08-24

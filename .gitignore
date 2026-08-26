@@ -81,6 +81,9 @@ web_modules/
 # shared project config (settings.json and launch.json are).
 .claude/settings.local.json
 
+# Local repository-maintenance scratch space
+dev/
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
