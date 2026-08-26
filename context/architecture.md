@@ -101,6 +101,23 @@ is ever saved
 Reader UI updates with the "already saved" marker for that citation
 ```
 
+**Flow 1b — Adding a Selection straight to the Library (2026-08-26, no Liturgy involved)**
+
+The Reader's target picker also offers a "Scripture Library" mode: the user picks a Section-name tag (from `getSectionNames("selection")`, the same Selection-eligible whitelist Flow 1's target-Section picker uses) instead of a Liturgy + Section. Marking verses, building the citation, and the Add panel are identical to Flow 1 — only the destination and the write differ:
+
+```
+User assigns passage to a Library Section tag instead of a Liturgy Section
+        ↓
+No lib/liturgy dedup check (no Section instance exists to check against) --
+a duplicate is instead caught by scripture_selections' own unique
+constraint on (section_name, citation)
+        ↓
+lib/selections writes directly into the Scripture Text Library --
+no Item, no Section, no Liturgy ever created
+```
+
+`app/reader/page.tsx` validates the requested Library Section tag against `getSectionNames("selection")`'s live list before accepting it (same as `getTargetSection` returning `null` for an invalid Liturgy/Section) — an unrecognized tag is treated as no target, not written.
+
 ### Flow 2 — Exporting a Liturgy
 
 ```

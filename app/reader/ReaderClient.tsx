@@ -12,6 +12,7 @@ import ReaderTargetPicker from "@/components/reader/ReaderTargetPicker";
 import { ArrowRightIcon, ArrowLeftIcon } from "@/components/liturgy/icons";
 import { setHighlight } from "@/lib/bible/highlightActions";
 import { addSelection } from "@/lib/liturgy/addSelectionAction";
+import { createScriptureSelection } from "@/lib/selections/scriptureSelectionActions";
 import { buildCitation, buildSelectionText, parseCitationVerses } from "@/lib/liturgy/citations";
 import type { BibleBook, BibleChapter, HighlightColor, VerseHighlights } from "@/types/bible";
 import type { TargetSection } from "@/lib/liturgy/getTargetSection";
@@ -36,15 +37,21 @@ interface ReaderClientProps {
   chapter: BibleChapter;
   initialHighlights: VerseHighlights;
   targetSection: TargetSection | null;
+  // Gap #1 fix: the Scripture Library counterpart to targetSection -- a
+  // Section-name tag (getSectionNames("selection")) chosen via
+  // ReaderTargetPicker's "Scripture Library" mode, with no Liturgy involved.
+  // Mutually exclusive with targetSection (see page.tsx).
+  librarySection: string | null;
   // v2 (BSB): "fil" (AB1905) or "en" (BSB) -- which translation the Reader
   // is currently browsing. Drives citation language (buildCitation/
   // parseCitationVerses) and what gets saved onto a new Selection.
   language: "fil" | "en";
-  // Only populated when there's no targetSection yet -- powers
-  // ReaderTargetPicker so someone who free-browsed in via the top nav can
-  // still choose a liturgy/Section to add to, without a round trip back to
-  // the Compile View first.
+  // Only populated when there's no target yet -- powers ReaderTargetPicker
+  // so someone who free-browsed in via the top nav can still choose a
+  // liturgy/Section or a Library Section to add to, without a round trip
+  // back to the Compile View first.
   liturgies: LiturgySummary[];
+  librarySectionNames: string[];
   // null for an anonymous visitor -- highlighting requires an account
   // (task 31: highlights are per-account, so there's nothing to show an
   // anonymous visitor anyway).
@@ -56,10 +63,21 @@ export default function ReaderClient({
   chapter,
   initialHighlights,
   targetSection,
+  librarySection,
   language,
   liturgies,
+  librarySectionNames,
   currentUser,
 }: ReaderClientProps): React.ReactElement {
+  // Gap #2 fix: an anonymous visitor can read/browse the Reader freely (an
+  // intentional, documented invariant -- see architecture.md/project-
+  // overview.md's "public reading remains anonymous"), but must never see
+  // the Selection-building affordances at all -- not just get rejected at
+  // the final save click. This single flag gates the target picker, verse
+  // markers, and Add panel together, the same "don't offer an affordance
+  // that can't work" rule already applied to the highlight color picker
+  // below.
+  const canBuildSelection = !!currentUser;
   const router = useRouter();
   const [activeColor, setActiveColor] = useState<HighlightColor | null>("accent");
   const [highlights, setHighlights] = useState<VerseHighlights>(initialHighlights);
@@ -84,6 +102,8 @@ export default function ReaderClient({
     if (targetSection) {
       params.set("liturgyId", targetSection.liturgyId);
       params.set("sectionIndex", String(targetSection.sectionIndex));
+    } else if (librarySection) {
+      params.set("librarySection", librarySection);
     }
     router.push(`/reader?${params.toString()}`);
   };
@@ -150,9 +170,11 @@ export default function ReaderClient({
     }
   }
 
+  const hasTarget = !!targetSection || !!librarySection;
+
   const verseMarkers: Record<number, VerseMarker> = {};
-  if (targetSection) {
-    const label = targetSection.sectionName;
+  if (hasTarget) {
+    const label = targetSection ? targetSection.sectionName : (librarySection as string);
     for (const verse of chapter.verses) {
       if (alreadySavedVerses.has(verse.number)) {
         verseMarkers[verse.number] = { label, state: "saved" };
@@ -166,15 +188,23 @@ export default function ReaderClient({
 
   const selectedVerseNumbers = Array.from(selectedVerses);
   const candidateCitation =
-    targetSection && selectedVerseNumbers.length > 0
+    hasTarget && selectedVerseNumbers.length > 0
       ? buildCitation(chapter.book, chapter.chapter, selectedVerseNumbers, language)
       : null;
   const candidateText = candidateCitation
     ? buildSelectionText(chapter.verses, selectedVerseNumbers)
     : "";
+  // Library saves have no fetched citation list to check against -- a
+  // duplicate is caught by createScriptureSelection's own unique-constraint
+  // error instead (surfaced through saveError, same as any other save
+  // failure), matching ScriptureSelectionForm's direct-add path.
   const alreadySaved =
     targetSection && candidateCitation ? targetSection.citations.includes(candidateCitation) : false;
-  const targetLabel = targetSection ? `${targetSection.templateName} → ${targetSection.sectionName}` : "";
+  const targetLabel = targetSection
+    ? `${targetSection.templateName} → ${targetSection.sectionName}`
+    : librarySection
+      ? `Scripture Library → ${librarySection}`
+      : "";
 
   const handleSaveSelection = (
     citation: string,
@@ -183,25 +213,28 @@ export default function ReaderClient({
     marks: TextMark[],
     trinitarianSeal: "en" | "fil" | null
   ): void => {
-    if (!targetSection) return;
+    if (!targetSection && !librarySection) return;
     setIsSaving(true);
     setSaveError(null);
     setSuccessMessage(null);
-    addSelection(
-      targetSection.liturgyId,
-      targetSection.sectionIndex,
-      citation,
-      text,
-      amenExpected,
-      marks,
-      trinitarianSeal,
-      language
-    ).then((result) => {
+    const savePromise = targetSection
+      ? addSelection(
+          targetSection.liturgyId,
+          targetSection.sectionIndex,
+          citation,
+          text,
+          amenExpected,
+          marks,
+          trinitarianSeal,
+          language
+        )
+      : createScriptureSelection(librarySection as string, citation, text, language, marks);
+    savePromise.then((result) => {
       setIsSaving(false);
       if (result.success) {
         setSelectedVerses(new Set());
         setSuccessMessage(
-          `Successfully added to ${targetSection.sectionName}` +
+          `Successfully added to ${targetSection ? targetSection.sectionName : "the Scripture Library"}` +
             (result.companionSaved
               ? language === "fil"
                 ? " (BSB translation also saved)"
@@ -221,16 +254,16 @@ export default function ReaderClient({
         Bible Reader
       </h1>
 
-      {targetSection && (
+      {canBuildSelection && hasTarget && (
         <div className="flex items-center justify-between bg-accent-light rounded-md px-3 py-1.5">
           <p className="flex items-center gap-1 text-[12px] text-accent-dark truncate" title={targetLabel}>
-            <ArrowRightIcon size={13} className="shrink-0" /> {targetSection.sectionName}
+            <ArrowRightIcon size={13} className="shrink-0" /> {targetSection ? targetSection.sectionName : librarySection}
           </p>
           <Link
-            href={`/liturgy/${targetSection.liturgyId}#section-${targetSection.sectionIndex}`}
+            href={targetSection ? `/liturgy/${targetSection.liturgyId}#section-${targetSection.sectionIndex}` : "/library"}
             className="flex items-center gap-1 text-[12px] font-medium text-accent-dark underline shrink-0"
           >
-            <ArrowLeftIcon size={13} /> Liturgy
+            <ArrowLeftIcon size={13} /> {targetSection ? "Liturgy" : "Library"}
           </Link>
         </div>
       )}
@@ -248,8 +281,13 @@ export default function ReaderClient({
           heading (see VerseDisplay's headingAccessory). */}
       <div className="flex flex-col md:flex-row items-start gap-6">
         <div className="w-full md:w-[360px] shrink-0 md:sticky md:top-8 flex flex-col gap-4">
-          {!targetSection ? (
-            <ReaderTargetPicker liturgies={liturgies} />
+          {!canBuildSelection ? (
+            // Gap #2 fix: hides the whole workflow, not just the final save
+            // click -- an anonymous visitor never sees the target picker,
+            // verse markers, or Add panel at all.
+            <p className="text-sm text-text-muted">Sign in to build a Scripture Selection.</p>
+          ) : !hasTarget ? (
+            <ReaderTargetPicker liturgies={liturgies} librarySectionNames={librarySectionNames} />
           ) : candidateCitation ? (
             <AddSelectionPanel
               key={candidateCitation}
@@ -260,13 +298,19 @@ export default function ReaderClient({
               isSaving={isSaving}
               saveError={saveError}
               onSave={handleSaveSelection}
-              textOptional={REFERENCE_ONLY_SECTIONS.includes(targetSection.sectionName)}
-              amenPolicy={getAmenPolicy(targetSection.sectionName)}
-              availableMarks={getSelectionMarks(targetSection.sectionName)}
-              allowTrinitarianSeal={TRINITARIAN_SEAL_SECTIONS.includes(targetSection.sectionName)}
+              textOptional={REFERENCE_ONLY_SECTIONS.includes(
+                targetSection ? targetSection.sectionName : (librarySection as string)
+              )}
+              amenPolicy={targetSection ? getAmenPolicy(targetSection.sectionName) : "none"}
+              availableMarks={getSelectionMarks(
+                targetSection ? targetSection.sectionName : (librarySection as string)
+              )}
+              allowTrinitarianSeal={
+                targetSection ? TRINITARIAN_SEAL_SECTIONS.includes(targetSection.sectionName) : false
+              }
             />
           ) : (
-            <p className="text-sm text-text-muted">Click the + beside a verse to add it to this Section.</p>
+            <p className="text-sm text-text-muted">Click the + beside a verse to add it here.</p>
           )}
           {successMessage && (
             <div className="bg-success-light rounded-lg px-4 py-3">
@@ -292,8 +336,8 @@ export default function ReaderClient({
             chapter={chapter}
             highlights={highlights}
             onVerseClick={handleVerseClick}
-            verseMarkers={targetSection ? verseMarkers : undefined}
-            onVerseMarkerClick={targetSection ? handleVerseMarkerClick : undefined}
+            verseMarkers={canBuildSelection && hasTarget ? verseMarkers : undefined}
+            onVerseMarkerClick={canBuildSelection && hasTarget ? handleVerseMarkerClick : undefined}
             headingAccessory={
               <div className="flex items-center rounded-md border border-border overflow-hidden text-sm font-medium shrink-0">
                 <button

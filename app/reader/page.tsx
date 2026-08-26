@@ -3,6 +3,7 @@ import { getHighlights } from "@/lib/bible/highlights";
 import { canon } from "@/lib/bible/canon";
 import { getTargetSection } from "@/lib/liturgy/getTargetSection";
 import { getLiturgies } from "@/lib/liturgy/getLiturgies";
+import { getSectionNames } from "@/lib/liturgy/getSectionNames";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import ReaderClient from "@/app/reader/ReaderClient";
 
@@ -17,6 +18,11 @@ interface ReaderPageProps {
     liturgyId?: string;
     sectionIndex?: string;
     translation?: string;
+    // Gap #1 fix: an alternative to liturgyId/sectionIndex -- names a
+    // Scripture Library Section tag (from getSectionNames("selection"))
+    // directly, with no Liturgy involved, so a marked passage can be saved
+    // straight to the shared Library.
+    librarySection?: string;
   }>;
 }
 
@@ -39,8 +45,24 @@ export default async function ReaderPage({ searchParams }: ReaderPageProps): Pro
   ]);
 
   // Only fetched when there's no target yet -- someone who arrived via
-  // "+ Scripture" already has a target pre-set, and never needs this list.
-  const liturgies = targetSection ? [] : await getLiturgies();
+  // "+ Scripture" already has a target pre-set, and never needs these lists.
+  const [liturgies, librarySectionNames] = targetSection
+    ? [[], []]
+    : await Promise.all([getLiturgies(), getSectionNames("selection")]);
+
+  // A Liturgy/Section target (deep-linked via "+ Scripture") always wins over
+  // a Library target if somehow both are present in the URL. A librarySection
+  // value is only honored when it's actually one of the real, Selection-
+  // eligible Section tags -- otherwise a hand-edited URL could tag a Library
+  // row under a Section that doesn't exist or doesn't allow Selections,
+  // bypassing the same whitelist getSectionNames() exists to enforce (same
+  // class of gap that motivated getSectionNames itself -- see its own
+  // comment). Mirrors getTargetSection returning null for an invalid
+  // liturgyId/sectionIndex.
+  const librarySection =
+    !targetSection && params.librarySection && librarySectionNames.includes(params.librarySection)
+      ? params.librarySection
+      : null;
 
   return (
     <ReaderClient
@@ -48,6 +70,8 @@ export default async function ReaderPage({ searchParams }: ReaderPageProps): Pro
       chapter={chapterData}
       initialHighlights={highlights}
       targetSection={targetSection}
+      librarySection={librarySection}
+      librarySectionNames={librarySectionNames}
       language={language}
       liturgies={liturgies}
       currentUser={currentUser}
