@@ -66,6 +66,7 @@ export default async function ReaderPage({ searchParams }: ReaderPageProps): Pro
 
   return (
     <ReaderClient
+      key={`${chapterData.book}-${chapterData.chapter}`}
       books={canon}
       chapter={chapterData}
       initialHighlights={highlights}

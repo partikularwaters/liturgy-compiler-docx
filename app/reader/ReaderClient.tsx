@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import BookChapterPicker from "@/components/reader/BookChapterPicker";
 import HighlightColorPicker from "@/components/reader/HighlightColorPicker";
 import VerseDisplay from "@/components/reader/VerseDisplay";
@@ -86,15 +86,6 @@ export default function ReaderClient({
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only reset on an actual
-  // chapter change, not every initialHighlights reference change from router.refresh()
-  useEffect(() => {
-    setHighlights(initialHighlights);
-    setSelectedVerses(new Set());
-    setSaveError(null);
-    setSuccessMessage(null);
-  }, [chapter.book, chapter.chapter]);
 
   const navigateTo = (book: string, chapterNumber: number, nextLanguage: "fil" | "en" = language): void => {
     const params = new URLSearchParams({ book, chapter: String(chapterNumber) });
