@@ -152,6 +152,10 @@ User shares the URL directly
 
 The canonical document confirms the Discourse cycle is a 3-month (12-Sunday) rotation but never states which calendar month starts a new cycle, nor what happens on a 5th Sunday. **Confirmed with Madrid 2026-08-25**: the calendar-quarter anchor (Jan/Apr/Jul/Oct) and the 5th-Sunday behavior (repeat the 4th Sunday's reading) already implemented in `vesperTableRotation.ts` are both correct as-is — no code change needed. Critically, the Vesper Compiler has never actually been used for a real service; every past Vesper Table reading (including a documented case of a missed Sunday compensated by repeating the prior reading rather than skipping ahead) was tracked manually, so there is no live automation state to reconcile against past practice. The automated assignment remains an explicit default, never a mandate — `VesperReadingPanel.tsx`'s manual override (already shipped) is the actual mechanism of record for exactly this kind of real-world irregularity, not something the automation itself should try to handle.
 
+### Flow 5 — Manual publication fallback
+
+If the n8n automation is unavailable for any reason — whether it is down, a Render free-tier restart is in progress, or Supabase is paused — an authorized Curator or Compiler can open the Liturgy's Compile View directly. From there, they can open `/liturgy/[id]/view`, the existing public Web View, and share that URL manually with the congregation. For Morning Worship, the Congregation Bulletin DOCX remains available through the existing `/api/liturgy/[id]/export` route; no new tooling is required for this fallback.
+
 ---
 
 ## Database Schema
