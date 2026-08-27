@@ -8,6 +8,7 @@ export interface EnsureWeekResult {
   vesperLiturgyId: string;
   morningCreated: boolean;
   vesperCreated: boolean;
+  lordsDayNumber: number;
 }
 
 interface TemplateToEnsure {
@@ -31,7 +32,7 @@ const TEMPLATES_TO_ENSURE: TemplateToEnsure[] = [
 
 export async function ensureWeek(upcomingSunday: string): Promise<EnsureWeekResult | null> {
   const lordsDayNumber = getLordsDayNumber(parseLocalDate(upcomingSunday));
-  const result: Partial<EnsureWeekResult> = {};
+  const result: Partial<EnsureWeekResult> = { lordsDayNumber };
 
   for (const template of TEMPLATES_TO_ENSURE) {
     const { data: templateRow, error: templateError } = await supabase

@@ -76,6 +76,7 @@ describe("GET /api/automation/status", () => {
       status: "ready",
       readyAt: "2026-08-30T00:00:00+00:00",
       templateName: "Morning Worship",
+      lordsDayNumber: 35,
     });
     expect(body.liturgies[0].compileViewUrl).toContain("/liturgy/liturgy-1");
     expect(body.liturgies[0].webViewUrl).toContain("/liturgy/liturgy-1/view");

@@ -38,6 +38,7 @@ export async function GET(request: Request): Promise<Response> {
         return {
           id: row.id,
           templateName: liturgy.templateName,
+          lordsDayNumber: liturgy.lordsDayNumber,
           status: row.status as "draft" | "ready",
           // Handed back to record-publication verbatim -- n8n has no other
           // way to know which revision it's about to publish. Must be the

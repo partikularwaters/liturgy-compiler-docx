@@ -104,13 +104,16 @@ describe("ensureWeek", () => {
       vesperLiturgyId: "liturgy-2",
       morningCreated: true,
       vesperCreated: true,
+      lordsDayNumber: expect.any(Number),
     });
     expect(second).toEqual({
       morningLiturgyId: "liturgy-1",
       vesperLiturgyId: "liturgy-2",
       morningCreated: false,
       vesperCreated: false,
+      lordsDayNumber: expect.any(Number),
     });
+    expect(first?.lordsDayNumber).toBe(second?.lordsDayNumber);
     expect(mocks.rpc).toHaveBeenCalledTimes(2);
     expect(mocks.liturgies).toHaveLength(2);
   });

@@ -52,6 +52,7 @@ describe("POST /api/automation/ensure-week", () => {
       vesperLiturgyId: "vesper-1",
       morningCreated: true,
       vesperCreated: false,
+      lordsDayNumber: 35,
     });
 
     const response = await POST(request({ upcomingSunday: "2026-08-30" }));
@@ -63,6 +64,7 @@ describe("POST /api/automation/ensure-week", () => {
       vesperLiturgyId: "vesper-1",
       morningCreated: true,
       vesperCreated: false,
+      lordsDayNumber: 35,
     });
     expect(body.morningCompileViewUrl).toContain("/liturgy/morning-1");
     expect(body.vesperCompileViewUrl).toContain("/liturgy/vesper-1");

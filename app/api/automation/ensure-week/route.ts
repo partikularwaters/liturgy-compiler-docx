@@ -28,6 +28,7 @@ export async function POST(request: Request): Promise<Response> {
       vesperLiturgyId: result.vesperLiturgyId,
       morningCreated: result.morningCreated,
       vesperCreated: result.vesperCreated,
+      lordsDayNumber: result.lordsDayNumber,
       morningCompileViewUrl: compileViewUrl(result.morningLiturgyId),
       vesperCompileViewUrl: compileViewUrl(result.vesperLiturgyId),
     });
