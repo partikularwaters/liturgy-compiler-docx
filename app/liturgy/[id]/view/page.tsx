@@ -29,11 +29,21 @@ export async function generateMetadata({ params }: LiturgyViewPageProps): Promis
 
   const title = buildWebViewTitle(liturgy);
   const description = buildWebViewDescription(liturgy);
+  // Manually wired, not Next's opengraph-image.tsx auto-discovery -- see
+  // opengraph-image/route.tsx's own comment for why this had to become a
+  // plain Route Handler instead of that special-file convention.
+  const imageUrl = `${process.env.SITE_URL ?? ""}/liturgy/${id}/view/opengraph-image`;
 
   return {
     title,
     description,
-    openGraph: { title, description, siteName: WEB_VIEW_SITE_NAME, type: "website" },
+    openGraph: {
+      title,
+      description,
+      siteName: WEB_VIEW_SITE_NAME,
+      type: "website",
+      images: [{ url: imageUrl, width: 1200, height: 630 }],
+    },
   };
 }
 

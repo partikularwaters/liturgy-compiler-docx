@@ -4,18 +4,22 @@ import path from "node:path";
 import { getLiturgy } from "@/lib/liturgy/getLiturgy";
 import { buildWebViewDescription, buildWebViewTitle, WEB_VIEW_SITE_NAME } from "@/lib/liturgy/webViewMetadata";
 
-// fs.readFile needs the Node.js runtime -- the default Edge runtime for
-// this special-file convention can't read local files the way react-pdf's
-// font loading already relies on elsewhere in this codebase.
+// A plain Route Handler, not Next's opengraph-image.tsx special-file
+// convention -- that convention silently 404s specifically when nested as
+// [dynamic-segment]/static-folder/opengraph-image.tsx (confirmed by
+// isolating the exact failing shape locally: it works directly under a
+// dynamic segment or at the app root, but not with an extra static folder
+// like this route's real "view" segment in between). A manual Route
+// Handler in the identical nesting shape works correctly, so this route is
+// wired into generateMetadata's openGraph.images manually in page.tsx
+// instead of relying on Next's automatic convention wiring.
 export const runtime = "nodejs";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
 
-interface OpengraphImageProps {
+interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-export default async function OpengraphImage({ params }: OpengraphImageProps): Promise<ImageResponse> {
+export async function GET(_request: Request, { params }: RouteContext): Promise<ImageResponse> {
   const { id } = await params;
   const liturgy = await getLiturgy(id);
 
@@ -91,8 +95,8 @@ export default async function OpengraphImage({ params }: OpengraphImageProps): P
       </div>
     ),
     {
-      width: size.width,
-      height: size.height,
+      width: 1200,
+      height: 630,
       fonts: [
         { name: "Ibarra Real Nova", data: ibarraRegular, weight: 400, style: "normal" },
         { name: "Inter", data: interRegular, weight: 400, style: "normal" },
