@@ -115,7 +115,7 @@ export default function ScriptureSelectionRow({
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+            className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
           >
             {isSaving ? "Saving…" : "Save"}
           </button>
@@ -128,7 +128,7 @@ export default function ScriptureSelectionRow({
               setError(null);
               setIsEditing(false);
             }}
-            className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+            className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
           >
             <XIcon size={15} /> Cancel
           </button>
@@ -158,12 +158,12 @@ export default function ScriptureSelectionRow({
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
+            className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
           >
             <PencilIcon size={15} /> Edit
           </button>
           {currentUser.role === "curator" && (
-            <button type="button" title="Delete" onClick={handleDelete} className="text-text-muted hover:text-error">
+            <button type="button" title="Delete" onClick={handleDelete} className="text-text-muted hover:text-error transition-colors duration-[var(--duration-tooltip)] ease">
               <TrashIcon size={16} />
             </button>
           )}

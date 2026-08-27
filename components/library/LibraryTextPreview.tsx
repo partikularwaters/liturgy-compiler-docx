@@ -52,7 +52,7 @@ export default function LibraryTextPreview({
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="text-[12px] font-medium text-accent-dark mt-0.5"
+          className="text-[12px] font-medium text-accent-dark mt-0.5 transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
         >
           See more
         </button>

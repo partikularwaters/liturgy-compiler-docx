@@ -136,10 +136,12 @@ Interactive states (2026-08-27, emil-design-eng Phase 2): every toolbar toggle b
 
 Formula, Prayer, and Song forms are reused by their create page and inline row editor. Scripture creation uses `ScriptureSelectionForm`; `ScriptureSelectionRow` implements its own inline editor. Rows own display/edit state and respect ownership/role affordances supplied by server-authorized page data.
 
+Interactive states (2026-08-28, emil-design-eng Phase 4 — see `ui-rules.md`'s Motion & Animation section for tokens/timing): every Save/Cancel pair across these five forms now carries the same press-feedback recipe as `components/liturgy/`'s (this was a real Phase 2 gap — that pass only covered `components/liturgy/*.tsx` and missed this folder entirely; if a new shared-string button pattern is fixed in one folder, grep the whole repo for it, not just the folder you're in). Each row's "Edit" link gets press-only feedback (no hover-color invented, since none existed); "Delete" gets a hover-color transition only, matching the bare-icon-no-scale judgment call already made for Compile View's Pencil/Trash in Phase 2. The inline `isEditing` swap itself has no entrance transition, consistent with Compile View's own edit-form swap never getting one either.
+
 ### Shared library components
 
 - `components/library/BilingualGrid.tsx` — paired-language presentation.
-- `components/library/LibraryTextPreview.tsx` — consistent marked-text preview for library prose.
+- `components/library/LibraryTextPreview.tsx` — consistent marked-text preview for library prose. Its "See more" button (2026-08-28) has press-only feedback; opening the full-text `Modal` inherits that component's own entrance animation from Phase 1 for free.
 - `components/library/TranslationPairFields.tsx` — translation and companion-pair controls.
 
 Do not duplicate bilingual pairing fields or preview rendering inside type-specific rows.

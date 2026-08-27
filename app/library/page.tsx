@@ -89,10 +89,10 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
       <input type="radio" id="lib-lang-fil" name="lib-lang" defaultChecked className="sr-only" />
       <input type="radio" id="lib-lang-en" name="lib-lang" className="sr-only" />
       <div className="md:hidden flex gap-2 self-start rounded-md border border-border overflow-hidden text-sm font-medium">
-        <label htmlFor="lib-lang-fil" className="lib-lang-label px-3 py-1.5 cursor-pointer bg-surface text-text-secondary hover:bg-surface-secondary">
+        <label htmlFor="lib-lang-fil" className="lib-lang-label px-3 py-1.5 cursor-pointer bg-surface text-text-secondary hover:bg-surface-secondary transition-colors duration-[var(--duration-tooltip)] ease">
           AB / Filipino
         </label>
-        <label htmlFor="lib-lang-en" className="lib-lang-label px-3 py-1.5 cursor-pointer bg-surface text-text-secondary hover:bg-surface-secondary">
+        <label htmlFor="lib-lang-en" className="lib-lang-label px-3 py-1.5 cursor-pointer bg-surface text-text-secondary hover:bg-surface-secondary transition-colors duration-[var(--duration-tooltip)] ease">
           BSB / English
         </label>
       </div>
@@ -106,7 +106,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           {currentUser && (
             <Link
               href="/selections/new"
-              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
             >
               <PlusIcon size={15} /> New Scripture
             </Link>
@@ -131,7 +131,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           {currentUser && (
             <Link
               href="/songs/new"
-              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
             >
               <PlusIcon size={15} /> New Song
             </Link>
@@ -169,7 +169,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           {currentUser && (
             <Link
               href="/prayers/new"
-              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
             >
               <PlusIcon size={15} /> New Prayer
             </Link>
@@ -210,7 +210,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           {currentUser && (
             <Link
               href="/formulas/new"
-              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium"
+              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
             >
               <PlusIcon size={15} /> New Formula
             </Link>

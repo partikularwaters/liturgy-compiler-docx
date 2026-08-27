@@ -122,7 +122,7 @@ export default function FormulaListRow({
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark"
+            className="inline-flex items-center gap-1 text-sm font-medium text-accent-dark transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
           >
             <PencilIcon size={15} /> Edit
           </button>
@@ -130,7 +130,7 @@ export default function FormulaListRow({
             type="button"
             title="Delete"
             onClick={handleDelete}
-            className="text-text-muted hover:text-error"
+            className="text-text-muted hover:text-error transition-colors duration-[var(--duration-tooltip)] ease"
           >
             <TrashIcon size={16} />
           </button>
