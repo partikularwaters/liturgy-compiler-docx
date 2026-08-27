@@ -93,7 +93,7 @@ const TITLE_IN_HEADER_SECTIONS = ["Affirmation of Faith"];
 // standard secondary button, transparent fill -- shared by every Add
 // trigger below (both the <Link> and <button> ones) so they stay identical.
 const addButtonClass =
-  "inline-flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-[11px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground hover:border-accent-dark";
+  "inline-flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-[11px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground hover:border-accent-dark transition-[color,background-color,border-color,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]";
 
 interface SectionCardProps {
   section: CompiledSection;
@@ -266,14 +266,14 @@ function PrayerEditForm({
           type="button"
           onClick={() => onSubmit(text, marks, saveToPersonalLibrary)}
           disabled={isSaving}
-          className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+          className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
         >
           {isSaving ? "Saving…" : "Save"}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
         >
           <XIcon size={15} /> Cancel
         </button>
@@ -403,14 +403,14 @@ function SongEditForm({
           type="button"
           onClick={() => onSubmit(title, attribution, yearPublished, notes, amenExpected, saveToPersonalLibrary)}
           disabled={isSaving}
-          className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+          className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
         >
           {isSaving ? "Saving…" : "Save"}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
         >
           <XIcon size={15} /> Cancel
         </button>
@@ -878,7 +878,7 @@ export default function SectionCard({
       )}
 
       {isAddingExistingSelection && (
-        <div className="mb-4">
+        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
           <AddExistingSelectionPanel
             scriptureSelections={sectionScriptureSelections}
             liturgyId={liturgyId}
@@ -891,7 +891,7 @@ export default function SectionCard({
       )}
 
       {isChoosingVesperReading && (
-        <div className="mb-4">
+        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
           <VesperReadingPanel
             sectionName={section.name}
             liturgyId={liturgyId}
@@ -905,7 +905,7 @@ export default function SectionCard({
       )}
 
       {isAddingFormula && (
-        <div className="mb-4">
+        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
           <AddFormulaPanel
             formulas={sectionFormulas}
             liturgyId={liturgyId}
@@ -916,7 +916,7 @@ export default function SectionCard({
       )}
 
       {isAddingVerbalCue && (
-        <div className="mb-4">
+        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
           <VerbalCueForm
             initialText=""
             initialVisibility="leader_only"
@@ -934,7 +934,7 @@ export default function SectionCard({
       )}
 
       {isAddingPrayer && (
-        <div className="mb-4">
+        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
           <AddPrayerPanel
             prayers={sectionPrayers}
             currentUserId={currentUser?.id ?? null}
@@ -947,7 +947,7 @@ export default function SectionCard({
       )}
 
       {isAddingSermon && (
-        <div className="mb-4">
+        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
           <SermonForm
             initialPassage=""
             isSaving={isSaving}
@@ -963,7 +963,7 @@ export default function SectionCard({
       )}
 
       {isAddingPsalm && (
-        <div className="mb-4">
+        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
           <AddSongPanel
             songs={sectionPsalms}
             currentUserId={currentUser?.id ?? null}
@@ -977,7 +977,7 @@ export default function SectionCard({
       )}
 
       {isAddingHymn && (
-        <div className="mb-4">
+        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
           <AddSongPanel
             songs={sectionHymns}
             currentUserId={currentUser?.id ?? null}
@@ -1014,7 +1014,7 @@ export default function SectionCard({
                                 setError(null);
                                 setEditingItemId(s.id);
                               }}
-                              className="text-text-muted hover:text-accent-dark"
+                              className="text-text-muted hover:text-accent-dark transition-colors duration-[var(--duration-tooltip)] ease"
                             >
                               <PencilIcon size={15} />
                             </button>
@@ -1022,7 +1022,7 @@ export default function SectionCard({
                               type="button"
                               title={`Remove ${s.citation}`}
                               onClick={() => handleRemoveItem(s.id)}
-                              className="text-text-muted hover:text-error"
+                              className="text-text-muted hover:text-error transition-colors duration-[var(--duration-tooltip)] ease"
                             >
                               <TrashIcon size={15} />
                             </button>
@@ -1215,7 +1215,7 @@ export default function SectionCard({
                             setError(null);
                             setEditingItemId(item.id);
                           }}
-                          className="text-text-muted hover:text-accent-dark"
+                          className="text-text-muted hover:text-accent-dark transition-colors duration-[var(--duration-tooltip)] ease"
                         >
                           <PencilIcon size={15} />
                         </button>
@@ -1224,7 +1224,7 @@ export default function SectionCard({
                         type="button"
                         title="Remove"
                         onClick={() => handleRemoveItem(item.id)}
-                        className="text-text-muted hover:text-error"
+                        className="text-text-muted hover:text-error transition-colors duration-[var(--duration-tooltip)] ease"
                       >
                         <TrashIcon size={15} />
                       </button>

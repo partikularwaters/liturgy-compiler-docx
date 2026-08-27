@@ -184,14 +184,14 @@ export default function AddPrayerPanel({
           type="button"
           onClick={handleSave}
           disabled={isSaving}
-          className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+          className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
         >
           {isSaving ? "Saving…" : "Add Prayer"}
         </button>
         <button
           type="button"
           onClick={onDone}
-          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium"
+          className="self-start inline-flex items-center gap-1 bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
         >
           <XIcon size={15} /> Cancel
         </button>

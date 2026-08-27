@@ -121,7 +121,7 @@ export default function AddSelectionPanel({
             type="button"
             onClick={() => onSave(citation, text, amenExpected, marks, trinitarianSeal)}
             disabled={isSaving}
-            className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+            className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
           >
             {isSaving ? "Saving…" : "Add to Section"}
           </button>

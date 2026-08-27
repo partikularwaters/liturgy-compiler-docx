@@ -68,6 +68,8 @@ Interactive states (2026-08-27, emil-design-eng Phase 1 — see `ui-rules.md`'s 
 
 An empty Section renders its heading and available add controls only. Item deletion always routes through the generic remove action.
 
+Interactive states (2026-08-27, emil-design-eng Phase 2 — see `ui-rules.md`'s Motion & Animation section for tokens/timing): the shared `addButtonClass` const (every "+ X" trigger) has hover-color and press feedback — one edit covers all call sites, the reference pattern for any future shared button-class const. Pencil/Trash icon buttons have a hover-color transition only, deliberately no press-feedback scale (a bare small icon with no background reads as jitter, not feedback, at that treatment — judgment call, revisit if it looks wrong in practice). Every Add-panel/edit-form mount point gets a restrained fade-in entrance, not an instant pop.
+
 ### Add panels
 
 - `components/liturgy/AddExistingSelectionPanel.tsx`
@@ -88,6 +90,8 @@ Panels follow the library-backed create/edit/place pattern above. Candidate list
 
 Placed-Item editors change the placement unless the UI explicitly invokes a library edit action. Formula overrides remain per-instance. Prayer/Song display data comes from the placement snapshot.
 
+**Save/Cancel button pair** (2026-08-27, emil-design-eng Phase 2): this exact button pairing is not a shared component — its `className` is repeated verbatim across every Add panel and edit form above, plus `SectionCard`'s own inline `PrayerEditForm`/`SongEditForm`. All 23 occurrences now carry the same press-feedback recipe as `addButtonClass`. Treat this as the reference pattern until (if ever) it's extracted into a real shared `Button` component — apply the same recipe to any new occurrence rather than reinventing it.
+
 ### MarkEditor / MarkedText / CitationField
 
 - `components/liturgy/MarkEditor.tsx`
@@ -95,6 +99,8 @@ Placed-Item editors change the placement unless the UI explicitly invokes a libr
 - `components/liturgy/CitationField.tsx`
 
 Marks remain structured offsets separate from raw prose. Congregation and Minister are mutually exclusive speaker marks; Bold and Small Caps are independent overlays. The live preview remains available even when only universal marks apply. Citation display uses the shared formatting/linking behavior and citation token.
+
+Interactive states (2026-08-27, emil-design-eng Phase 2): every toolbar toggle button (Bold, Small Caps, exclusive marks, Trinitarian Seal, including its active/"on" state) and the Clear/help icon buttons have hover-color and press feedback, matching `addButtonClass`'s recipe.
 
 ### LiturgyWebView
 

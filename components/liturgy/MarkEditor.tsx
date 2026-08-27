@@ -137,7 +137,7 @@ export default function MarkEditor({
           onClick={() => toggleOverlayMark("bold")}
           aria-label="Bold"
           title="Bold"
-          className="rounded-md border border-border w-7 h-7 flex items-center justify-center text-[13px] font-bold text-text-secondary bg-transparent hover:bg-surface-secondary"
+          className="rounded-md border border-border w-7 h-7 flex items-center justify-center text-[13px] font-bold text-text-secondary bg-transparent hover:bg-surface-secondary transition-[background-color,transform] duration-[var(--duration-tooltip)] ease motion-safe:active:scale-[0.97]"
         >
           {OVERLAY_MARK_LABELS.bold}
         </button>
@@ -145,7 +145,7 @@ export default function MarkEditor({
           <button
             type="button"
             onClick={() => toggleOverlayMark("small_caps")}
-            className="rounded-md border border-border px-2.5 py-1 text-[12px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground"
+            className="rounded-md border border-border px-2.5 py-1 text-[12px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground transition-[color,background-color,transform] duration-[var(--duration-tooltip)] ease motion-safe:active:scale-[0.97]"
           >
             {OVERLAY_MARK_LABELS.small_caps}
           </button>
@@ -155,7 +155,7 @@ export default function MarkEditor({
             key={type}
             type="button"
             onClick={() => applyMark(type)}
-            className="rounded-md border border-border px-2.5 py-1 text-[12px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground"
+            className="rounded-md border border-border px-2.5 py-1 text-[12px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground transition-[color,background-color,transform] duration-[var(--duration-tooltip)] ease motion-safe:active:scale-[0.97]"
           >
             {EXCLUSIVE_MARK_LABELS[type]}
           </button>
@@ -166,8 +166,8 @@ export default function MarkEditor({
             onClick={cycleSeal}
             className={
               trinitarianSeal
-                ? "rounded-md border border-accent-dark px-2.5 py-1 text-[12px] font-medium text-accent-foreground bg-accent-dark"
-                : "rounded-md border border-border px-2.5 py-1 text-[12px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground"
+                ? "rounded-md border border-accent-dark px-2.5 py-1 text-[12px] font-medium text-accent-foreground bg-accent-dark transition-[color,background-color,transform] duration-[var(--duration-tooltip)] ease motion-safe:active:scale-[0.97]"
+                : "rounded-md border border-border px-2.5 py-1 text-[12px] font-medium text-accent-dark bg-transparent hover:bg-accent-dark hover:text-accent-foreground transition-[color,background-color,transform] duration-[var(--duration-tooltip)] ease motion-safe:active:scale-[0.97]"
             }
           >
             {SEAL_BUTTON_LABELS[trinitarianSeal ?? "off"]}
@@ -179,7 +179,7 @@ export default function MarkEditor({
             onClick={clearMarksInSelection}
             aria-label="Clear marks in selection"
             title="Clear marks in selection"
-            className="text-text-muted hover:text-accent-dark"
+            className="text-text-muted hover:text-accent-dark transition-colors duration-[var(--duration-tooltip)] ease"
           >
             <ClearIcon />
           </button>
@@ -189,7 +189,7 @@ export default function MarkEditor({
           onClick={() => setShowHelp((prev) => !prev)}
           aria-label="How marking works"
           title="How marking works"
-          className="text-text-muted hover:text-accent-dark"
+          className="text-text-muted hover:text-accent-dark transition-colors duration-[var(--duration-tooltip)] ease"
         >
           <NoteIcon />
         </button>
