@@ -1,21 +1,46 @@
+import { cache } from "react";
+import type { Metadata } from "next";
 import LiturgyWebView from "@/components/liturgy/LiturgyWebView";
 import { getLiturgy } from "@/lib/liturgy/getLiturgy";
 import { getFormulas } from "@/lib/formulas/getFormulas";
 import { getPrayers } from "@/lib/prayers/getPrayers";
 import { getSongs } from "@/lib/songs/getSongs";
+import { buildWebViewDescription, buildWebViewTitle, WEB_VIEW_SITE_NAME } from "@/lib/liturgy/webViewMetadata";
 
 // Always reads live data -- same cached-fetch bug class fixed on the
 // homepage, Library, and Compile View pages.
 export const dynamic = "force-dynamic";
 
+// React's cache() dedupes this within a single request, so generateMetadata
+// and the page body share one Supabase read instead of two.
+const getCachedLiturgy = cache(getLiturgy);
+
 interface LiturgyViewPageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: LiturgyViewPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const liturgy = await getCachedLiturgy(id);
+
+  if (!liturgy) {
+    return { title: "Liturgy Not Found | Liturgy Compiler" };
+  }
+
+  const title = buildWebViewTitle(liturgy);
+  const description = buildWebViewDescription(liturgy);
+
+  return {
+    title,
+    description,
+    openGraph: { title, description, siteName: WEB_VIEW_SITE_NAME, type: "website" },
+  };
 }
 
 export default async function LiturgyViewPage({ params }: LiturgyViewPageProps): Promise<React.ReactElement> {
   const { id } = await params;
   const [liturgy, formulas, prayers, songs] = await Promise.all([
-    getLiturgy(id),
+    getCachedLiturgy(id),
     getFormulas(),
     getPrayers(),
     getSongs(),
