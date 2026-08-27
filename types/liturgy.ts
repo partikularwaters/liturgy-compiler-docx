@@ -324,4 +324,10 @@ export interface CompiledLiturgy {
   // (matches the prior practice of adding this by hand every time,
   // with removal being the rare exception when a week's layout is tight).
   showEndNote: boolean;
+  // n8n automation feature: readiness lifecycle for publication. Defaults to
+  // 'draft'/null since every Liturgy starts there; markReady()/markDraft()
+  // (lib/liturgy/liturgyReadinessActions.ts, markDraft.ts) are the only
+  // writers.
+  status: "draft" | "ready";
+  readyAt: string | null;
 }

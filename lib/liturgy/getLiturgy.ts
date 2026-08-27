@@ -13,18 +13,20 @@ export async function getLiturgy(id: string): Promise<CompiledLiturgy | null> {
     lords_day_number: number;
     templates: unknown;
     show_end_note?: boolean;
+    status?: "draft" | "ready";
+    ready_at?: string | null;
   } | null = null;
   {
     const { data, error } = await supabase
       .from("liturgies")
-      .select("id, service_date, lords_day_number, show_end_note, templates(name, sections)")
+      .select("id, service_date, lords_day_number, show_end_note, status, ready_at, templates(name, sections)")
       .eq("id", id)
       .single();
 
     if (error?.message.includes("show_end_note")) {
       const fallback = await supabase
         .from("liturgies")
-        .select("id, service_date, lords_day_number, templates(name, sections)")
+        .select("id, service_date, lords_day_number, status, ready_at, templates(name, sections)")
         .eq("id", id)
         .single();
       if (fallback.error || !fallback.data) {
@@ -104,5 +106,7 @@ export async function getLiturgy(id: string): Promise<CompiledLiturgy | null> {
     lordsDayNumber: liturgy.lords_day_number,
     sections,
     showEndNote: liturgy.show_end_note ?? true,
+    status: liturgy.status ?? "draft",
+    readyAt: liturgy.ready_at ?? null,
   };
 }

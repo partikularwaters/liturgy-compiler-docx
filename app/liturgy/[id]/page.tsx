@@ -1,4 +1,5 @@
 import SectionCard from "@/components/liturgy/SectionCard";
+import CompletionProgress from "@/components/liturgy/CompletionProgress";
 import CopyLinkButton from "@/components/liturgy/CopyLinkButton";
 import EndNoteToggle from "@/components/liturgy/EndNoteToggle";
 import { DownloadIcon } from "@/components/liturgy/icons";
@@ -10,6 +11,7 @@ import { getScriptureSelections } from "@/lib/selections/getScriptureSelections"
 import { groupSectionsByPageColumn } from "@/lib/liturgy/groupSectionsByPageColumn";
 import { isSunday, parseLocalDate } from "@/lib/liturgy/lordsDay";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
+import { computeProgress } from "@/lib/liturgy/readiness";
 
 // Always reads live data -- otherwise a just-saved toggle (End Note, Prayer
 // Guide, column break) or library edit can look reverted after
@@ -49,6 +51,11 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
 
   const dateIsSunday = isSunday(parseLocalDate(liturgy.serviceDate));
   const grouped = groupSectionsByPageColumn(liturgy.sections);
+  const progress = computeProgress(liturgy);
+  const canMarkReady = currentUser?.role === "curator" || currentUser?.role === "compiler";
+  const completionProgress = (
+    <CompletionProgress liturgyId={liturgy.id} progress={progress} status={liturgy.status} canMarkReady={canMarkReady} />
+  );
 
   // docx is the only export mechanism surfaced here for now --
   // PDF download links removed;
@@ -117,6 +124,7 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
             {downloadButtons}
           </div>
         </div>
+        {completionProgress}
         <div className="flex flex-col gap-4">
           {liturgy.sections.map((section, index) => (
             <SectionCard
@@ -143,6 +151,7 @@ export default async function CompileViewPage({ params }: CompileViewPageProps):
         {viewLink}
         {downloadButtons}
       </div>
+      {completionProgress}
       {grouped.map((pageGroup) => (
         // A bounding box per page so the
         // Page 1/Page 2 boundary reads clearly at a glance, instead of two
