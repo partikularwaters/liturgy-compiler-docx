@@ -42,6 +42,19 @@ import type { CompiledSection, Formula, Item, Prayer, ScriptureSelection, Song, 
 
 const ALL_ITEM_TYPES: Item["type"][] = ["selection", "formula", "verbal_cue", "prayer", "sermon", "song"];
 
+// See `openTarget`'s comment in SectionCard for why these replace eight
+// independent booleans plus `editingItemId`.
+type PanelKey =
+  | "addExistingSelection"
+  | "vesperReading"
+  | "addFormula"
+  | "addVerbalCue"
+  | "addPrayer"
+  | "addSermon"
+  | "addPsalm"
+  | "addHymn";
+type OpenTarget = { type: "panel"; key: PanelKey } | { type: "edit"; itemId: string } | null;
+
 // 2026-08-25: Benediction's Formula slot only ever existed to hand-author
 // the Trinitarian closing line -- the Selection's own Trinitarian Seal
 // toggle (trinitarianSeal.ts) already appends that exact text, and having
@@ -452,17 +465,77 @@ export default function SectionCard({
   const sectionHymns = songs.filter(
     (s) => s.sectionName === section.name && s.kind === "hymn" && isVisibleToCurrentUser(s.ownerId)
   );
-  const [isAddingExistingSelection, setIsAddingExistingSelection] = useState(false);
-  const [isChoosingVesperReading, setIsChoosingVesperReading] = useState(false);
-  const [isAddingFormula, setIsAddingFormula] = useState(false);
-  const [isAddingVerbalCue, setIsAddingVerbalCue] = useState(false);
-  const [isAddingPrayer, setIsAddingPrayer] = useState(false);
-  const [isAddingSermon, setIsAddingSermon] = useState(false);
-  const [isAddingPsalm, setIsAddingPsalm] = useState(false);
-  const [isAddingHymn, setIsAddingHymn] = useState(false);
-  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  // Only one Add panel or item editor can be open in a Section at once --
+  // Madrid reported that clicking a second "+ X" button while a first one
+  // was still open left both stacked, and repeating this across several
+  // Sections/items produced a long run of open panels stretching down the
+  // page. `openTarget` replaces what used to be eight independent booleans
+  // plus `editingItemId`, so opening or editing anything new necessarily
+  // replaces whatever was open before, never adds to it. `isDirtyRef` is a
+  // best-effort "did the user actually type/select anything in the panel
+  // that's about to be replaced" signal -- fed by a capture-phase
+  // input/change listener on each panel/editor's own wrapper (see
+  // `dirtyCaptureProps` below) rather than by threading a prop through
+  // every Add panel and edit form. It won't catch a mark-only edit (e.g.
+  // toggling Bold with no text typed) as dirty -- an accepted, narrow gap
+  // rather than instrumenting every child component individually.
+  const [openTarget, setOpenTarget] = useState<OpenTarget>(null);
+  const isDirtyRef = useRef(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const editingItemId = openTarget?.type === "edit" ? openTarget.itemId : null;
+  const isAddingExistingSelection = openTarget?.type === "panel" && openTarget.key === "addExistingSelection";
+  const isChoosingVesperReading = openTarget?.type === "panel" && openTarget.key === "vesperReading";
+  const isAddingFormula = openTarget?.type === "panel" && openTarget.key === "addFormula";
+  const isAddingVerbalCue = openTarget?.type === "panel" && openTarget.key === "addVerbalCue";
+  const isAddingPrayer = openTarget?.type === "panel" && openTarget.key === "addPrayer";
+  const isAddingSermon = openTarget?.type === "panel" && openTarget.key === "addSermon";
+  const isAddingPsalm = openTarget?.type === "panel" && openTarget.key === "addPsalm";
+  const isAddingHymn = openTarget?.type === "panel" && openTarget.key === "addHymn";
+
+  // Opening a different panel/editor while the current one has unsaved
+  // input confirms before discarding it. Re-clicking the trigger for
+  // whatever's already open closes it (same convenience the old per-button
+  // toggle had). Confirmed via `window.confirm` -- matches this codebase's
+  // one other destructive-action confirm (`handleRemoveItem` below), not a
+  // new pattern.
+  const requestOpenChange = (next: OpenTarget): void => {
+    const isSameAsCurrent =
+      openTarget !== null &&
+      next !== null &&
+      ((openTarget.type === "panel" && next.type === "panel" && openTarget.key === next.key) ||
+        (openTarget.type === "edit" && next.type === "edit" && openTarget.itemId === next.itemId));
+    const resolvedNext = isSameAsCurrent ? null : next;
+
+    if (openTarget !== null && isDirtyRef.current) {
+      const proceed = window.confirm(
+        "This will discard what you've started here. Continue?"
+      );
+      if (!proceed) return;
+    }
+
+    setError(null);
+    isDirtyRef.current = false;
+    setOpenTarget(resolvedNext);
+  };
+
+  const closeOpenTarget = (): void => {
+    isDirtyRef.current = false;
+    setOpenTarget(null);
+  };
+
+  const markOpenTargetDirty = (): void => {
+    isDirtyRef.current = true;
+  };
+
+  // Spread onto the wrapper around whichever panel/editor is currently
+  // rendered -- capture phase so it fires on any descendant input/select/
+  // textarea/checkbox without each panel needing to wire it up itself.
+  const dirtyCaptureProps = {
+    onInputCapture: markOpenTargetDirty,
+    onChangeCapture: markOpenTargetDirty,
+  };
 
   const hasSermon = section.items.some((item) => item.type === "sermon");
   // Feature 23: item_types is missing only if a Section somehow predates the
@@ -564,7 +637,7 @@ export default function SectionCard({
     addVerbalCue(liturgyId, sectionIndex, text, visibility, rubric, textAlternate, showAlternate).then((result) => {
       setIsSaving(false);
       if (result.success) {
-        setIsAddingVerbalCue(false);
+        closeOpenTarget();
         router.refresh();
       } else {
         setError(result.error ?? "Unable to add this Verbal Cue right now.");
@@ -586,7 +659,7 @@ export default function SectionCard({
       (result) => {
         setIsSaving(false);
         if (result.success) {
-          setEditingItemId(null);
+          closeOpenTarget();
           router.refresh();
         } else {
           setError(result.error ?? "Unable to update this Verbal Cue right now.");
@@ -607,7 +680,7 @@ export default function SectionCard({
     updateFormulaItem(liturgyId, sectionIndex, itemId, text, visibility, marks, trinitarianSeal).then((result) => {
       setIsSaving(false);
       if (result.success) {
-        setEditingItemId(null);
+        closeOpenTarget();
         router.refresh();
       } else {
         setError(result.error ?? "Unable to update this Formula right now.");
@@ -637,7 +710,7 @@ export default function SectionCard({
     ).then((result) => {
       setIsSaving(false);
       if (result.success) {
-        setEditingItemId(null);
+        closeOpenTarget();
         router.refresh();
       } else {
         setError(result.error ?? "Unable to update this Scripture item right now.");
@@ -656,7 +729,7 @@ export default function SectionCard({
     updatePrayerItem(liturgyId, sectionIndex, itemId, text, marks, saveToPersonalLibrary).then((result) => {
       setIsSaving(false);
       if (result.success) {
-        setEditingItemId(null);
+        closeOpenTarget();
         router.refresh();
       } else {
         setError(result.error ?? "Unable to update this Prayer right now.");
@@ -689,7 +762,7 @@ export default function SectionCard({
       (result) => {
         setIsSaving(false);
         if (result.success) {
-          setEditingItemId(null);
+          closeOpenTarget();
           router.refresh();
         } else {
           setError(result.error ?? "Unable to update this Song right now.");
@@ -718,8 +791,7 @@ export default function SectionCard({
     saveSermonPassage(liturgyId, sectionIndex, passage).then((result) => {
       setIsSaving(false);
       if (result.success) {
-        setIsAddingSermon(false);
-        setEditingItemId(null);
+        closeOpenTarget();
         router.refresh();
       } else {
         setError(result.error ?? "Unable to save the Sermon passage right now.");
@@ -776,10 +848,7 @@ export default function SectionCard({
             {!VESPER_TABLE_SECTIONS.includes(section.name) && (
               <button
                 type="button"
-                onClick={() => {
-                  setError(null);
-                  setIsAddingExistingSelection((prev) => !prev);
-                }}
+                onClick={() => requestOpenChange({ type: "panel", key: "addExistingSelection" })}
                 className={addButtonClass}
               >
                 <PlusIcon size={13} /> From Library
@@ -788,10 +857,7 @@ export default function SectionCard({
             {VESPER_TABLE_SECTIONS.includes(section.name) && (
               <button
                 type="button"
-                onClick={() => {
-                  setError(null);
-                  setIsChoosingVesperReading((prev) => !prev);
-                }}
+                onClick={() => requestOpenChange({ type: "panel", key: "vesperReading" })}
                 className={addButtonClass}
               >
                 <PlusIcon size={13} /> Reading
@@ -800,17 +866,18 @@ export default function SectionCard({
           </>
         )}
         {allowedTypes.includes("formula") && !FORMULA_EXCLUDED_SECTIONS.includes(section.name) && (
-          <button type="button" onClick={() => setIsAddingFormula((prev) => !prev)} className={addButtonClass}>
+          <button
+            type="button"
+            onClick={() => requestOpenChange({ type: "panel", key: "addFormula" })}
+            className={addButtonClass}
+          >
             <PlusIcon size={13} /> Formula
           </button>
         )}
         {allowedTypes.includes("verbal_cue") && (
           <button
             type="button"
-            onClick={() => {
-              setError(null);
-              setIsAddingVerbalCue((prev) => !prev);
-            }}
+            onClick={() => requestOpenChange({ type: "panel", key: "addVerbalCue" })}
             className={addButtonClass}
           >
             <PlusIcon size={13} /> Cue
@@ -819,10 +886,7 @@ export default function SectionCard({
         {allowedTypes.includes("prayer") && (
           <button
             type="button"
-            onClick={() => {
-              setError(null);
-              setIsAddingPrayer((prev) => !prev);
-            }}
+            onClick={() => requestOpenChange({ type: "panel", key: "addPrayer" })}
             className={addButtonClass}
           >
             <PlusIcon size={13} /> Prayer
@@ -831,10 +895,7 @@ export default function SectionCard({
         {allowedTypes.includes("sermon") && !hasSermon && (
           <button
             type="button"
-            onClick={() => {
-              setError(null);
-              setIsAddingSermon((prev) => !prev);
-            }}
+            onClick={() => requestOpenChange({ type: "panel", key: "addSermon" })}
             className={addButtonClass}
           >
             <PlusIcon size={13} /> Sermon
@@ -844,20 +905,14 @@ export default function SectionCard({
           <>
             <button
               type="button"
-              onClick={() => {
-                setError(null);
-                setIsAddingPsalm((prev) => !prev);
-              }}
+              onClick={() => requestOpenChange({ type: "panel", key: "addPsalm" })}
               className={addButtonClass}
             >
               <PlusIcon size={13} /> Psalm
             </button>
             <button
               type="button"
-              onClick={() => {
-                setError(null);
-                setIsAddingHymn((prev) => !prev);
-              }}
+              onClick={() => requestOpenChange({ type: "panel", key: "addHymn" })}
               className={addButtonClass}
             >
               <PlusIcon size={13} /> Hymn
@@ -878,20 +933,26 @@ export default function SectionCard({
       )}
 
       {isAddingExistingSelection && (
-        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
+        <div
+          className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1"
+          {...dirtyCaptureProps}
+        >
           <AddExistingSelectionPanel
             scriptureSelections={sectionScriptureSelections}
             liturgyId={liturgyId}
             sectionIndex={sectionIndex}
             amenPolicy={getAmenPolicy(section.name)}
             allowTrinitarianSeal={TRINITARIAN_SEAL_SECTIONS.includes(section.name)}
-            onDone={() => setIsAddingExistingSelection(false)}
+            onDone={closeOpenTarget}
           />
         </div>
       )}
 
       {isChoosingVesperReading && (
-        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
+        <div
+          className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1"
+          {...dirtyCaptureProps}
+        >
           <VesperReadingPanel
             sectionName={section.name}
             liturgyId={liturgyId}
@@ -899,24 +960,30 @@ export default function SectionCard({
             currentCitation={
               selectionItems[0] ? toEnglishCitation(formatCitation(selectionItems[0].citation)) : null
             }
-            onDone={() => setIsChoosingVesperReading(false)}
+            onDone={closeOpenTarget}
           />
         </div>
       )}
 
       {isAddingFormula && (
-        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
+        <div
+          className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1"
+          {...dirtyCaptureProps}
+        >
           <AddFormulaPanel
             formulas={sectionFormulas}
             liturgyId={liturgyId}
             sectionIndex={sectionIndex}
-            onDone={() => setIsAddingFormula(false)}
+            onDone={closeOpenTarget}
           />
         </div>
       )}
 
       {isAddingVerbalCue && (
-        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
+        <div
+          className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1"
+          {...dirtyCaptureProps}
+        >
           <VerbalCueForm
             initialText=""
             initialVisibility="leader_only"
@@ -925,45 +992,48 @@ export default function SectionCard({
             error={error}
             submitLabel="Add Verbal Cue"
             onSubmit={handleAddVerbalCue}
-            onCancel={() => {
-              setError(null);
-              setIsAddingVerbalCue(false);
-            }}
+            onCancel={closeOpenTarget}
           />
         </div>
       )}
 
       {isAddingPrayer && (
-        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
+        <div
+          className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1"
+          {...dirtyCaptureProps}
+        >
           <AddPrayerPanel
             prayers={sectionPrayers}
             currentUserId={currentUser?.id ?? null}
             sectionName={section.name}
             liturgyId={liturgyId}
             sectionIndex={sectionIndex}
-            onDone={() => setIsAddingPrayer(false)}
+            onDone={closeOpenTarget}
           />
         </div>
       )}
 
       {isAddingSermon && (
-        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
+        <div
+          className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1"
+          {...dirtyCaptureProps}
+        >
           <SermonForm
             initialPassage=""
             isSaving={isSaving}
             error={error}
             submitLabel="Add Sermon"
             onSubmit={handleSaveSermon}
-            onCancel={() => {
-              setError(null);
-              setIsAddingSermon(false);
-            }}
+            onCancel={closeOpenTarget}
           />
         </div>
       )}
 
       {isAddingPsalm && (
-        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
+        <div
+          className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1"
+          {...dirtyCaptureProps}
+        >
           <AddSongPanel
             songs={sectionPsalms}
             currentUserId={currentUser?.id ?? null}
@@ -971,13 +1041,16 @@ export default function SectionCard({
             sectionName={section.name}
             liturgyId={liturgyId}
             sectionIndex={sectionIndex}
-            onDone={() => setIsAddingPsalm(false)}
+            onDone={closeOpenTarget}
           />
         </div>
       )}
 
       {isAddingHymn && (
-        <div className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
+        <div
+          className="mb-4 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1"
+          {...dirtyCaptureProps}
+        >
           <AddSongPanel
             songs={sectionHymns}
             currentUserId={currentUser?.id ?? null}
@@ -985,7 +1058,7 @@ export default function SectionCard({
             sectionName={section.name}
             liturgyId={liturgyId}
             sectionIndex={sectionIndex}
-            onDone={() => setIsAddingHymn(false)}
+            onDone={closeOpenTarget}
           />
         </div>
       )}
@@ -1010,10 +1083,7 @@ export default function SectionCard({
                             <button
                               type="button"
                               title={`Edit ${s.citation}`}
-                              onClick={() => {
-                                setError(null);
-                                setEditingItemId(s.id);
-                              }}
+                              onClick={() => requestOpenChange({ type: "edit", itemId: s.id })}
                               className="text-text-muted hover:text-accent-dark transition-colors duration-[var(--duration-tooltip)] ease"
                             >
                               <PencilIcon size={15} />
@@ -1040,7 +1110,7 @@ export default function SectionCard({
 
             if (item.type === "selection" && editingItemId === item.id) {
               return (
-                <li key={item.id}>
+                <li key={item.id} {...dirtyCaptureProps}>
                   <SelectionEditForm
                     initialCitation={item.citation}
                     initialText={item.text}
@@ -1056,10 +1126,7 @@ export default function SectionCard({
                     onSubmit={(citation, text, amenExpected, marks, trinitarianSeal) =>
                       handleUpdateSelectionItem(item.id, citation, text, amenExpected, marks, trinitarianSeal)
                     }
-                    onCancel={() => {
-                      setError(null);
-                      setEditingItemId(null);
-                    }}
+                    onCancel={closeOpenTarget}
                   />
                 </li>
               );
@@ -1067,7 +1134,7 @@ export default function SectionCard({
 
             if (item.type === "verbal_cue" && editingItemId === item.id) {
               return (
-                <li key={item.id}>
+                <li key={item.id} {...dirtyCaptureProps}>
                   <VerbalCueForm
                     initialText={item.text}
                     initialVisibility={item.visibility}
@@ -1081,10 +1148,7 @@ export default function SectionCard({
                     onSubmit={(text, visibility, rubric, textAlternate, showAlternate) =>
                       handleUpdateVerbalCue(item.id, text, visibility, rubric, textAlternate, showAlternate)
                     }
-                    onCancel={() => {
-                      setError(null);
-                      setEditingItemId(null);
-                    }}
+                    onCancel={closeOpenTarget}
                   />
                 </li>
               );
@@ -1092,7 +1156,7 @@ export default function SectionCard({
 
             if (item.type === "prayer" && editingItemId === item.id) {
               return (
-                <li key={item.id}>
+                <li key={item.id} {...dirtyCaptureProps}>
                   <PrayerEditForm
                     initialText={resolved.text}
                     initialMarks={resolved.marks ?? []}
@@ -1102,10 +1166,7 @@ export default function SectionCard({
                     onSubmit={(text, marks, saveToPersonalLibrary) =>
                       handleSavePrayerEdit(item.id, text, marks, saveToPersonalLibrary)
                     }
-                    onCancel={() => {
-                      setError(null);
-                      setEditingItemId(null);
-                    }}
+                    onCancel={closeOpenTarget}
                   />
                 </li>
               );
@@ -1113,7 +1174,7 @@ export default function SectionCard({
 
             if (item.type === "song" && editingItemId === item.id) {
               return (
-                <li key={item.id}>
+                <li key={item.id} {...dirtyCaptureProps}>
                   <SongEditForm
                     initialTitle={item.title ?? resolved.song?.title ?? ""}
                     initialAttribution={item.attribution ?? resolved.song?.attribution ?? ""}
@@ -1127,10 +1188,7 @@ export default function SectionCard({
                     onSubmit={(title, attribution, yearPublished, notes, amenExpected, saveToPersonalLibrary) =>
                       handleSaveSongEdit(item.id, title, attribution, yearPublished, notes, amenExpected, saveToPersonalLibrary)
                     }
-                    onCancel={() => {
-                      setError(null);
-                      setEditingItemId(null);
-                    }}
+                    onCancel={closeOpenTarget}
                   />
                 </li>
               );
@@ -1138,7 +1196,7 @@ export default function SectionCard({
 
             if (item.type === "formula" && editingItemId === item.id) {
               return (
-                <li key={item.id}>
+                <li key={item.id} {...dirtyCaptureProps}>
                   <FormulaEditForm
                     initialText={resolveBase(item, formulas, prayers, songs).text}
                     initialVisibility={item.visibility}
@@ -1151,10 +1209,7 @@ export default function SectionCard({
                     onSubmit={(text, visibility, marks, trinitarianSeal) =>
                       handleUpdateFormulaItem(item.id, text, visibility, marks, trinitarianSeal)
                     }
-                    onCancel={() => {
-                      setError(null);
-                      setEditingItemId(null);
-                    }}
+                    onCancel={closeOpenTarget}
                   />
                 </li>
               );
@@ -1162,17 +1217,14 @@ export default function SectionCard({
 
             if (item.type === "sermon" && editingItemId === item.id) {
               return (
-                <li key={item.id}>
+                <li key={item.id} {...dirtyCaptureProps}>
                   <SermonForm
                     initialPassage={item.passage}
                     isSaving={isSaving}
                     error={error}
                     submitLabel="Save"
                     onSubmit={handleSaveSermon}
-                    onCancel={() => {
-                      setError(null);
-                      setEditingItemId(null);
-                    }}
+                    onCancel={closeOpenTarget}
                   />
                 </li>
               );
@@ -1211,10 +1263,7 @@ export default function SectionCard({
                         <button
                           type="button"
                           title="Edit"
-                          onClick={() => {
-                            setError(null);
-                            setEditingItemId(item.id);
-                          }}
+                          onClick={() => requestOpenChange({ type: "edit", itemId: item.id })}
                           className="text-text-muted hover:text-accent-dark transition-colors duration-[var(--duration-tooltip)] ease"
                         >
                           <PencilIcon size={15} />
