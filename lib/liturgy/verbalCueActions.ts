@@ -1,10 +1,10 @@
 "use server";
 
 import { getSectionContext } from "@/lib/liturgy/getSectionContext";
-import { insertSectionItem, updateSectionItem } from "@/lib/liturgy/sectionItems";
+import { updateSectionItem } from "@/lib/liturgy/sectionItems";
 import { normalizeTypography } from "@/lib/text/typographic";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
-import type { VerbalCueItem } from "@/types/liturgy";
+import { placeVerbalCue } from "@/lib/liturgy/placeVerbalCue";
 
 export async function addVerbalCue(
   liturgyId: string,
@@ -15,37 +15,12 @@ export async function addVerbalCue(
   textAlternate: string = "",
   showAlternate: boolean = false
 ): Promise<{ success: boolean; error?: string }> {
-  if (!text.trim()) {
-    return { success: false, error: "Verbal Cue text is required." };
-  }
-
   const currentUser = await getCurrentUser();
   if (!currentUser) {
     return { success: false, error: "Sign in to add a Verbal Cue." };
   }
 
-  const section = await getSectionContext(liturgyId, sectionIndex);
-  if (!section) {
-    return { success: false, error: "Unable to find that Section right now." };
-  }
-
-  const newItem: VerbalCueItem = {
-    id: crypto.randomUUID(),
-    type: "verbal_cue",
-    text: normalizeTypography(text),
-    visibility,
-    rubric,
-    ...(textAlternate.trim() ? { textAlternate: normalizeTypography(textAlternate) } : {}),
-    showAlternate,
-  };
-
-  const { success, error } = await insertSectionItem(section.id, newItem);
-
-  if (!success) {
-    console.error("[lib/liturgy/verbalCueActions/addVerbalCue]", error);
-    return { success: false, error: "Unable to add this Verbal Cue right now." };
-  }
-  return { success: true };
+  return placeVerbalCue(liturgyId, sectionIndex, text, visibility, rubric, textAlternate, showAlternate);
 }
 
 export async function updateVerbalCue(
