@@ -319,7 +319,7 @@ Established 2026-08-27, Phase 0 of the emil-design-eng design-engineering charte
 - Never animate from `scale(0)` — start from `scale(0.9)` or higher, combined with `opacity: 0`.
 - A popover/dropdown scales from its trigger (`transform-origin` set to the trigger's position), never from center. Modals are the one exception — they stay `transform-origin: center` since they're not anchored to a trigger.
 - Prefer CSS transitions over `@keyframes` for anything that can be triggered rapidly or interrupted (toasts, toggled panels) — transitions retarget smoothly mid-animation, keyframes restart from zero.
-- Gate any `:hover`-triggered animation behind `@media (hover: hover) and (pointer: fine)` — touch devices fire hover on tap and would otherwise get a false-positive animation.
+- Every `hover:` class is gated behind `@media (hover: hover) and (pointer: fine)` automatically — `globals.css` redefines Tailwind's own `hover` variant project-wide (`@custom-variant hover`), so no component needs to opt in by hand. **Found unenforced across all four charter phases by a `review-animations` audit (2026-08-28)** — this line originally described a per-component instruction that was never actually followed; fixed at the mechanism level instead of retrofitting every call site. Touch devices fire hover on tap and would otherwise get a stuck/false-positive state until the next tap elsewhere.
 
 **Review format:** any animation audit or change is presented as a Before/After/Why markdown table (the emil-design-eng skill's required format), confirmed before implementation — not a prose list.
 

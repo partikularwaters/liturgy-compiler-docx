@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+/* Redefines Tailwind's own `hover:` variant project-wide so every existing
+   and future hover: class is automatically gated behind a real fine-pointer
+   hover device -- touch devices fire a hover state on tap that would
+   otherwise stick until the next tap elsewhere. One fix here covers every
+   hover: usage across the whole codebase; see ui-rules.md's Motion &
+   Animation section, which already required this and had gone
+   unenforced through four phases of motion work (found by review-animations,
+   2026-08-28). */
+@custom-variant hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
 @theme {
   --font-sans: var(--font-inter), sans-serif;
   --font-serif-display: var(--font-old-standard-tt), serif;
