@@ -15,7 +15,13 @@ export const MORNING_COMPLETION: Record<string, CompletionRule> = {
   "Psalm of Adoration": { class: "required", requiredItemTypes: ["song"] },
   "Righteousness of God": { class: "required", requiredItemTypes: ["selection"] },
   "Call to Confession": { class: "required", requiredItemTypes: ["selection"] },
-  "Confession of Sin": { class: "required", requiredItemTypes: ["selection"] },
+  // Morning's Confession of Sin is Prayer type -- redesign-plan-v1.1.md's
+  // §N-T notes explicitly correct this from an earlier Formula assumption.
+  // Unlike Vesper's own "Confession of Sin" (a different Section that
+  // really does take a Selection), Morning's never offers a "+ Scripture"
+  // button at all, so requiring "selection" here made every Morning Liturgy
+  // permanently unable to complete this Section regardless of real content.
+  "Confession of Sin": { class: "required", requiredItemTypes: ["prayer"] },
   "Hymn of Propitiation": { class: "required", requiredItemTypes: ["song"] },
   "Assurance of Pardon": { class: "required", requiredItemTypes: ["selection", "formula"] },
   "Prayer for Illumination": { class: "optional" },

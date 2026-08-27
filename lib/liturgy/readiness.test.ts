@@ -57,6 +57,14 @@ describe("computeProgress", () => {
     });
   });
 
+  it("requires a Prayer for Morning's Confession of Sin, not a Selection -- that Section never offers a Selection at all", () => {
+    const withPrayer = computeProgress(liturgy("Morning Worship", [section("Confession of Sin", [item("prayer")])]));
+    const withSelectionOnly = computeProgress(liturgy("Morning Worship", [section("Confession of Sin", [item("selection")])]));
+
+    expect(withPrayer).toMatchObject({ completed: 1, total: 1, missing: [] });
+    expect(withSelectionOnly).toMatchObject({ completed: 0, total: 1, missing: ["Confession of Sin"] });
+  });
+
   it("requires both Assurance of Pardon item types", () => {
     const both = computeProgress(liturgy("Morning Worship", [section("Assurance of Pardon", [item("selection"), item("formula")])]));
     const onlySelection = computeProgress(liturgy("Morning Worship", [section("Assurance of Pardon", [item("selection")])]));
@@ -89,7 +97,7 @@ describe("computeProgress", () => {
         section("Psalm of Adoration", [item("song")]),
         section("Righteousness of God", [item("selection")]),
         section("Call to Confession", [item("selection")]),
-        section("Confession of Sin", [item("selection")]),
+        section("Confession of Sin", [item("prayer")]),
         section("Hymn of Propitiation", [item("song")]),
         section("Assurance of Pardon", [item("selection"), item("formula")]),
         section("Prayer for Illumination"),
