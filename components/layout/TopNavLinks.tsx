@@ -118,14 +118,14 @@ export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksP
           means neither element ever needs two transforms at once. */}
       <div className="fixed top-4 inset-x-0 z-50 flex justify-center px-4">
         <nav
-          className="w-full max-w-[900px] bg-accent rounded-full shadow-lg transition-transform duration-300"
+          className="w-full max-w-[900px] bg-accent rounded-full shadow-lg transition-transform duration-[var(--duration-modal)] ease-[var(--ease-in-out-strong)] motion-reduce:transition-none"
           style={{ transform: isHidden ? "translateY(-6rem)" : "translateY(0)" }}
         >
           <div className="px-6 h-14 flex items-center justify-between gap-4">
         <Link
           href="/"
           title="Home"
-          className={`hidden md:block ${
+          className={`hidden md:block transition-colors duration-[var(--duration-tooltip)] ease ${
             isHomepage ? "text-accent-foreground" : "text-accent-foreground/70 hover:text-accent-foreground"
           }`}
         >
@@ -135,14 +135,14 @@ export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksP
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            className="text-accent-foreground/70 hover:text-accent-foreground"
+            className="text-accent-foreground/70 hover:text-accent-foreground transition-[color,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
             aria-label="Open menu"
             aria-expanded={isMobileMenuOpen}
           >
             <MenuIcon size={20} />
           </button>
           {isMobileMenuOpen && (
-            <div className="absolute left-0 top-full mt-2 w-48 bg-surface border border-border rounded-md shadow-lg py-1 z-50">
+            <div className="absolute left-0 top-full mt-2 w-48 bg-surface border border-border rounded-md shadow-lg py-1 z-50 origin-top-left transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:scale-95">
               <Link
                 href="/"
                 className={`block px-4 py-2 text-sm hover:bg-surface-secondary ${
@@ -189,7 +189,7 @@ export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksP
               className={
                 isLiturgiesActive
                   ? "text-sm font-semibold text-accent-foreground"
-                  : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+                  : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground transition-colors duration-[var(--duration-tooltip)] ease"
               }
             >
               Liturgies
@@ -204,7 +204,7 @@ export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksP
               className={
                 isReaderActive
                   ? "text-sm font-semibold text-accent-foreground"
-                  : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+                  : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground transition-colors duration-[var(--duration-tooltip)] ease"
               }
             >
               Bible Reader
@@ -223,7 +223,7 @@ export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksP
               className={
                 isLibraryActive
                   ? "text-sm font-semibold text-accent-foreground"
-                  : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground"
+                  : "text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground transition-colors duration-[var(--duration-tooltip)] ease"
               }
             >
               Library
@@ -241,7 +241,7 @@ export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksP
           {currentUser && (
             <Link
               href="/liturgy/new"
-              className="flex items-center gap-1 bg-cta-yellow text-cta-yellow-foreground rounded-full px-3 py-1.5 text-[13px] font-medium whitespace-nowrap"
+              className="flex items-center gap-1 bg-cta-yellow text-cta-yellow-foreground rounded-full px-3 py-1.5 text-[13px] font-medium whitespace-nowrap transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
             >
               <PlusIcon size={14} /> Create Liturgy
             </Link>

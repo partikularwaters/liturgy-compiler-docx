@@ -41,7 +41,7 @@ export default function AccountMenu({ currentUser, sessionStatus }: AccountMenuP
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-1 text-accent-foreground/70 hover:text-accent-foreground"
+        className="flex items-center gap-1 text-accent-foreground/70 hover:text-accent-foreground transition-[color,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
         aria-label={isPending ? "Account menu -- pending approval" : "Account menu"}
         aria-expanded={isOpen}
       >
@@ -50,7 +50,7 @@ export default function AccountMenu({ currentUser, sessionStatus }: AccountMenuP
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-md shadow-lg py-1 z-50">
+        <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-md shadow-lg py-1 z-50 origin-top-right transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:scale-95">
           {isPending ? (
             <>
               <div className="px-4 py-2 border-b border-border">

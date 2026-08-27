@@ -52,6 +52,8 @@ Use the exact foreground/background pairing from `ui-tokens.md`, then verify com
 
 Floating, responsive navigation with Home, Liturgies, Bible Reader, Library, Create Liturgy, and account actions. Desktop uses the centered pill; mobile uses the menu variant. The pill hides on downward scroll and returns near the page top or on upward scroll. Route changes close the mobile menu but do not otherwise reset scroll-hidden state. `TopNavLinks` renders no application navigation on `/liturgy/[id]/view`.
 
+Interactive states (2026-08-27, emil-design-eng Phase 1 — see `ui-rules.md`'s Motion & Animation section for the actual tokens/timing): every nav link and icon has a hover-color state; the hamburger, account-menu, and Create-Liturgy buttons have press feedback; the account-menu and mobile-menu dropdowns are origin-aware (scale in from their own trigger corner, never from center) with an entrance transition. This is the reference implementation for hover/press/entrance states going forward — match it rather than reinventing the pattern per component.
+
 ### ScriptureLinker
 
 `components/layout/ScriptureLinker.tsx` mounts the BibleGateway display-only linker once and rescans after route changes. It renders no project UI of its own and never stores AB2001/MBB text.
@@ -159,7 +161,7 @@ When compiling, `app/reader/ReaderClient.tsx` uses the sticky composition panel 
 
 ### Modal
 
-`components/ui/Modal.tsx` is the shared visual overlay. It closes through its close button, an outside click, or Escape, and uses the tokenized modal surface. Full dialog accessibility (2026-08-25): `role="dialog"`/`aria-modal`/`aria-labelledby`, initial focus on the close button, Tab/Shift+Tab focus containment within the dialog, and focus restored to whatever triggered it on close — live-verified in a browser, not just typechecked.
+`components/ui/Modal.tsx` is the shared visual overlay. It closes through its close button, an outside click, or Escape, and uses the tokenized modal surface. Full dialog accessibility (2026-08-25): `role="dialog"`/`aria-modal`/`aria-labelledby`, initial focus on the close button, Tab/Shift+Tab focus containment within the dialog, and focus restored to whatever triggered it on close — live-verified in a browser, not just typechecked. Interactive states (2026-08-27, emil-design-eng Phase 1 — see `ui-rules.md`'s Motion & Animation section for tokens/timing): the dialog has an entrance transition, scaling in at `transform-origin: center` — the one deliberate exception to origin-aware popovers, since a modal isn't anchored to a trigger. The close button has hover and press feedback. Exit remains instant (parent unmounts on close); animating it would need a delayed-unmount refactor, deliberately out of scope for this phase.
 
 ---
 

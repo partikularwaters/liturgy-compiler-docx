@@ -59,6 +59,18 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-full: 9999px;
+
+  /* Motion (emil-design-eng charter, Phase 0/1, 2026-08-27) — see
+     context/ui-rules.md's Motion & Animation section for when to use each
+     value. All durations stay under 300ms per that section. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --duration-press: 160ms;
+  --duration-tooltip: 150ms;
+  --duration-dropdown: 200ms;
+  --duration-modal: 250ms;
 }
 
 body {

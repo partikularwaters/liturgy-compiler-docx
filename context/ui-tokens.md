@@ -109,6 +109,19 @@ className="bg-purple-500 text-gray-600"
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-full: 9999px;
+
+  /* Motion (Phase 0 of the emil-design-eng charter, 2026-08-27) — see
+     ui-rules.md's Motion & Animation section for when to use each value.
+     Durations stay under 300ms for every UI element per that section;
+     nothing here is a marketing/explanatory-animation duration. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --duration-press: 160ms;    /* button/control press feedback */
+  --duration-tooltip: 150ms;  /* tooltips, small popovers */
+  --duration-dropdown: 200ms; /* dropdowns, selects, small panels */
+  --duration-modal: 250ms;    /* modals, drawers, larger panels */
 }
 ```
 
@@ -266,6 +279,24 @@ font-weight:   font-medium
 
 ---
 
+## Motion
+
+Values only — see `ui-rules.md`'s Motion & Animation section for when (and whether) to animate at all, easing selection, and the reduced-motion rule.
+
+| Token | Value | Usage |
+| --- | --- | --- |
+| `--ease-out-strong` | `cubic-bezier(0.23, 1, 0.32, 1)` | Entering/exiting elements — the default for anything appearing or disappearing |
+| `--ease-in-out-strong` | `cubic-bezier(0.77, 0, 0.175, 1)` | Elements moving or morphing while staying on screen |
+| `--ease-drawer` | `cubic-bezier(0.32, 0.72, 0, 1)` | Drawer/sheet-style slide transitions specifically |
+| `--duration-press` | `160ms` | Button/control `:active` press feedback |
+| `--duration-tooltip` | `150ms` | Tooltips, small popovers |
+| `--duration-dropdown` | `200ms` | Dropdowns, selects, small panels |
+| `--duration-modal` | `250ms` | Modals, drawers, larger panels |
+
+Reference via `var(--ease-out-strong)` / `var(--duration-press)`, the same direct-CSS-variable pattern already established above for color tokens — these are not Tailwind-utility-generating `@theme` namespaces (no `duration-*`/`ease-*` classes are produced from them), since Tailwind v4 core doesn't define a transition-duration namespace and hand-rolling one risks colliding with Tailwind's own `ease-*` utilities.
+
+---
+
 ## Invariants
 
 - Never use hex values directly in components — always use CSS variables via Tailwind tokens
@@ -275,3 +306,4 @@ font-weight:   font-medium
 - All borders default to `--color-border` — never use `border-gray-*`
 - `lib/pdf/tokens.ts` mirrors this file's hex values for react-pdf, which has no Tailwind/CSS-variable access — update both together if a token changes (see `library-docs.md`). As of 2026-07-18, `pdfColors` also has a `surfaceSecondary: "#F1EFE9"` entry (mirroring `--color-surface-secondary`), added when the PDF's Prayer Guide reference panel needed it — check `pdfColors` for a token before assuming it's missing from the PDF side.
 - Shared icons (`components/liturgy/icons.tsx`) use `strokeWidth="2"` uniformly; any new icon added to that file must match.
+- Never hand-write a duration or easing curve inline — always reference a Motion token above. A new duration/easing value is only added here once it's genuinely reused across two or more components, not as a one-off for a single animation (see ui-rules.md's Motion & Animation section).

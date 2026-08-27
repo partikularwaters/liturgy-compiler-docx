@@ -292,6 +292,41 @@ Morning's 3-column PDF: **13in × 8in landscape** (`[936, 576]` points — repla
 
 ---
 
+## Motion & Animation
+
+Established 2026-08-27, Phase 0 of the emil-design-eng design-engineering charter — the project's first motion standard. Values live in `ui-tokens.md`'s Motion section; this section governs *when* and *whether* to use them. Follows the `emil-design-eng` skill's framework directly; consult that skill for the full reasoning behind any rule below.
+
+**This app's own frequency map** — read this before defaulting to "add an animation":
+
+| Surface | Frequency | Default posture |
+| --- | --- | --- |
+| Reader (verse markers, chapter navigation, highlight toggling) | Very high — the Compiler and congregation both hit these constantly | No animation, or as close to none as possible. Never animate a keyboard-initiated action here. |
+| Compile View (`SectionCard`, Add panels, item add/remove/edit) | Occasional per session, but a real session touches it dozens of times | Standard, restrained animation — feedback and spatial consistency only |
+| Library management (Formula/Prayer/Song/Selection tables, inline edit) | Occasional | Standard animation |
+| Modals, forms, floating nav pill | Occasional | Standard animation |
+| Public Liturgy Web View, homepage | Rare per visitor (most congregation members open a liturgy once a week) | Can carry a considered entrance treatment, but stay restrained — this surface is content-first, not a marketing page |
+
+**Before adding any animation, answer in order:**
+1. **Should this animate at all?** Check the frequency map above. A 100+/day action gets nothing. Tens/day gets none or drastically reduced. Occasional gets the standard treatment. Rare/first-time can carry more.
+2. **What is the purpose?** Spatial consistency, state indication, feedback, or preventing a jarring appear/disappear. "It looks nice" is not sufficient justification on a frequently-seen element.
+3. **What easing?** Entering/exiting → `--ease-out-strong`. Moving/morphing on screen → `--ease-in-out-strong`. Hover/color change → CSS `ease`. Never `ease-in` on a UI element — it delays the movement the user is watching most closely, which reads as sluggish even at an identical duration.
+4. **What duration?** Use the matching token from `ui-tokens.md` — `--duration-press` (160ms), `--duration-tooltip` (150ms), `--duration-dropdown` (200ms), `--duration-modal` (250ms). Every UI animation in this app stays under 300ms; longer is reserved for marketing/explanatory motion this app doesn't currently have any of.
+
+**Hard constraints:**
+- Never animate a keyboard-initiated action.
+- Only animate `transform` and `opacity` — both skip layout/paint. Never animate `padding`/`margin`/`height`/`width`/`top`/`left`.
+- Respect `prefers-reduced-motion: reduce` on every animation added: keep opacity/color transitions that aid comprehension, drop movement/position transforms.
+- Never animate from `scale(0)` — start from `scale(0.9)` or higher, combined with `opacity: 0`.
+- A popover/dropdown scales from its trigger (`transform-origin` set to the trigger's position), never from center. Modals are the one exception — they stay `transform-origin: center` since they're not anchored to a trigger.
+- Prefer CSS transitions over `@keyframes` for anything that can be triggered rapidly or interrupted (toasts, toggled panels) — transitions retarget smoothly mid-animation, keyframes restart from zero.
+- Gate any `:hover`-triggered animation behind `@media (hover: hover) and (pointer: fine)` — touch devices fire hover on tap and would otherwise get a false-positive animation.
+
+**Review format:** any animation audit or change is presented as a Before/After/Why markdown table (the emil-design-eng skill's required format), confirmed before implementation — not a prose list.
+
+**Implementation gotcha (found in Phase 1, 2026-08-27):** Tailwind's single-property transition utilities (`transition-colors`, `transition-transform`, etc.) each set the CSS `transition-property` declaration outright — they don't merge. Stacking `transition-colors` and `transition-transform` as two classes on one element does not transition both; the second declaration silently wins and the other property change (e.g. an `active:scale` press effect on an element that also has a `hover:` color change) applies instantly with no easing at all. Always combine multiple animated properties into one arbitrary-value utility instead: `transition-[color,transform]`, not `transition-colors transition-transform`. This is exactly how the entrance transitions on Modal/dropdowns already combine `opacity,transform` — apply the same pattern anywhere a hover-color state and a press-feedback transform share an element.
+
+---
+
 ## Tailwind v4 Note
 
 This project uses Tailwind v4. Tokens are defined with `@theme` in globals.css — no `tailwind.config.ts` needed. Never define colors in a config file. Always use `@theme` for new tokens.
@@ -311,3 +346,5 @@ This project uses Tailwind v4. Tokens are defined with `@theme` in globals.css �
 - Never offer Add Selection on the five dynamic song Sections (Psalm/Hymn of Adoration, Propitiation, Proclamation, Dedication, Communion) — those take Psalm/Hymn only, a Scripture-reading Selection doesn't belong in a sung slot (v1.1)
 - Never show the compiler's own top nav bar on the public Liturgy Web View (`/liturgy/[id]/view`) — it's meant to be the liturgy alone, shared with a congregation member who has no reason to see internal nav (2026-07-18)
 - Never apply small-caps to a Metrical Psalm title, even though it shares the citation-red color with a Scripture citation — small-caps is a reference-only convention, a Psalm title is naturally-cased prose (2026-07-18, see Typography Hierarchy above)
+- Never animate a Reader verse-marker click, chapter navigation, or any other keyboard-initiated/very-high-frequency action — see Motion & Animation above (2026-08-27)
+- Never hand-write a transition duration or easing curve inline — always reference a Motion token from `ui-tokens.md` (2026-08-27)

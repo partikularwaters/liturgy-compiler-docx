@@ -65,7 +65,7 @@ export default function Modal({ title, onClose, children }: ModalProps): React.R
 
   return (
     <div
-      className="fixed inset-0 bg-text-primary/40 flex items-center justify-center p-6 z-50"
+      className="fixed inset-0 bg-text-primary/40 flex items-center justify-center p-6 z-50 transition-opacity duration-[var(--duration-modal)] ease-[var(--ease-out-strong)] starting:opacity-0"
       onClick={onClose}
     >
       <div
@@ -73,7 +73,7 @@ export default function Modal({ title, onClose, children }: ModalProps): React.R
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="bg-surface border border-border rounded-lg shadow-lg max-w-[560px] w-full max-h-[80vh] overflow-y-auto p-6 flex flex-col gap-4"
+        className="bg-surface border border-border rounded-lg shadow-lg max-w-[560px] w-full max-h-[80vh] overflow-y-auto p-6 flex flex-col gap-4 transition-[opacity,transform] duration-[var(--duration-modal)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:scale-95"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
@@ -84,7 +84,7 @@ export default function Modal({ title, onClose, children }: ModalProps): React.R
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            className="text-text-muted hover:text-text-primary text-xl leading-none"
+            className="text-text-muted hover:text-text-primary text-xl leading-none transition-[color,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
             aria-label="Close"
           >
             ×
