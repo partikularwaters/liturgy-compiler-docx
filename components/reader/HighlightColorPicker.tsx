@@ -25,7 +25,7 @@ export default function HighlightColorPicker({
           type="button"
           aria-label={label}
           onClick={() => onSelect(activeColor === color ? null : color)}
-          className={`w-6 h-6 rounded-full ${swatchClass} ${
+          className={`w-6 h-6 rounded-full transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97] ${swatchClass} ${
             activeColor === color ? "ring-2 ring-offset-2 ring-text-primary" : ""
           }`}
         />

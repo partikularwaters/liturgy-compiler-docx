@@ -76,8 +76,8 @@ export default function ReaderTargetPicker({
             onClick={() => setMode("section")}
             className={
               mode === "section"
-                ? "px-3 py-1.5 bg-accent text-accent-foreground"
-                : "px-3 py-1.5 bg-surface text-text-secondary hover:bg-surface-secondary"
+                ? "px-3 py-1.5 bg-accent text-accent-foreground transition-[background-color,color,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
+                : "px-3 py-1.5 bg-surface text-text-secondary hover:bg-surface-secondary transition-[background-color,color,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
             }
           >
             Liturgy Section
@@ -87,8 +87,8 @@ export default function ReaderTargetPicker({
             onClick={() => setMode("library")}
             className={
               mode === "library"
-                ? "px-3 py-1.5 bg-accent text-accent-foreground"
-                : "px-3 py-1.5 bg-surface text-text-secondary hover:bg-surface-secondary"
+                ? "px-3 py-1.5 bg-accent text-accent-foreground transition-[background-color,color,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
+                : "px-3 py-1.5 bg-surface text-text-secondary hover:bg-surface-secondary transition-[background-color,color,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
             }
           >
             Scripture Library
@@ -130,7 +130,7 @@ export default function ReaderTargetPicker({
             type="button"
             onClick={handleGoToSection}
             disabled={!liturgyId || sectionIndex === null}
-            className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+            className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
           >
             Set Target
           </button>
@@ -156,7 +156,7 @@ export default function ReaderTargetPicker({
               type="button"
               onClick={handleGoToLibrary}
               disabled={!librarySectionName}
-              className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+              className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
             >
               Set Target
             </button>

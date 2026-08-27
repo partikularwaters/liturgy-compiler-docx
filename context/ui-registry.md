@@ -151,17 +151,17 @@ Do not duplicate bilingual pairing fields or preview rendering inside type-speci
 ### BookChapterPicker / HighlightColorPicker
 
 - `components/reader/BookChapterPicker.tsx` uses standard form-input tokens for book/chapter navigation.
-- `components/reader/HighlightColorPicker.tsx` uses semantic token swatches with a ring for the active choice.
+- `components/reader/HighlightColorPicker.tsx` uses semantic token swatches with a ring for the active choice. Press feedback added (2026-08-28, emil-design-eng Phase 3) — swatches are picked occasionally, not per-verse, so they get the standard press recipe unlike the Reader's high-frequency controls below.
 
 ### ReaderTargetPicker
 
-`components/reader/ReaderTargetPicker.tsx` selects the destination Liturgy/Section without moving Section-scope authority into the client.
+`components/reader/ReaderTargetPicker.tsx` selects the destination Liturgy/Section without moving Section-scope authority into the client. Its mode-toggle buttons and "Set Target" button (2026-08-28, Phase 3) carry the same hover/press recipe as the rest of the app's buttons — shown once per Reader session (arriving with no target set), not a frequent control.
 
 ### VerseDisplay
 
-`components/reader/VerseDisplay.tsx` owns the reading surface, highlights, and verse marker states. Addable/pending markers are compact square buttons; a saved marker is passive typography, not a disabled button. Text highlighting and Selection-building remain separate click targets.
+`components/reader/VerseDisplay.tsx` owns the reading surface, highlights, and verse marker states. Addable/pending markers are compact square buttons; a saved marker is passive typography, not a disabled button. Text highlighting and Selection-building remain separate click targets. **Deliberately carries no motion of any kind (confirmed 2026-08-28, emil-design-eng Phase 3)** — verse markers and the highlight click are the single highest-frequency interaction in the app; do not add hover/press/transition here even when applying a recipe used everywhere else, per `ui-rules.md`'s frequency map.
 
-When compiling, `app/reader/ReaderClient.tsx` uses the sticky composition panel beside the reading column. Plain Reader browsing remains a single reading column.
+When compiling, `app/reader/ReaderClient.tsx` uses the sticky composition panel beside the reading column. Plain Reader browsing remains a single reading column. Its `successMessage` panel (2026-08-28, Phase 3) gets the same fade+`translateY` entrance as Compile View's Add panels — occasional (once per successful save). **`AddSelectionPanel` here is deliberately not given an entrance transition**, unlike its Compile-View counterparts: it's keyed on the candidate citation and remounts on every verse-marker click, so an entrance animation would replay on every mark rather than once per genuine open — a trap for anyone reusing the Phase 2 Add-panel pattern here without checking why it's absent.
 
 ---
 

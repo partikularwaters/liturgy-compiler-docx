@@ -304,7 +304,7 @@ export default function ReaderClient({
             <p className="text-sm text-text-muted">Click the + beside a verse to add it here.</p>
           )}
           {successMessage && (
-            <div className="bg-success-light rounded-lg px-4 py-3">
+            <div className="bg-success-light rounded-lg px-4 py-3 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
               <p className="text-sm font-medium text-success-foreground">{successMessage}</p>
             </div>
           )}
