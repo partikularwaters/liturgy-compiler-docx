@@ -80,7 +80,7 @@ export default async function Home(): Promise<React.ReactElement> {
         />
         <div className="absolute inset-0 bg-cta-yellow mix-blend-multiply" style={{ opacity: 0.18 }} /> {/* TINT_OPACITY */}
       </div>
-      <div className="max-w-[960px] mx-auto p-8 flex flex-col items-start text-left gap-8">
+      <div className="max-w-[960px] mx-auto p-8 flex flex-col items-start text-left gap-8 transition-[opacity,transform] duration-[var(--duration-modal)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
       <p className="font-serif-body text-[26px] leading-[1.4] font-bold text-text-primary italic max-w-[820px]">
         Glory be to the Father, and to the Son, and to the Holy Spirit; as it was in the
         beginning, is now, and ever shall be, world without end. Amen.
@@ -92,14 +92,14 @@ export default async function Home(): Promise<React.ReactElement> {
         {currentUser && (
           <Link
             href="/liturgy/new"
-            className="flex items-center gap-1.5 bg-accent text-accent-foreground rounded-full px-3 py-1.5 text-[13px] font-semibold"
+            className="flex items-center gap-1.5 bg-accent text-accent-foreground rounded-full px-3 py-1.5 text-[13px] font-semibold transition-[background-color,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] hover:bg-accent-dark motion-safe:active:scale-[0.97]"
           >
             <PlusIcon size={14} /> Create Liturgy
           </Link>
         )}
         <Link
           href="/library"
-          className="flex items-center gap-1.5 bg-surface border border-border text-text-primary rounded-full px-3 py-1.5 text-[13px] font-medium"
+          className="flex items-center gap-1.5 bg-surface border border-border text-text-primary rounded-full px-3 py-1.5 text-[13px] font-medium transition-[background-color,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] hover:bg-surface-secondary motion-safe:active:scale-[0.97]"
         >
           <ArrowRightIcon size={14} /> Browse Library
         </Link>

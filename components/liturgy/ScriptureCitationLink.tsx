@@ -100,7 +100,8 @@ function BSBLink({ citation, className }: { citation: string; className?: string
           className={[
             "absolute top-full mt-1 w-[374px] rounded-md border border-border bg-surface p-3 shadow-lg z-10 flex flex-col gap-2",
             "font-serif-body text-[16px] leading-[1.6] text-text-primary [font-variant:normal]",
-            tooltipSide === "left" ? "left-0" : "right-0",
+            "transition-[opacity,transform] duration-[var(--duration-tooltip)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:scale-95",
+            tooltipSide === "left" ? "left-0 origin-top-left" : "right-0 origin-top-right",
           ].join(" ")}
         >
           <span>
@@ -113,7 +114,7 @@ function BSBLink({ citation, className }: { citation: string; className?: string
                 <span
                   key={v.number}
                   className={[
-                    "block mb-1 last:mb-0 -mx-1 px-1 rounded transition-colors duration-1000",
+                    "block mb-1 last:mb-0 -mx-1 px-1 rounded transition-colors duration-[var(--duration-modal)] ease",
                     referencedVerses.has(v.number) && highlightActive ? "bg-warning/10" : "bg-transparent",
                   ].join(" ")}
                 >
@@ -126,7 +127,7 @@ function BSBLink({ citation, className }: { citation: string; className?: string
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="self-start inline-flex items-center gap-1 bg-error text-error-foreground rounded-full px-3 py-1 text-[12px] font-medium [font-variant:normal] hover:opacity-90"
+            className="self-start inline-flex items-center gap-1 bg-error text-error-foreground rounded-full px-3 py-1 text-[12px] font-medium [font-variant:normal] hover:opacity-90 transition-[opacity,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
           >
             View in Reader <ExternalLinkIcon size={13} />
           </a>

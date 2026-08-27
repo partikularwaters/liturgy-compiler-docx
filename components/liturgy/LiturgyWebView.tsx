@@ -71,7 +71,7 @@ export default function LiturgyWebView({
   const dateIsSunday = isSunday(parseLocalDate(liturgy.serviceDate));
 
   return (
-    <div className="max-w-[640px] mx-auto px-6 py-10 flex flex-col gap-8">
+    <div className="max-w-[640px] mx-auto px-6 py-10 flex flex-col gap-8 transition-[opacity,transform] duration-[var(--duration-modal)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">
       <div className="flex flex-col gap-1">
         <h1 className="font-serif-display text-[22px] font-semibold leading-[30px] text-text-primary">
           {liturgy.templateName}

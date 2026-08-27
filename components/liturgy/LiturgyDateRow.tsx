@@ -72,7 +72,7 @@ export default function LiturgyDateRow({ group, isLast, currentUser }: LiturgyDa
               onClick={() => handleDelete(liturgy, label)}
               disabled={deletingId === liturgy.id}
               title="Delete this liturgy"
-              className="text-text-muted hover:text-error disabled:opacity-50 shrink-0"
+              className="text-text-muted hover:text-error disabled:opacity-50 shrink-0 transition-colors duration-[var(--duration-tooltip)] ease"
             >
               <TrashIcon size={16} />
             </button>
@@ -101,7 +101,7 @@ export default function LiturgyDateRow({ group, isLast, currentUser }: LiturgyDa
                   onClick={() => handleDelete(liturgy, liturgy.sermonPassage ?? templateName)}
                   disabled={deletingId === liturgy.id}
                   title="Delete this liturgy"
-                  className="text-text-muted hover:text-error disabled:opacity-50 shrink-0"
+                  className="text-text-muted hover:text-error disabled:opacity-50 shrink-0 transition-colors duration-[var(--duration-tooltip)] ease"
                 >
                   <TrashIcon size={14} />
                 </button>
