@@ -135,6 +135,20 @@ refuse to run if their target URL doesn't match the direction they're meant
 to go (Production-looking for the restore script, local-looking for the pull
 script).
 
+Not required by the app's own preflight, but required for the n8n
+automation feature to function: `AUTOMATION_API_TOKEN` (a long random shared
+secret, checked by `lib/auth/automationAuth.ts` against every request to
+`app/api/automation/*` — missing or wrong fails closed with 401, never
+authorizes by default) and `SITE_URL` (the deployed app's own base URL,
+plain server-only, used only to build absolute Compile View/Web View links
+in that API's responses — never sent to a browser, so no `NEXT_PUBLIC_`
+prefix). `app/api/automation/*` deliberately has no rate limiting, IP
+allowlisting, or in-app credential rotation beyond the plain env var — this
+API has exactly one trusted caller (self-hosted n8n) over HTTPS with a
+rotatable shared secret, the same reasoning that ruled out the heavier
+service-account credential alternative; add real rate limiting only if that
+caller assumption ever actually changes.
+
 ---
 
 ## Comments
