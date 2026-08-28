@@ -21,14 +21,14 @@ describe("buildWebViewTitle", () => {
 });
 
 describe("buildWebViewDescription", () => {
-  it("includes Lord's Day # for a Sunday service date", () => {
+  it("includes Lord’s Day # for a Sunday service date", () => {
     // 2026-08-30 is a real Sunday, matching the app's existing test fixtures.
     expect(buildWebViewDescription({ serviceDate: "2026-08-30", lordsDayNumber: 35 })).toBe(
-      "August 30, 2026 | Lord's Day #35"
+      "August 30, 2026 | Lord’s Day #35"
     );
   });
 
-  it("omits Lord's Day # for a non-Sunday service date", () => {
+  it("omits Lord’s Day # for a non-Sunday service date", () => {
     // 2026-08-31 is a Monday.
     expect(buildWebViewDescription({ serviceDate: "2026-08-31", lordsDayNumber: 35 })).toBe("August 31, 2026");
   });

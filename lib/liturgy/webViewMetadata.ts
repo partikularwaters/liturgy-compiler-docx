@@ -23,11 +23,11 @@ export function buildWebViewTitle(liturgy: Pick<CompiledLiturgy, "templateName">
   return `The Order for the ${liturgy.templateName} Service`;
 }
 
-// Omits "Lord's Day #" for a non-Sunday service date, matching
+// Omits "Lord’s Day #" for a non-Sunday service date, matching
 // formatLiturgyName.ts's same gating rule.
 export function buildWebViewDescription(liturgy: Pick<CompiledLiturgy, "serviceDate" | "lordsDayNumber">): string {
   const dateDisplay = formatServiceDateDisplay(liturgy.serviceDate);
   return isSunday(parseLocalDate(liturgy.serviceDate))
-    ? `${dateDisplay} | Lord's Day #${liturgy.lordsDayNumber}`
+    ? `${dateDisplay} | Lord’s Day #${liturgy.lordsDayNumber}`
     : dateDisplay;
 }

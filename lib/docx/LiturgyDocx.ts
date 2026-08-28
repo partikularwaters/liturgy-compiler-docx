@@ -545,7 +545,7 @@ export function buildLiturgyDocx({ liturgy, formulas, prayers, songs, audience }
       spacing: { after: 200 },
       children: [
         new TextRun({
-          text: dateIsSunday ? `${formattedDate}   Lord's Day #${liturgy.lordsDayNumber}` : formattedDate,
+          text: dateIsSunday ? `${formattedDate}   Lord’s Day #${liturgy.lordsDayNumber}` : formattedDate,
           smallCaps: true,
           size: META_SIZE,
           font: DOCX_FONT_FAMILY,

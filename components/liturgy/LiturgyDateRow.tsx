@@ -128,7 +128,7 @@ export default function LiturgyDateRow({
       <div className="flex items-start gap-4">
         {renderSide(group.morning, "Morning Worship")}
         <div className="w-[120px] shrink-0 text-center text-[13px] font-medium text-text-secondary pt-0.5">
-          {showLordsDay ? `Lord's Day ${group.lordsDayNumber}` : ""}
+          {showLordsDay ? `Lord’s Day ${group.lordsDayNumber}` : ""}
         </div>
         {renderSide(group.vesper, "Vesper Worship")}
       </div>

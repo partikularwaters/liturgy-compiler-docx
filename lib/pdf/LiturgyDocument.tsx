@@ -477,7 +477,7 @@ export function LiturgyDocument({
           <Text style={styles.title}>{liturgy.templateName} Service</Text>
           <Text style={styles.columnDate}>
             {formattedDate}
-            {dateIsSunday && `   Lord's Day #${liturgy.lordsDayNumber}`}
+            {dateIsSunday && `   Lord’s Day #${liturgy.lordsDayNumber}`}
           </Text>
           {liturgy.sections.map((section, index) => (
             <RenderedSection
@@ -516,7 +516,7 @@ export function LiturgyDocument({
                     <Text style={styles.columnTitle}>{liturgy.templateName} Service</Text>
                     <Text style={styles.columnDate}>
                       {formattedDate}
-                      {dateIsSunday && `   Lord's Day #${liturgy.lordsDayNumber}`}
+                      {dateIsSunday && `   Lord’s Day #${liturgy.lordsDayNumber}`}
                     </Text>
                   </View>
                 )}
