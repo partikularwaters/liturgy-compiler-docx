@@ -21,6 +21,11 @@ interface LiturgyDateRowProps {
   // null for an anonymous visitor -- Delete is hidden entirely then, same
   // rule every other list row in the app already follows.
   currentUser: CurrentUser | null;
+  // true on the homepage's "Recent Liturgies" preview -- that list is
+  // purely a display surface, not a management view, so Delete never
+  // renders there even for a signed-in Compiler/Curator. /liturgies is
+  // the one place this row's delete affordance belongs.
+  readOnly?: boolean;
 }
 
 // One row per service_date, matching Library's two-column pattern: a
@@ -31,7 +36,12 @@ interface LiturgyDateRowProps {
 // pair or for a "multiple of one type on one date" data anomaly, which
 // renders as a plain-label parent with real links only on its narrower
 // child rows.
-export default function LiturgyDateRow({ group, isLast, currentUser }: LiturgyDateRowProps): React.ReactElement {
+export default function LiturgyDateRow({
+  group,
+  isLast,
+  currentUser,
+  readOnly = false,
+}: LiturgyDateRowProps): React.ReactElement {
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +76,7 @@ export default function LiturgyDateRow({ group, isLast, currentUser }: LiturgyDa
           <Link href={`/liturgy/${liturgy.id}`} className="flex-1 min-w-0 text-sm text-text-primary hover:underline truncate">
             {label}
           </Link>
-          {currentUser && (
+          {!readOnly && currentUser && (
             <button
               type="button"
               onClick={() => handleDelete(liturgy, label)}
@@ -95,7 +105,7 @@ export default function LiturgyDateRow({ group, isLast, currentUser }: LiturgyDa
               >
                 {liturgy.sermonPassage ?? "(no passage yet)"}
               </Link>
-              {currentUser && (
+              {!readOnly && currentUser && (
                 <button
                   type="button"
                   onClick={() => handleDelete(liturgy, liturgy.sermonPassage ?? templateName)}

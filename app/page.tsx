@@ -120,6 +120,7 @@ export default async function Home(): Promise<React.ReactElement> {
                 group={group}
                 isLast={index === recentDateGroups.length - 1}
                 currentUser={currentUser}
+                readOnly
               />
             ))}
           </div>
