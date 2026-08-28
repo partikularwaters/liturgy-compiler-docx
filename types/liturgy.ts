@@ -303,6 +303,11 @@ export interface CompiledSection extends TemplateSection {
   // liturgy's docx export actually includes it. Defaults true -- matches
   // every guide-bearing Section's current export behavior.
   showPrayerGuide: boolean;
+  // Which language of the Silent Confession rubric this Liturgy uses
+  // (Confession of Sin Section only) -- a real per-liturgy stored choice,
+  // English carrying equal authority to Tagalog, not a fallback. Defaults
+  // 'fil' in the DB, matching the prior fixed behavior.
+  silentConfessionLanguage: "fil" | "en";
 }
 
 export interface LiturgySummary {

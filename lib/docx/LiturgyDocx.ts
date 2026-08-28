@@ -447,11 +447,13 @@ function renderSection({ section, formulas, prayers, songs, audience }: RenderSe
     }
   }
 
-  // Silent Confession rubric -- fixed, uneditable text (not per-liturgy
-  // data), always present regardless of audience since it's public (shown
-  // to the whole church), unlike this Section's other, Leader-only cue.
+  // Silent Confession rubric -- language is a real per-liturgy stored
+  // choice (English carries equal authority to Tagalog, not a fallback),
+  // but the text itself is otherwise fixed/uneditable. Always present
+  // regardless of audience since it's public (shown to the whole church),
+  // unlike this Section's other, Leader-only cue.
   if (section.name === SILENT_CONFESSION_SECTION) {
-    const [firstLine, ...restLines] = SILENT_CONFESSION_RUBRIC_TEXT.split("\n");
+    const [firstLine, ...restLines] = SILENT_CONFESSION_RUBRIC_TEXT[section.silentConfessionLanguage].split("\n");
     paragraphs.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,

@@ -42,27 +42,38 @@ export async function getLiturgy(id: string): Promise<CompiledLiturgy | null> {
     }
   }
 
-  // 20260721030000_column_break_before.sql and 20260722020000_
-  // show_prayer_guide.sql are DDL migrations applied manually (this
-  // project has no direct Postgres connection -- see those files' own
-  // notes); until applied, selecting either new column outright would fail
-  // this entire query (a missing-column error, not a per-row gap), taking
-  // the whole Compile View and both exports down with it -- unacceptable
-  // given PDF export must stay working/untouched in the meantime. Try with
-  // both new columns first; on exactly that failure, retry without them and
-  // default every Section to "no break" / "show the guide," identical to
-  // every liturgy's current behavior.
+  // 20260721030000_column_break_before.sql, 20260722020000_
+  // show_prayer_guide.sql, and 20260828010000_silent_confession_language.sql
+  // are DDL migrations applied manually (this project has no direct
+  // Postgres connection -- see those files' own notes); until applied,
+  // selecting a new column outright would fail this entire query (a
+  // missing-column error, not a per-row gap), taking the whole Compile View
+  // and both exports down with it -- unacceptable given PDF export must
+  // stay working/untouched in the meantime. Try with every new column
+  // first; on exactly that failure, retry without them and default every
+  // Section to "no break" / "show the guide" / Tagalog, identical to every
+  // liturgy's current behavior.
   let sectionRows:
-    | { id: string; template_section_index: number; column_break_before?: boolean; show_prayer_guide?: boolean }[]
+    | {
+        id: string;
+        template_section_index: number;
+        column_break_before?: boolean;
+        show_prayer_guide?: boolean;
+        silent_confession_language?: "fil" | "en";
+      }[]
     | null = null;
   {
     const { data, error } = await supabase
       .from("sections")
-      .select("id, template_section_index, column_break_before, show_prayer_guide")
+      .select("id, template_section_index, column_break_before, show_prayer_guide, silent_confession_language")
       .eq("liturgy_id", id)
       .order("template_section_index");
 
-    if (error?.message.includes("column_break_before") || error?.message.includes("show_prayer_guide")) {
+    if (
+      error?.message.includes("column_break_before") ||
+      error?.message.includes("show_prayer_guide") ||
+      error?.message.includes("silent_confession_language")
+    ) {
       const fallback = await supabase
         .from("sections")
         .select("id, template_section_index")
@@ -97,6 +108,7 @@ export async function getLiturgy(id: string): Promise<CompiledLiturgy | null> {
     items: itemsBySection.get(row.id) ?? [],
     columnBreakBefore: row.column_break_before ?? false,
     showPrayerGuide: row.show_prayer_guide ?? true,
+    silentConfessionLanguage: row.silent_confession_language ?? "fil",
   }));
 
   return {

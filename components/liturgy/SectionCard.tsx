@@ -9,6 +9,7 @@ import VesperReadingPanel from "@/components/liturgy/VesperReadingPanel";
 import AddPrayerPanel from "@/components/liturgy/AddPrayerPanel";
 import AddSongPanel from "@/components/liturgy/AddSongPanel";
 import PrayerGuidePanel from "@/components/liturgy/PrayerGuidePanel";
+import SilentConfessionLanguageToggle from "@/components/liturgy/SilentConfessionLanguageToggle";
 import MarkedText from "@/components/liturgy/MarkedText";
 import MarkEditor from "@/components/liturgy/MarkEditor";
 import FormulaEditForm from "@/components/liturgy/FormulaEditForm";
@@ -1301,9 +1302,17 @@ export default function SectionCard({
         </ul>
       )}
       {section.name === SILENT_CONFESSION_SECTION && (
-        <p className="font-serif-body text-[16px] leading-[1.6] text-text-primary italic text-center whitespace-pre-line">
-          {SILENT_CONFESSION_RUBRIC_TEXT}
-        </p>
+        <div className="flex flex-col items-center gap-2">
+          <SilentConfessionLanguageToggle
+            liturgyId={liturgyId}
+            sectionIndex={sectionIndex}
+            language={section.silentConfessionLanguage}
+            canEdit={currentUser !== null}
+          />
+          <p className="font-serif-body text-[16px] leading-[1.6] text-text-primary italic text-center whitespace-pre-line">
+            {SILENT_CONFESSION_RUBRIC_TEXT[section.silentConfessionLanguage]}
+          </p>
+        </div>
       )}
     </div>
   );

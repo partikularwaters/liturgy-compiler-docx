@@ -2,6 +2,7 @@ import { sectionTitle } from "@/lib/liturgy/sectionTitle";
 import { applyMarks } from "@/lib/text/marks";
 import { prepareSectionRender } from "@/lib/liturgy/prepareSectionRender";
 import { isSunday, parseLocalDate } from "@/lib/liturgy/lordsDay";
+import { formatServiceDateDisplay } from "@/lib/liturgy/webViewMetadata";
 import { SILENT_CONFESSION_SECTION, SILENT_CONFESSION_RUBRIC_TEXT } from "@/lib/liturgy/silentConfessionRubric";
 import ScriptureCitationLink from "@/components/liturgy/ScriptureCitationLink";
 import type { CompiledLiturgy, Formula, Prayer, Song, TextMark } from "@/types/liturgy";
@@ -77,7 +78,7 @@ export default function LiturgyWebView({
           {liturgy.templateName}
         </h1>
         <p className="text-[13px] text-text-secondary">
-          {liturgy.serviceDate}
+          {formatServiceDateDisplay(liturgy.serviceDate)}
           {dateIsSunday && ` — Lord’s Day ${liturgy.lordsDayNumber}`}
         </p>
       </div>
@@ -89,7 +90,7 @@ export default function LiturgyWebView({
           const isEmpty = visibleItems.length === 0 && !prepared.mergedSelection;
 
           return (
-            <div key={index} className="flex flex-col gap-2">
+            <div key={index} className="flex flex-col gap-4">
               <div className="flex items-baseline justify-between gap-4 flex-wrap">
                 <h2 className="font-serif-body text-[16px] font-bold uppercase text-text-primary">
                   {sectionTitle(section, songs, formulas)}
@@ -188,7 +189,7 @@ export default function LiturgyWebView({
               )}
               {section.name === SILENT_CONFESSION_SECTION && (
                 <p className="font-serif-body text-[16px] leading-[1.6] text-text-primary italic text-center whitespace-pre-line">
-                  {SILENT_CONFESSION_RUBRIC_TEXT}
+                  {SILENT_CONFESSION_RUBRIC_TEXT[section.silentConfessionLanguage]}
                 </p>
               )}
             </div>
