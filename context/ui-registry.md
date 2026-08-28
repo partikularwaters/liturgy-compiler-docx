@@ -72,6 +72,8 @@ An empty Section renders its heading and available add controls only. Item delet
 
 Interactive states (2026-08-27, emil-design-eng Phase 2 — see `ui-rules.md`'s Motion & Animation section for tokens/timing): the shared `addButtonClass` const (every "+ X" trigger) has hover-color and press feedback — one edit covers all call sites, the reference pattern for any future shared button-class const. Pencil/Trash icon buttons have a hover-color transition only, deliberately no press-feedback scale (a bare small icon with no background reads as jitter, not feedback, at that treatment — judgment call, revisit if it looks wrong in practice). Every Add-panel/edit-form mount point gets a restrained fade-in entrance, not an instant pop.
 
+**Section-title-plus-item-header row spacing (2026-08-28), shared with `LiturgyWebView.tsx` — same fix applied to both, not independent choices.** The `h2` Section title and its optional single-item header (a Song title, a Selection/Formula citation) sit in one `flex items-baseline justify-between gap-x-4 gap-y-1 flex-wrap` row. A single `gap-4` here originally governed both cases, which looked fine inline but read as much too far apart once the header wraps below the title — the smaller 13px header text has less visual weight to anchor against 16px of empty space than the 16px title does. Split into `gap-x-4` (unchanged, correct for the inline case) and a much tighter `gap-y-1` (the wrapped case) rather than picking one compromise value. Any future Section-title-plus-header row should use this same split, not a single `gap-4`.
+
 ### Add panels
 
 - `components/liturgy/AddExistingSelectionPanel.tsx`
@@ -107,6 +109,8 @@ Interactive states (2026-08-27, emil-design-eng Phase 2): every toolbar toggle b
 ### LiturgyWebView
 
 `components/liturgy/LiturgyWebView.tsx` is the public, responsive, nav-free read surface for both templates. It consumes the shared read-only render preparation and ignores Compile View page/column editing layout.
+
+**Section spacing rhythm (2026-08-28):** between-Sections spacing uses `gap-8` (32px, not the Compile View's `gap-6` — this surface has no card borders to reinforce the boundary, so whitespace alone has to read as a clear break next to bold all-caps headings); Section-internal spacing (title to body) uses `gap-2` (8px). See `SectionCard`'s entry above for the shared Section-title-plus-header row `gap-x-4`/`gap-y-1` split, used identically here.
 
 ### Supporting controls
 
