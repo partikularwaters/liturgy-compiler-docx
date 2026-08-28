@@ -91,7 +91,7 @@ export default function LiturgyWebView({
 
           return (
             <div key={index} className="flex flex-col gap-2">
-              <div className="flex items-baseline justify-between gap-4 flex-wrap">
+              <div className="flex items-baseline justify-between gap-x-4 gap-y-1 flex-wrap">
                 <h2 className="font-serif-body text-[16px] font-bold uppercase text-text-primary">
                   {sectionTitle(section, songs, formulas)}
                 </h2>
