@@ -229,3 +229,20 @@ window.BGLinks.linkVerses();
 
 - This widget is the only permitted source of AB2001/MBB text anywhere in the app — never fetch or store this text elsewhere (see architecture.md's invariants)
 - Re-run `BGLinks.linkVerses()` after any client-side navigation, since the script only scans the DOM once on load
+
+---
+
+## `next/og` (Dynamic Open Graph Images)
+
+Used by the Web View's `opengraph-image` route to render a real per-liturgy preview image (`ImageResponse`, Satori under the hood) instead of relying on plain `og:title`/`og:description` text, which no platform lets you style (fixed system font, no per-field layout control, ever).
+
+**Confirmed real bug (2026-08-28), not a usage mistake — isolate before assuming your own code is wrong:** Next.js's `opengraph-image.tsx` special-file convention silently 404s specifically when nested as `[dynamic-segment]/static-folder/opengraph-image.tsx`. Confirmed by isolating the exact failing shape: it works directly under a dynamic segment (`app/liturgy/[id]/opengraph-image.tsx`) or at the app root (`app/opengraph-image.tsx`), but not with an extra static folder in between — which is this app's actual route shape (`app/liturgy/[id]/view/...`). The route still shows up correctly in `next build`'s route listing and in the app-path-routes-manifest, making it look like it *should* work; only a live request reveals the 404. **Workaround:** use a plain Route Handler (`route.tsx`, not the special-file convention) in the identical URL shape — confirmed to work in the same nesting Next's own convention fails on — and wire its URL into `generateMetadata`'s `openGraph.images` manually, since a plain Route Handler isn't auto-discovered the way the special-file convention would be. See `app/liturgy/[id]/view/opengraph-image/route.tsx` and `app/liturgy/[id]/view/page.tsx`'s `generateMetadata`.
+
+**Font loading:** `ImageResponse` needs real font bytes passed explicitly (no `next/font/google` access, same constraint `lib/pdf/fonts.ts` already documents for react-pdf) — reuses `IbarraRealNova-Regular.ttf` from `public/fonts/`, plus two new files (`Inter-Regular.woff`, `Inter-SemiBold.woff`) sourced the same way this project already sources Ibarra Real Nova's italic: Google's CSS2 API, forced to a static (non-variable) instance via an old-enough User-Agent string, since modern requests only serve the variable font and Satori needs a single static weight per registered font.
+
+**No real OpenType small caps:** Satori doesn't support `font-variant: small-caps`. Faked with uppercase text plus generous letter-spacing instead — an intentional, documented degradation, the same pattern as the PDF's italic fallback above, not an oversight.
+
+**Rules:**
+
+- This route must run on the Node.js runtime (`export const runtime = "nodejs"`) to use `fs.readFile` for font loading — the default Edge runtime can't read local files
+- Never assume a route missing from a live request means your route code is wrong before checking whether it's this specific nesting-shape bug first — confirm via a minimal reproduction (bare content at the app root, then directly under the dynamic segment, then with the extra static folder) rather than debugging the real implementation's logic
