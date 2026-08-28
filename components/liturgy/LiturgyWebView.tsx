@@ -83,14 +83,14 @@ export default function LiturgyWebView({
         </p>
       </div>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
         {liturgy.sections.map((section, index) => {
           const prepared = prepareSectionRender(section, formulas, prayers, songs);
           const visibleItems = prepared.items.filter(({ resolved }) => !resolved.leaderOnly);
           const isEmpty = visibleItems.length === 0 && !prepared.mergedSelection;
 
           return (
-            <div key={index} className="flex flex-col gap-4">
+            <div key={index} className="flex flex-col gap-2">
               <div className="flex items-baseline justify-between gap-4 flex-wrap">
                 <h2 className="font-serif-body text-[16px] font-bold uppercase text-text-primary">
                   {sectionTitle(section, songs, formulas)}

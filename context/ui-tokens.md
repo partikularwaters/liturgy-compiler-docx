@@ -201,9 +201,10 @@ Font family: **Inter** — import via `next/font/google`, never use a fallback s
 
 | Token | Value | Usage |
 | --- | --- | --- |
-| `gap-2` | 8px | Badge and tag gaps |
-| `gap-4` | 16px | Section internal gaps |
+| `gap-2` | 8px | Badge and tag gaps; also the Web View's Section-internal gap (title/header to body) — deliberately tighter than the Compile View's own `gap-4`, since the Web View is dense continuous prose with no card borders to lean on, so contrast has to come from spacing alone (2026-08-28) |
+| `gap-4` | 16px | Section internal gaps in the Compile View |
 | `gap-6` | 24px | Between Sections in the Compile View |
+| `gap-8` | 32px | Between Sections in the Web View — wider than the Compile View's `gap-6` for the same reason: no card borders exist there to reinforce a Section boundary, so whitespace alone must read as a clear break even next to bold, all-caps Section headings (2026-08-28) |
 | `p-4` | 16px | Card padding |
 | `p-6` | 24px | Large card padding |
 | `px-4 py-2` | 16/8px | Button padding |
