@@ -90,13 +90,13 @@ export default function ConfirmDeleteLiturgyDialog({
         type="button"
         disabled={!onToggle || isDeleted}
         onClick={onToggle}
-        className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium text-center transition-[border-color,color,background-color] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] ${
+        className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium text-center transition-[border-color,color,background-color,transform] duration-[var(--duration-press)] ease ${
           isDeleted
             ? "border-border text-text-muted bg-surface-secondary line-through"
             : isSelected
               ? "border-error text-error bg-error-light"
               : "border-border text-text-muted bg-surface-secondary"
-        } ${onToggle && !isDeleted ? "" : "cursor-default"}`}
+        } ${onToggle && !isDeleted ? "motion-safe:active:scale-[0.97]" : "cursor-default"}`}
       >
         {liturgy.templateName}
         {isDeleted && " — Deleted"}
