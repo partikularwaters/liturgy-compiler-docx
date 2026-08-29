@@ -3,10 +3,12 @@ import { getAccountRequests } from "@/lib/curatorInbox/getAccountRequests";
 import { getLibrarySubmissions } from "@/lib/curatorInbox/getLibrarySubmissions";
 import { getActiveAccounts } from "@/lib/curatorInbox/getActiveAccounts";
 import { getBinnedItems } from "@/lib/curatorInbox/getBinnedItems";
+import { getDeletionLog } from "@/lib/curatorInbox/getDeletionLog";
 import AccountRequestsTab from "@/app/curator-inbox/AccountRequestsTab";
 import LibrarySubmissionsTab from "@/app/curator-inbox/LibrarySubmissionsTab";
 import ActiveAccountsTab from "@/app/curator-inbox/ActiveAccountsTab";
 import BinTab from "@/app/curator-inbox/BinTab";
+import DeletionLogTab from "@/app/curator-inbox/DeletionLogTab";
 
 export const dynamic = "force-dynamic";
 
@@ -21,11 +23,12 @@ export default async function CuratorInboxPage(): Promise<React.ReactElement> {
     );
   }
 
-  const [accountRequests, librarySubmissions, activeAccounts, binnedItems] = await Promise.all([
+  const [accountRequests, librarySubmissions, activeAccounts, binnedItems, deletionLog] = await Promise.all([
     getAccountRequests(),
     getLibrarySubmissions(),
     getActiveAccounts(),
     getBinnedItems(),
+    getDeletionLog(),
   ]);
 
   return (
@@ -52,6 +55,11 @@ export default async function CuratorInboxPage(): Promise<React.ReactElement> {
         <section className="flex flex-col gap-3">
           <h2 className="text-[15px] font-semibold text-text-primary">Bin</h2>
           <BinTab items={binnedItems} />
+        </section>
+
+        <section className="flex flex-col gap-3">
+          <h2 className="text-[15px] font-semibold text-text-primary">Deletion Log</h2>
+          <DeletionLogTab entries={deletionLog} />
         </section>
       </div>
     </div>

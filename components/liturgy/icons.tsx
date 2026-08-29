@@ -26,6 +26,8 @@ import {
   IconClock,
   IconTriangleFilled,
   IconMenu2,
+  IconDotsVertical,
+  IconCircleCheck,
 } from "@tabler/icons-react";
 
 interface IconProps {
@@ -77,3 +79,5 @@ export const ClockIcon = wrap(IconClock);
 export const TriangleIcon = wrap(IconTriangleFilled);
 // Mobile nav hamburger toggle.
 export const MenuIcon = wrap(IconMenu2);
+export const MoreIcon = wrap(IconDotsVertical);
+export const CircleCheckIcon = wrap(IconCircleCheck);
