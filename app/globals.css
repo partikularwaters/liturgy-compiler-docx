@@ -70,6 +70,18 @@
      (redesign-plan-v1.1.md §AB), not a provisional guess. */
   --color-citation: #C00000;
 
+  /* Morning/Vesper liturgy tags (LiturgyDateRow), approved 2026-08-30.
+     Neither existing --color-warning nor --color-info gives correct
+     contrast for this pairing (warning-foreground is white, meant for the
+     solid warning bg, not warning-light -- a real bug the first version of
+     this tag shipped with). Madrid asked for a light "highlighter" yellow
+     for Morning and a dark navy for Vesper specifically, not a reuse of
+     an existing semantic token. */
+  --color-morning: #FDE68A;
+  --color-morning-foreground: #6B4A1D;
+  --color-vesper: #1E3A5F;
+  --color-vesper-foreground: #EAF1F8;
+
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;

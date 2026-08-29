@@ -6,6 +6,7 @@ interface ModalProps {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  size?: "default" | "compact";
 }
 
 const FOCUSABLE_SELECTOR =
@@ -16,7 +17,7 @@ const FOCUSABLE_SELECTOR =
 // aria-modal/aria-labelledby, Escape to dismiss, initial focus on open,
 // Tab/Shift+Tab contained within the dialog, focus restored to whatever
 // triggered it on close) so any future caller gets it for free.
-export default function Modal({ title, onClose, children }: ModalProps): React.ReactElement {
+export default function Modal({ title, onClose, children, size = "default" }: ModalProps): React.ReactElement {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -73,7 +74,9 @@ export default function Modal({ title, onClose, children }: ModalProps): React.R
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="bg-surface border border-border rounded-lg shadow-lg max-w-[560px] w-full max-h-[80vh] overflow-y-auto p-6 flex flex-col gap-4 transition-[opacity,transform] duration-[var(--duration-modal)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:scale-95"
+        className={`bg-surface border border-border rounded-lg shadow-lg ${
+          size === "compact" ? "max-w-[440px]" : "max-w-[560px]"
+        } w-full max-h-[80vh] overflow-y-auto p-6 flex flex-col gap-4 transition-[opacity,transform] duration-[var(--duration-modal)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:scale-95`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">

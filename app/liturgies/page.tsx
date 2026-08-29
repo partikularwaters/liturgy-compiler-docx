@@ -60,7 +60,7 @@ export default async function LiturgiesPage(): Promise<React.ReactElement> {
           )}
         </div>
       ) : (
-        <div className="bg-surface border border-border rounded-lg overflow-hidden">
+        <div className="bg-surface border border-border rounded-lg">
           {dateGroups.map((group, index) => (
             <LiturgyDateRow
               key={group.serviceDate}

@@ -45,7 +45,14 @@ export default function ConfirmDeleteLiturgyDialog({
   // state rather than looking like nothing happened.
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
-  const selected = [primary, ...(siblingSelected && sibling ? [sibling] : [])];
+  // The trigger decides which option is locked on, never the visual order:
+  // the pair always reads Morning then Vesper in the options and action copy.
+  const orderedOptions = sibling
+    ? primary.templateName === "Morning Worship"
+      ? [primary, sibling]
+      : [sibling, primary]
+    : [primary];
+  const selected = orderedOptions.filter((liturgy) => liturgy.id === primary.id || siblingSelected);
   const label = (liturgy: LiturgySummary): string => liturgy.templateName.replace(" Worship", "");
   const pending = selected.filter((liturgy) => !deletedIds.has(liturgy.id));
 
@@ -87,6 +94,7 @@ export default function ConfirmDeleteLiturgyDialog({
     const isDeleted = deletedIds.has(liturgy.id);
     return (
       <button
+        key={liturgy.id}
         type="button"
         disabled={!onToggle || isDeleted}
         onClick={onToggle}
@@ -105,7 +113,7 @@ export default function ConfirmDeleteLiturgyDialog({
   };
 
   return (
-    <Modal title="Confirm to delete the selected liturgy" onClose={onClose}>
+    <Modal title="Confirm to delete the selected liturgy" onClose={onClose} size="compact">
       <p className="text-sm text-text-secondary">
         Are you sure you want to delete the selected liturgy? This action cannot be undone.
       </p>
@@ -115,8 +123,14 @@ export default function ConfirmDeleteLiturgyDialog({
       </p>
 
       <div className="flex gap-2">
-        {renderOption(primary, true)}
-        {sibling && renderOption(sibling, siblingSelected, () => setSiblingSelected((prev) => !prev))}
+        {orderedOptions.map((liturgy) => {
+          const isPrimary = liturgy.id === primary.id;
+          return renderOption(
+            liturgy,
+            isPrimary || siblingSelected,
+            isPrimary ? undefined : () => setSiblingSelected((prev) => !prev)
+          );
+        })}
       </div>
 
       {requiresTypedConfirmation && pending.length > 0 && (
@@ -135,21 +149,21 @@ export default function ConfirmDeleteLiturgyDialog({
 
       {error && <p className="text-sm text-error">{error}</p>}
 
-      <div className="flex items-center gap-2 justify-end">
-        <button
-          type="button"
-          onClick={onClose}
-          className="bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
-        >
-          {deletedIds.size > 0 ? "Close" : "Cancel"}
-        </button>
+      <div className="flex flex-col gap-2">
         <button
           type="button"
           disabled={!canConfirm}
           onClick={handleConfirm}
-          className="bg-error text-error-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
+          className="w-full bg-error text-error-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
         >
           {buttonLabel}
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-full bg-surface border border-border text-text-primary rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
+        >
+          {deletedIds.size > 0 ? "Close" : "Cancel"}
         </button>
       </div>
     </Modal>

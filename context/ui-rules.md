@@ -139,8 +139,8 @@ font-weight: 500
 Established variants:
 - **Already used elsewhere** — `bg-success-light` / `text-success-foreground` — shown in the Reader and Compile View when a citation is already saved to the current Section
 - **Leader only** — `bg-accent-light` / `text-accent-dark` — marks a Verbal Cue that won't appear in the Congregation Bulletin export
-- **Morning** — `bg-info-light` / `text-info-foreground` — tags a liturgy as Morning Worship in `LiturgyDateRow` (2026-08-30)
-- **Vesper** — `bg-warning-light` / `text-warning-foreground` — tags a liturgy as Vesper Worship in `LiturgyDateRow` (2026-08-30)
+- **Morning** — `bg-morning` / `text-morning-foreground` — approved highlighter-yellow identity tag in `LiturgyDateRow` (2026-08-30)
+- **Vesper** — `bg-vesper` / `text-vesper-foreground` — approved dark-navy identity tag in `LiturgyDateRow` (2026-08-30)
 
 ---
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { liturgyOccasionLabel } from "@/lib/liturgy/liturgyOccasionLabel";
+import { getLiturgyOccasionParts, liturgyOccasionLabel } from "@/lib/liturgy/liturgyOccasionLabel";
 
 describe("liturgyOccasionLabel", () => {
   it("shows the Lord's Day number for a Sunday service date", () => {
@@ -10,5 +10,12 @@ describe("liturgyOccasionLabel", () => {
   it("shows 'Special Service' for a non-Sunday date, never the Lord's Day number", () => {
     // 2026-08-22 is a real Saturday.
     expect(liturgyOccasionLabel("2026-08-22", 34)).toBe("August 22, 2026 | Special Service");
+  });
+
+  it("provides structured date and occasion labels for split layouts", () => {
+    expect(getLiturgyOccasionParts("2026-08-30", 35)).toEqual({
+      serviceDateLabel: "August 30, 2026",
+      occasionLabel: "Lord’s Day #35",
+    });
   });
 });

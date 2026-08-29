@@ -103,6 +103,14 @@ className="bg-purple-500 text-gray-600"
      (redesign-plan-v1.1.md §AB) — was a provisional guess (#C0392B) before. */
   --color-citation: #C00000;
 
+  /* Liturgy-type tags in LiturgyDateRow — highlighter yellow distinguishes
+     Morning without implying warning; dark navy gives Vesper the intended
+     evening register. Both pairs were visually approved 2026-08-30. */
+  --color-morning: #FDE68A;
+  --color-morning-foreground: #6B4A1D;
+  --color-vesper: #1E3A5F;
+  --color-vesper-foreground: #EAF1F8;
+
   /* Border radius */
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -178,6 +186,17 @@ These rows are exact foreground/background pairings, not interchangeable token f
 | Floating nav pill CTA background | `bg-cta-yellow` |
 | Floating nav pill CTA text | `text-cta-yellow-foreground` |
 | Scripture citation text (small caps) | `text-citation` |
+
+### Liturgy-type tags
+
+| Liturgy type | Background | Text |
+| --- | --- | --- |
+| Morning | `bg-morning` | `text-morning-foreground` |
+| Vesper | `bg-vesper` | `text-vesper-foreground` |
+
+These are identity colors scoped to the Morning/Vesper badges in
+`LiturgyDateRow`; they are not general-purpose status colors. The approved
+pairings have 6.43:1 (Morning) and 10.10:1 (Vesper) contrast.
 
 ---
 
@@ -303,7 +322,7 @@ Reference via `var(--ease-out-strong)` / `var(--duration-press)`, the same direc
 - Never use hex values directly in components — always use CSS variables via Tailwind tokens
 - Font is **Inter** — always import via `next/font/google`, never use a fallback system font.
 - Never use raw Tailwind color classes like `bg-purple-500` or `text-gray-600` — use project tokens only
-- The burgundy accent (`--color-accent`) is the only *primary* accent color — never use Tailwind's built-in color scale for it. `--color-cta-yellow` and `--color-citation` (added v1.1) are narrowly-scoped exceptions for the top nav CTA and Scripture citations specifically, not general-purpose accents — don't reach for them outside those two uses.
+- The burgundy accent (`--color-accent`) is the only *primary* accent color — never use Tailwind's built-in color scale for it. `--color-cta-yellow`, `--color-citation`, `--color-morning`, and `--color-vesper` are narrowly-scoped exceptions for the top nav CTA, Scripture citations, and LiturgyDateRow's two liturgy-type badges respectively — don't reach for them outside those uses.
 - All borders default to `--color-border` — never use `border-gray-*`
 - `lib/pdf/tokens.ts` mirrors this file's hex values for react-pdf, which has no Tailwind/CSS-variable access — update both together if a token changes (see `library-docs.md`). As of 2026-07-18, `pdfColors` also has a `surfaceSecondary: "#F1EFE9"` entry (mirroring `--color-surface-secondary`), added when the PDF's Prayer Guide reference panel needed it — check `pdfColors` for a token before assuming it's missing from the PDF side.
 - Shared icons (`components/liturgy/icons.tsx`) use `strokeWidth="2"` uniformly; any new icon added to that file must match.

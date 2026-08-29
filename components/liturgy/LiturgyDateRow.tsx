@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import LiturgyOptionsMenu from "@/components/liturgy/LiturgyOptionsMenu";
 import ConfirmDeleteLiturgyDialog from "@/components/liturgy/ConfirmDeleteLiturgyDialog";
-import { liturgyOccasionLabel } from "@/lib/liturgy/liturgyOccasionLabel";
+import { getLiturgyOccasionParts } from "@/lib/liturgy/liturgyOccasionLabel";
 import type { LiturgyDateGroup } from "@/lib/liturgy/groupLiturgiesByDate";
 import type { LiturgySummary } from "@/types/liturgy";
 import type { CurrentUser } from "@/lib/auth/getCurrentUser";
@@ -59,6 +59,7 @@ export default function LiturgyDateRow({
   const [deleteTarget, setDeleteTarget] = useState<{ primary: LiturgySummary; sibling: LiturgySummary | null } | null>(
     null
   );
+  const { serviceDateLabel, occasionLabel } = getLiturgyOccasionParts(group.serviceDate, group.lordsDayNumber);
 
   // Combined "delete both" is only offered for the common, unambiguous
   // one-Morning/one-Vesper pairing -- a "multiple of one type on one date"
@@ -76,55 +77,57 @@ export default function LiturgyDateRow({
     setDeleteTarget({ primary: liturgy, sibling });
   };
 
-  const renderLiturgy = (liturgy: LiturgySummary, textClassName: string): React.ReactElement => {
+  // One bordered container per liturgy, never a shared box holding a
+  // stacked list -- previously a "multiple of one type on one date"
+  // anomaly nested several liturgies inside one tag'd box, which also made
+  // that box (and, since the row used items-stretch, the LD#/Special
+  // Service anchor next to it) grow taller the more liturgies existed.
+  // Each liturgy now gets its own fixed-shape box regardless of how many
+  // siblings share its column.
+  const renderLiturgy = (liturgy: LiturgySummary, tagLabel: string, tagClassName: string): React.ReactElement => {
     const readinessInfo = readiness?.[liturgy.id];
     return (
-      <div key={liturgy.id} className="flex items-center gap-2 min-w-0">
-        <Link href={`/liturgy/${liturgy.id}`} className={`flex-1 min-w-0 truncate ${textClassName}`}>
-          {[liturgy.sermonPassage, formatDateDisplay(liturgy.serviceDate)].filter(Boolean).join(" | ")}
-        </Link>
-        {!readOnly && currentUser && (
-          <LiturgyOptionsMenu
-            liturgyId={liturgy.id}
-            canMarkReady={readinessInfo?.status === "draft" && readinessInfo.canMarkReady}
-            onDeleteClick={() => requestDelete(liturgy)}
-          />
-        )}
-      </div>
-    );
-  };
-
-  const renderSide = (
-    liturgies: LiturgySummary[],
-    tagLabel: string,
-    tagClassName: string
-  ): React.ReactElement => {
-    if (liturgies.length === 0) return <div className="flex-1" />;
-
-    return (
-      <div className="flex-1 min-w-0 border border-border rounded-md px-3 py-2 flex flex-col gap-1.5">
-        <span
-          className={`self-start rounded-full px-2.5 py-0.5 text-[11px] font-medium ${tagClassName}`}
-        >
+      <div key={liturgy.id} className="min-w-0 border border-border rounded-md px-3 py-2 flex flex-col gap-1.5">
+        <span className={`self-start rounded-full px-2.5 py-0.5 text-[11px] font-medium ${tagClassName}`}>
           {tagLabel}
         </span>
-        {liturgies.length === 1
-          ? renderLiturgy(liturgies[0], "text-sm text-text-primary hover:underline")
-          : liturgies.map((liturgy) => renderLiturgy(liturgy, "text-[13px] text-text-secondary hover:underline"))}
+        <div className="flex items-center gap-2 min-w-0">
+          <Link href={`/liturgy/${liturgy.id}`} className="flex-1 min-w-0 truncate text-sm text-text-primary hover:underline">
+            {[liturgy.sermonPassage, formatDateDisplay(liturgy.serviceDate)].filter(Boolean).join(" | ")}
+          </Link>
+          {!readOnly && currentUser && (
+            <LiturgyOptionsMenu
+              liturgyId={liturgy.id}
+              canMarkReady={readinessInfo?.status === "draft" && readinessInfo.canMarkReady}
+              onDeleteClick={() => requestDelete(liturgy)}
+            />
+          )}
+        </div>
       </div>
     );
   };
+
+  const renderSide = (liturgies: LiturgySummary[], tagLabel: string, tagClassName: string): React.ReactElement => (
+    <div
+      className={`${liturgies.length === 0 ? "hidden sm:flex" : "flex"} w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-1`}
+    >
+      {liturgies.map((liturgy) => renderLiturgy(liturgy, tagLabel, tagClassName))}
+    </div>
+  );
 
   return (
     <div className={`px-6 py-3 ${isLast ? "" : "border-b border-border"}`}>
-      <div className="flex items-stretch gap-3">
-        <div className="w-[140px] shrink-0 flex items-center px-3 py-2 rounded-md bg-surface-secondary">
-          <span className="text-[13px] font-medium text-text-secondary">
-            {liturgyOccasionLabel(group.serviceDate, group.lordsDayNumber).split(" | ")[1]}
+      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start">
+        <div className="w-full shrink-0 flex flex-row items-baseline justify-start gap-2 border-b border-border pb-2 text-left font-serif-body [font-variant:small-caps] sm:w-[120px] sm:self-stretch sm:flex-col sm:items-start sm:justify-center sm:gap-1 sm:border-b-0 sm:border-r sm:py-2">
+          <span className="text-[16px] font-semibold leading-5 text-text-primary">
+            {occasionLabel}
+          </span>
+          <span className="text-[13px] leading-[18px] text-text-muted">
+            {serviceDateLabel}
           </span>
         </div>
-        {renderSide(group.morning, "Morning", "bg-info-light text-info-foreground")}
-        {renderSide(group.vesper, "Vesper", "bg-warning-light text-warning-foreground")}
+        {renderSide(group.morning, "Morning", "bg-morning text-morning-foreground")}
+        {renderSide(group.vesper, "Vesper", "bg-vesper text-vesper-foreground")}
       </div>
       {error && <p className="text-[12px] text-error mt-1">{error}</p>}
 
