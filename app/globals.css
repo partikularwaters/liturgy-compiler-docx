@@ -89,6 +89,19 @@
   --duration-modal: 250ms;
 }
 
+/* Reserves the vertical scrollbar's width on every page, whether or not
+   that page's own content is tall enough to need it. Without this, the
+   floating nav pill and every centered page container re-center against
+   document.documentElement.clientWidth, which is ~15px narrower on a page
+   that scrolls than one that doesn't -- so navigating between a short page
+   and a tall one (most visibly /liturgies as its list grows) visibly
+   shifts the whole nav/content horizontally by half a scrollbar width.
+   Confirmed live: with this rule, a scrolling and a non-scrolling page
+   both render the nav pill at the identical pixel position. */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   background: var(--color-background);
   color: var(--color-text-primary);
