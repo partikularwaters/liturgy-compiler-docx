@@ -28,8 +28,8 @@ older build narrative lives in `context/overflow/session-notes/`, indexed by
 the file's own Overflow Index. **Never read an overflow file wholesale on
 `/remember restore` or by default** — grep it for a specific keyword/date
 only. Protocol §2.9 itself is defined in Banka's own repo,
-`https://github.com/partikularwaters/Banka/blob/main/protocol/Banka.md`
-(public; current as of commit `46870c6`, 2026-08-25) — see
+`https://github.com/partikularwaters/Banka/blob/v2.0.0/protocol/Banka.md`
+(public; this project runs Banka `v2.0.0`, updated 2026-08-30) — see
 `progress-tracker.md`'s Decisions Made for the migration history and
 rationale.
 
