@@ -37,12 +37,19 @@ export async function addSong(
     return { success: false, error: "That Song could not be found." };
   }
 
-  if (song.section_name !== section.sectionName) {
+  const { data: tag, error: tagError } = await supabase
+    .from("song_section_tags")
+    .select("song_id")
+    .eq("song_id", songId)
+    .eq("section_name", section.sectionName)
+    .maybeSingle();
+
+  if (tagError || !tag) {
     console.error(
-      "[lib/liturgy/addSongAction] section mismatch:",
-      song.section_name,
-      "!=",
-      section.sectionName
+      "[lib/liturgy/addSongAction] Song tag mismatch:",
+      songId,
+      section.sectionName,
+      tagError?.message
     );
     return { success: false, error: "That Song does not belong to this Section." };
   }

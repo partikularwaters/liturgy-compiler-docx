@@ -2,7 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 import { normalizeTypography } from "@/lib/text/typographic";
-import { setTranslationPair } from "@/lib/liturgy/translationPairing";
+import { reconcileTranslationPair, setTranslationPair } from "@/lib/liturgy/translationPairing";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { TextMark } from "@/types/liturgy";
 
@@ -21,14 +21,13 @@ import type { TextMark } from "@/types/liturgy";
 export async function createPrayer(
   sectionName: string,
   text: string,
-  kind: "corporate" | "leader" = "leader",
   marks: TextMark[] = [],
   isGuide: boolean = false,
   translation: "fil" | "en" | null = null,
   pairedId: string | null = null
 ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
-  if (!text.trim()) {
-    return { success: false, error: "Prayer text is required." };
+  if (!sectionName.trim() || !text.trim()) {
+    return { success: false, error: "Section and Prayer content are required." };
   }
 
   const currentUser = await getCurrentUser();
@@ -38,12 +37,14 @@ export async function createPrayer(
 
   const ownerId = currentUser.role === "curator" ? null : currentUser.id;
 
+  // `kind` deliberately omitted -- no longer a meaningful Library-level
+  // fact (Track B, 2026-08-31; see prayerKindPolicy.ts). The DB column's
+  // own default applies.
   const { data, error } = await supabase
     .from("prayers")
     .insert({
       section_name: sectionName,
       text: normalizeTypography(text),
-      kind,
       marks,
       is_guide: isGuide,
       translation,
@@ -58,7 +59,14 @@ export async function createPrayer(
   }
 
   if (pairedId) {
-    await setTranslationPair("prayers", data.id, pairedId);
+    const pairResult = await setTranslationPair("prayers", data.id, pairedId);
+    if (!pairResult.success) {
+      return {
+        success: false,
+        data: { id: data.id },
+        error: "Prayer was created, but its translation pairing could not be saved. Close this form and edit the saved Prayer to retry.",
+      };
+    }
   }
 
   return { success: true, data: { id: data.id } };
@@ -68,7 +76,6 @@ export async function updatePrayer(
   id: string,
   sectionName: string,
   text: string,
-  kind?: "corporate" | "leader",
   marks: TextMark[] = [],
   isGuide?: boolean,
   translation?: "fil" | "en" | null,
@@ -99,7 +106,6 @@ export async function updatePrayer(
       section_name: sectionName,
       text: normalizeTypography(text),
       marks,
-      ...(kind ? { kind } : {}),
       ...(isGuide !== undefined ? { is_guide: isGuide } : {}),
       ...(translation !== undefined ? { translation } : {}),
     })
@@ -110,10 +116,11 @@ export async function updatePrayer(
     return { success: false, error: "Unable to update this Prayer right now." };
   }
 
-  if (pairedId !== undefined) {
-    const pairResult = await setTranslationPair("prayers", id, pairedId);
-    if (!pairResult.success) return pairResult;
-  }
+  const pairResult =
+    pairedId !== undefined
+      ? await setTranslationPair("prayers", id, pairedId)
+      : await reconcileTranslationPair("prayers", id);
+  if (!pairResult.success) return pairResult;
 
   return { success: true };
 }

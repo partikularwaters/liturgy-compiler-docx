@@ -60,19 +60,23 @@ export async function getLiturgy(id: string): Promise<CompiledLiturgy | null> {
         column_break_before?: boolean;
         show_prayer_guide?: boolean;
         silent_confession_language?: "fil" | "en";
+        merge_selections?: boolean;
       }[]
     | null = null;
   {
     const { data, error } = await supabase
       .from("sections")
-      .select("id, template_section_index, column_break_before, show_prayer_guide, silent_confession_language")
+      .select(
+        "id, template_section_index, column_break_before, show_prayer_guide, silent_confession_language, merge_selections"
+      )
       .eq("liturgy_id", id)
       .order("template_section_index");
 
     if (
       error?.message.includes("column_break_before") ||
       error?.message.includes("show_prayer_guide") ||
-      error?.message.includes("silent_confession_language")
+      error?.message.includes("silent_confession_language") ||
+      error?.message.includes("merge_selections")
     ) {
       const fallback = await supabase
         .from("sections")
@@ -109,6 +113,7 @@ export async function getLiturgy(id: string): Promise<CompiledLiturgy | null> {
     columnBreakBefore: row.column_break_before ?? false,
     showPrayerGuide: row.show_prayer_guide ?? true,
     silentConfessionLanguage: row.silent_confession_language ?? "fil",
+    mergeSelections: row.merge_selections ?? false,
   }));
 
   return {

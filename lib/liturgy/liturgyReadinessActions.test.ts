@@ -34,7 +34,7 @@ function liturgy(overrides: Partial<CompiledLiturgy> = {}): CompiledLiturgy {
         dynamic_naming: false,
         items: [{ id: "s1", type: "selection", text: "text", citation: "Ps 1:1" }],
         columnBreakBefore: false,
-        showPrayerGuide: true, silentConfessionLanguage: "fil",
+        showPrayerGuide: true, silentConfessionLanguage: "fil", mergeSelections: false,
       },
     ],
     showEndNote: true,
@@ -72,7 +72,7 @@ describe("markReady", () => {
             dynamic_naming: false,
             items: [],
             columnBreakBefore: false,
-            showPrayerGuide: true, silentConfessionLanguage: "fil",
+            showPrayerGuide: true, silentConfessionLanguage: "fil", mergeSelections: false,
           },
         ],
       })

@@ -5,6 +5,7 @@ import { getSectionContext } from "@/lib/liturgy/getSectionContext";
 import { insertSectionItem, updateSectionItem } from "@/lib/liturgy/sectionItems";
 import { normalizeTypography } from "@/lib/text/typographic";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
+import { getDefaultPrayerKind } from "@/lib/liturgy/prayerKindPolicy";
 import type { PrayerItem, TextMark } from "@/types/liturgy";
 
 export async function addPrayer(
@@ -28,7 +29,7 @@ export async function addPrayer(
 
   const { data: prayer, error: prayerError } = await supabase
     .from("prayers")
-    .select("section_name, text, marks, kind")
+    .select("section_name, text, marks")
     .eq("id", prayerId)
     .single();
 
@@ -47,15 +48,19 @@ export async function addPrayer(
     return { success: false, error: "That Prayer does not belong to this Section." };
   }
 
-  // Snapshot text/marks/leaderOnly now -- see PrayerItem's own comment for
-  // why this can no longer be a live lookup at render/export time.
+  // Snapshot text/marks now -- see PrayerItem's own comment for why this
+  // can no longer be a live lookup at render/export time. leaderOnly starts
+  // from this Section's own default policy (Track B, 2026-08-31) -- it is
+  // no longer derived from the library Prayer at all, since audience is now
+  // a per-placement fact, independently changeable afterward (see
+  // updatePrayerItem below).
   const newItem: PrayerItem = {
     id: crypto.randomUUID(),
     type: "prayer",
     prayerId,
     text: prayer.text,
     marks: prayer.marks ?? [],
-    leaderOnly: prayer.kind === "leader",
+    leaderOnly: getDefaultPrayerKind(section.sectionName) === "leader",
   };
 
   const { success, error: updateError } = await insertSectionItem(section.id, newItem);
@@ -93,6 +98,7 @@ export async function updatePrayerItem(
   itemId: string,
   text: string,
   marks: TextMark[],
+  leaderOnly: boolean,
   saveToPersonalLibrary: boolean = false
 ): Promise<{ success: boolean; error?: string; savedToPersonalLibrary?: boolean }> {
   const requester = await getCurrentUser();
@@ -111,7 +117,12 @@ export async function updatePrayerItem(
     return { success: false, error: "Unable to find that Prayer right now." };
   }
 
-  const { success, error } = await updateSectionItem({ ...existingItem, text: normalizedText, marks });
+  const { success, error } = await updateSectionItem({
+    ...existingItem,
+    text: normalizedText,
+    marks,
+    leaderOnly,
+  });
 
   if (!success) {
     console.error("[lib/liturgy/addPrayerAction/updatePrayerItem]", error);
@@ -136,13 +147,14 @@ export async function updatePrayerItem(
     } else {
       const { data: original } = await supabase
         .from("prayers")
-        .select("section_name, kind")
+        .select("section_name")
         .eq("id", existingItem.prayerId)
         .single();
       if (original) {
+        // `kind` deliberately omitted -- no longer a meaningful Library-level
+        // fact (Track B, 2026-08-31); the DB column's own default applies.
         const { error: forkError } = await supabase.from("prayers").insert({
           section_name: original.section_name,
-          kind: original.kind,
           text: normalizedText,
           marks,
           owner_id: requester.id,

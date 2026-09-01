@@ -163,21 +163,17 @@ export interface Prayer {
   id: string;
   sectionName: string;
   text: string;
-  // `kind` is
-  // purely about audience, driving derived Bulletin/Guide visibility the
-  // same way Formula/Verbal Cue's `visibility` field already does (see
-  // resolveItemText.ts's "prayer" case) -- 'corporate' means the whole
-  // church prays it (both Bulletin + Guide), 'leader' means it's the
-  // leader/minister's own material (Guide only, since a leader-only prayer
-  // isn't for the congregation). Meaningless when `isGuide` is true (a
-  // guide entry is never placed, so it has no audience).
-  kind: "corporate" | "leader";
-  // Placeability is
-  // its own independent fact from audience (see `kind` above). A guide
-  // entry is structural reference material (redesign-plan-v1.1.md §W's
-  // checklists) shown next to "Add Prayer" on the Sections that need one,
-  // never placeable as an actual liturgy item themselves. Defaults `false`
-  // at the DB level (migration 20260723020000_prayer_kind_redesign.sql).
+  // Placeability is its own independent fact from audience. Audience
+  // ("corporate" vs "leader") moved off this library row entirely as of
+  // Track B (2026-08-31) -- it's now a per-placement fact on PrayerItem
+  // itself (`leaderOnly`), since the same shared Prayer can genuinely be
+  // Corporate in one placement and Leader-only in another. See
+  // lib/liturgy/prayerKindPolicy.ts for the per-Section default a new
+  // placement starts from. A guide entry is structural reference material
+  // (redesign-plan-v1.1.md §W's checklists) shown next to "Add Prayer" on
+  // the Sections that need one, never placeable as an actual liturgy item
+  // themselves. Defaults `false` at the DB level (migration
+  // 20260723020000_prayer_kind_redesign.sql).
   isGuide?: boolean;
   // Library-level marking, same convention as Formula.marks --
   // added specifically so Bold (now a real mark, not `**markdown**`) has
@@ -216,6 +212,13 @@ export interface PrayerItem {
   // lookup when absent.
   text?: string;
   marks?: TextMark[];
+  // Track B (2026-08-31): this is now the real, independently-changeable
+  // source of truth for this one placement's audience (Corporate vs
+  // Leader/Guide-only) -- Prayer.kind (the library row) no longer exists.
+  // Initialized from prayerKindPolicy.ts's per-Section default at placement
+  // time, then editable per-placement afterward (SectionCard.tsx's
+  // PrayerEditForm) -- the same shared Prayer can genuinely be Corporate in
+  // one placement and Leader-only in another.
   leaderOnly?: boolean;
 }
 
@@ -223,6 +226,13 @@ export interface SermonItem {
   id: string;
   type: "sermon";
   passage: string;
+  // v2 (2026-08-31): three new optional fields alongside the original
+  // Scripture reference. Absent means "not set yet" -- the correct default
+  // for every Sermon saved before these existed, same compatibility
+  // convention as Song/Prayer's own optional snapshot fields.
+  title?: string;
+  series?: string;
+  preacher?: string;
 }
 
 // Feature 21: shared "Songs" library (redesign-plan-v1.1.md §L), tagged by
@@ -231,7 +241,16 @@ export interface SermonItem {
 // psalm, author for a hymn -- one field, meaning depends on `kind`.
 export interface Song {
   id: string;
+  // Kept for display/creation purposes (e.g. the Library list's Section
+  // label) -- the source of truth for "which Sections can this Song be
+  // placed in" is sectionNames below, not this field. See
+  // song_section_tags's own migration comment for why the column stays.
   sectionName: string;
+  // Track B (2026-08-31): a Song can now be tagged for multiple Sections
+  // (song_section_tags), not just the one in sectionName. Always populated
+  // by getSongs.ts -- every Song has at least the one tag matching its own
+  // sectionName, backfilled when the join table was created.
+  sectionNames: string[];
   kind: "psalm" | "hymn";
   title: string;
   attribution: string | null;
@@ -308,6 +327,12 @@ export interface CompiledSection extends TemplateSection {
   // English carrying equal authority to Tagalog, not a fallback. Defaults
   // 'fil' in the DB, matching the prior fixed behavior.
   silentConfessionLanguage: "fil" | "en";
+  // Track B (2026-08-31): opt-in natural-flow merging of 2+ Selections into
+  // one continuous paragraph, exposed only on Righteousness of God, Call to
+  // Confession, and The Lord's Discourses (see NATURAL_FLOW_TOGGLE_SECTIONS
+  // in SectionCard.tsx). Assurance of Pardon's own unconditional merge
+  // behavior is untouched and does not read this field. Defaults false.
+  mergeSelections: boolean;
 }
 
 export interface LiturgySummary {
@@ -316,6 +341,11 @@ export interface LiturgySummary {
   serviceDate: string;
   lordsDayNumber: number;
   sermonPassage: string | null;
+  // Morning only -- the Sermon Section's own SermonItem.title, if set.
+  // Always null for Vesper (no Sermon Section, no Title concept for its
+  // Lord's Discourses equivalent). The liturgy row's summary line falls
+  // back to sermonPassage when this is null, never the reverse.
+  sermonTitle: string | null;
 }
 
 export interface CompiledLiturgy {

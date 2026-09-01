@@ -2,14 +2,20 @@
 
 import { supabase } from "@/lib/db/supabase";
 import { normalizeTypography } from "@/lib/text/typographic";
-import { setTranslationPair } from "@/lib/liturgy/translationPairing";
+import { reconcileTranslationPair, setTranslationPair } from "@/lib/liturgy/translationPairing";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
 // Same v3 RBAC gate as lib/prayers/prayerActions.ts -- see that file's
 // comment for the full reasoning (this direct Library CRUD path had no auth
 // check at all until the task 8 anonymous-read-only audit).
+// Track B (2026-08-31): sectionNames is now a real multi-select (Ticket 26's
+// Library add-modal) -- a Song can be tagged for every Section it's
+// actually used in, not just one. `songs.section_name` (the legacy single
+// column, kept for display -- see Song's own type comment) is set to the
+// first selected name; song_section_tags carries the full set and is the
+// real source of truth for placement (getSongs.ts).
 export async function createSong(
-  sectionName: string,
+  sectionNames: string[],
   kind: "psalm" | "hymn",
   title: string,
   attribution: string,
@@ -18,8 +24,8 @@ export async function createSong(
   translation: "fil" | "en" | null = null,
   pairedId: string | null = null
 ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
-  if (!sectionName.trim() || !title.trim()) {
-    return { success: false, error: "Section and title are required." };
+  if (sectionNames.length === 0 || !title.trim()) {
+    return { success: false, error: "At least one Section and a title are required." };
   }
 
   const currentUser = await getCurrentUser();
@@ -29,20 +35,16 @@ export async function createSong(
 
   const ownerId = currentUser.role === "curator" ? null : currentUser.id;
 
-  const { data, error } = await supabase
-    .from("songs")
-    .insert({
-      section_name: sectionName,
-      kind,
-      title: normalizeTypography(title),
-      attribution: attribution.trim() ? normalizeTypography(attribution) : null,
-      year_published: yearPublished.trim() || null,
-      notes: notes.trim() ? normalizeTypography(notes) : null,
-      translation,
-      owner_id: ownerId,
-    })
-    .select("id")
-    .single();
+  const { data, error } = await supabase.rpc("create_song_with_tags", {
+    p_section_names: sectionNames,
+    p_kind: kind,
+    p_title: normalizeTypography(title),
+    p_attribution: attribution.trim() ? normalizeTypography(attribution) : "",
+    p_year_published: yearPublished.trim(),
+    p_notes: notes.trim() ? normalizeTypography(notes) : "",
+    p_translation: translation,
+    p_owner_id: ownerId,
+  });
 
   if (error) {
     console.error("[lib/songs/songActions/createSong]", error.message);
@@ -50,15 +52,22 @@ export async function createSong(
   }
 
   if (pairedId) {
-    await setTranslationPair("songs", data.id, pairedId);
+    const pairResult = await setTranslationPair("songs", data, pairedId);
+    if (!pairResult.success) {
+      return {
+        success: false,
+        data: { id: data },
+        error: "Song was created, but its translation pairing could not be saved. Close this form and edit the saved Song to retry.",
+      };
+    }
   }
 
-  return { success: true, data: { id: data.id } };
+  return { success: true, data: { id: data } };
 }
 
 export async function updateSong(
   id: string,
-  sectionName: string,
+  sectionNames: string[],
   kind: "psalm" | "hymn",
   title: string,
   attribution: string,
@@ -67,8 +76,8 @@ export async function updateSong(
   translation?: "fil" | "en" | null,
   pairedId?: string | null
 ): Promise<{ success: boolean; error?: string }> {
-  if (!sectionName.trim() || !title.trim()) {
-    return { success: false, error: "Section and title are required." };
+  if (sectionNames.length === 0 || !title.trim()) {
+    return { success: false, error: "At least one Section and a title are required." };
   }
 
   const currentUser = await getCurrentUser();
@@ -76,7 +85,11 @@ export async function updateSong(
     return { success: false, error: "Sign in to edit a Song." };
   }
 
-  const { data: existing, error: fetchError } = await supabase.from("songs").select("owner_id").eq("id", id).single();
+  const { data: existing, error: fetchError } = await supabase
+    .from("songs")
+    .select("owner_id, translation")
+    .eq("id", id)
+    .single();
   if (fetchError || !existing) {
     return { success: false, error: "That Song could not be found." };
   }
@@ -86,28 +99,28 @@ export async function updateSong(
     return { success: false, error: "Only a Curator can edit this Song." };
   }
 
-  const { error } = await supabase
-    .from("songs")
-    .update({
-      section_name: sectionName,
-      kind,
-      title: normalizeTypography(title),
-      attribution: attribution.trim() ? normalizeTypography(attribution) : null,
-      year_published: yearPublished.trim() || null,
-      notes: notes.trim() ? normalizeTypography(notes) : null,
-      ...(translation !== undefined ? { translation } : {}),
-    })
-    .eq("id", id);
+  const { error } = await supabase.rpc("update_song_with_tags", {
+    p_song_id: id,
+    p_section_names: sectionNames,
+    p_kind: kind,
+    p_title: normalizeTypography(title),
+    p_attribution: attribution.trim() ? normalizeTypography(attribution) : "",
+    p_year_published: yearPublished.trim(),
+    p_notes: notes.trim() ? normalizeTypography(notes) : "",
+    // AddSongPanel's incidental metadata edit does not send a translation,
+    // so preserve the existing value rather than treating "undefined" as a
+    // request to clear it. Library-form edits pass an explicit value.
+    p_translation: translation === undefined ? existing.translation : translation,
+  });
 
   if (error) {
     console.error("[lib/songs/songActions/updateSong]", error.message);
     return { success: false, error: "Unable to update this Song right now." };
   }
 
-  if (pairedId !== undefined) {
-    const pairResult = await setTranslationPair("songs", id, pairedId);
-    if (!pairResult.success) return pairResult;
-  }
+  const pairResult =
+    pairedId !== undefined ? await setTranslationPair("songs", id, pairedId) : await reconcileTranslationPair("songs", id);
+  if (!pairResult.success) return pairResult;
 
   return { success: true };
 }

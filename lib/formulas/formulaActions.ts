@@ -2,7 +2,7 @@
 
 import { supabase } from "@/lib/db/supabase";
 import { normalizeTypography } from "@/lib/text/typographic";
-import { setTranslationPair } from "@/lib/liturgy/translationPairing";
+import { reconcileTranslationPair, setTranslationPair } from "@/lib/liturgy/translationPairing";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { TextMark } from "@/types/liturgy";
 
@@ -63,7 +63,14 @@ export async function createFormula(
   }
 
   if (pairedId) {
-    await setTranslationPair("formulas", data.id, pairedId);
+    const pairResult = await setTranslationPair("formulas", data.id, pairedId);
+    if (!pairResult.success) {
+      return {
+        success: false,
+        data: { id: data.id },
+        error: "Formula was created, but its translation pairing could not be saved. Close this form and edit the saved Formula to retry.",
+      };
+    }
   }
 
   return { success: true, data: { id: data.id } };
@@ -125,10 +132,11 @@ export async function updateFormula(
     return { success: false, error: "Unable to update this Formula right now." };
   }
 
-  if (pairedId !== undefined) {
-    const pairResult = await setTranslationPair("formulas", id, pairedId);
-    if (!pairResult.success) return pairResult;
-  }
+  const pairResult =
+    pairedId !== undefined
+      ? await setTranslationPair("formulas", id, pairedId)
+      : await reconcileTranslationPair("formulas", id);
+  if (!pairResult.success) return pairResult;
 
   return { success: true };
 }

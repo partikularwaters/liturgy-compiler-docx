@@ -56,9 +56,12 @@ export async function getLiturgies(): Promise<LiturgySummary[]> {
     );
     const items = sectionRow ? itemsBySection.get(sectionRow.id) : undefined;
 
+    const sermonItem =
+      sectionName === "Sermon" ? items?.find((item): item is SermonItem => item.type === "sermon") : undefined;
+
     const sermonPassage =
       sectionName === "Sermon"
-        ? (items?.find((item): item is SermonItem => item.type === "sermon")?.passage ?? null)
+        ? (sermonItem?.passage ?? null)
         : (items?.find((item): item is SelectionItem => item.type === "selection")?.citation ?? null);
 
     return {
@@ -67,6 +70,7 @@ export async function getLiturgies(): Promise<LiturgySummary[]> {
       serviceDate: row.service_date,
       lordsDayNumber: row.lords_day_number,
       sermonPassage,
+      sermonTitle: sermonItem?.title ?? null,
     };
   });
 }

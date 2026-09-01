@@ -1,5 +1,6 @@
 import { resolveItemText, type ResolvedItem } from "@/lib/liturgy/resolveItemText";
 import { sortSectionItems } from "@/lib/liturgy/sortSectionItems";
+import { NATURAL_FLOW_TOGGLE_SECTIONS } from "@/lib/liturgy/naturalFlowSections";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
 import { displayCitation } from "@/lib/bible/bookNamesTagalog";
 import type { CompiledSection, Formula, Item, Prayer, SelectionItem, Song, TextMark } from "@/types/liturgy";
@@ -104,8 +105,14 @@ export function prepareSectionRender(
     }
   }
 
+  // Track B: merging is opt-in (section.mergeSelections) on the three named
+  // Sections; every other Section (Assurance of Pardon included) keeps the
+  // old unconditional behavior -- see naturalFlowSections.ts.
+  const isToggleGated = NATURAL_FLOW_TOGGLE_SECTIONS.includes(section.name);
+  const shouldMergeSelections = selectionItems.length > 1 && (!isToggleGated || section.mergeSelections);
+
   let mergedSelection: { text: string; marks: TextMark[] } | null = null;
-  if (selectionItems.length > 1) {
+  if (shouldMergeSelections) {
     let offset = 0;
     const marks: TextMark[] = [];
     const parts: string[] = [];

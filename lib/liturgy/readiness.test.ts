@@ -26,7 +26,7 @@ function section(name: string, items: Item[] = []): CompiledSection {
     dynamic_naming: false,
     items,
     columnBreakBefore: false,
-    showPrayerGuide: true, silentConfessionLanguage: "fil",
+    showPrayerGuide: true, silentConfessionLanguage: "fil", mergeSelections: false,
   };
 }
 

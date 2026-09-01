@@ -2,6 +2,7 @@ import { applyTrinitarianSeal } from "@/lib/liturgy/trinitarianSeal";
 import { formatCitation } from "@/lib/liturgy/formatCitation";
 import { displayCitation } from "@/lib/bible/bookNamesTagalog";
 import { resolveVerbalCueTemplate, type VerbalCueRun } from "@/lib/liturgy/resolveVerbalCueTemplate";
+import { getDefaultPrayerKind } from "@/lib/liturgy/prayerKindPolicy";
 import type { Formula, Item, Prayer, Song, TextMark } from "@/types/liturgy";
 
 export interface ResolvedItem {
@@ -91,17 +92,41 @@ export function resolveBase(
           marks: item.marks ?? [],
         };
       }
+      // Genuinely ancient fallback (placed before the 2026-08-25 snapshot
+      // fix, so it has no item.text/leaderOnly at all) -- Prayer.kind no
+      // longer exists as a meaningful fact (Track B, 2026-08-31), so this
+      // falls back to the same per-Section default policy a fresh placement
+      // would start from, keyed off the library Prayer's own Section (Prayer
+      // rows are Section-scoped by name already).
       const prayer = prayers.find((p) => p.id === item.prayerId);
       return {
         label: "Prayer",
         text: prayer?.text ?? "(Prayer not found)",
-        leaderOnly: prayer?.kind === "leader",
+        leaderOnly: getDefaultPrayerKind(prayer?.sectionName ?? "") === "leader",
         rubric: false,
         marks: prayer?.marks ?? [],
       };
     }
-    case "sermon":
-      return { label: "Sermon", text: item.passage, leaderOnly: false, rubric: false };
+    case "sermon": {
+      // All four fields are public (leaderOnly: false) -- Title/Series lead
+      // as a heading-like line, Passage is the Scripture reference, Preacher
+      // trails last. Absent fields (older records, or fields left blank)
+      // are simply skipped, never rendered as an empty line.
+      // NOTE: Compile View, Web View, and DOCX each render Sermon via their
+      // own dedicated component (SermonBody / sermonParagraphs) reading the
+      // raw item directly, not this flat text -- they need small-caps-title/
+      // centered structure this single string can't carry, matching Song's
+      // and Verbal Cue's existing precedent of bypassing resolved.text for
+      // structured display. This case is still the live path for the frozen
+      // legacy PDF (lib/pdf/LiturgyDocument.tsx), which has no per-type
+      // Sermon branch and renders resolved.text generically for every item.
+      const lines = [
+        [item.title, item.series].filter(Boolean).join(" — "),
+        item.passage,
+        item.preacher,
+      ].filter(Boolean);
+      return { label: "Sermon", text: lines.join("\n"), leaderOnly: false, rubric: false };
+    }
     case "song": {
       // Snapshot taken at placement time (see SongItem's own comment) --
       // same pre-fix fallback as Prayer above.

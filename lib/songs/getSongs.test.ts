@@ -36,4 +36,30 @@ describe("getSongs", () => {
 
     expect(result).toEqual([]);
   });
+
+  it("filters by tag while preserving every Section tag on the returned Song", async () => {
+    mocks.orderTitle.mockResolvedValue({
+      data: [
+        {
+          id: "song-1",
+          section_name: "Psalm of Adoration",
+          kind: "hymn",
+          title: "A shared Hymn",
+          attribution: null,
+          year_published: null,
+          notes: null,
+          owner_id: null,
+          translation: "en",
+          paired_id: null,
+          song_section_tags: [{ section_name: "Psalm of Adoration" }, { section_name: "Hymn of Communion" }],
+        },
+      ],
+      error: null,
+    });
+
+    const result = await getSongs("Hymn of Communion");
+
+    expect(result).toHaveLength(1);
+    expect(result?.[0].sectionNames).toEqual(["Psalm of Adoration", "Hymn of Communion"]);
+  });
 });

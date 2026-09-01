@@ -60,7 +60,6 @@ export async function getPrayers(sectionName?: string): Promise<Prayer[] | null>
     id: row.id,
     sectionName: row.section_name,
     text: row.text,
-    kind: row.kind as "corporate" | "leader",
     marks: (row.marks as TextMark[] | undefined) ?? [],
     isGuide: Boolean((row as { is_guide?: boolean }).is_guide),
     translation: (row as { translation?: "fil" | "en" | null }).translation ?? null,
