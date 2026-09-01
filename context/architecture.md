@@ -262,7 +262,7 @@ The live union is `SelectionItem | FormulaItem | VerbalCueItem | PrayerItem | Se
 | id | uuid | Primary key |
 | section_name | text | Which Section this prayer belongs to (e.g. "Confession of Sin") — filtered by Section **name**, so the same tag matches that Section in both Morning and Vesper |
 | text | text | The prayer itself, or the guide's checklist text if `is_guide = true` |
-| kind | text | `'corporate'` \| `'leader'` — redesigned 2026-07-23 (was `'prayer'` \| `'guide'`, v1.1). Now purely audience: `'corporate'` means the whole church prays it (both Bulletin + Guide, same as before); `'leader'` means it's the leader/minister's own material (Guide only — `resolveItemText.ts`'s `leaderOnly` is now derived from this, the same pattern Formula/Verbal Cue's `visibility` already used). Meaningless when `is_guide` is true. |
+| kind | text | Legacy compatibility column. It no longer expresses a Library-row audience and application code does not read or write it for placement behavior; a placed `PrayerItem.leaderOnly` snapshot is initialized from `lib/liturgy/prayerKindPolicy.ts` and independently editable per placement. Meaningless when `is_guide` is true. |
 | is_guide | boolean | Added 2026-07-23 (`20260723020000_prayer_kind_redesign.sql`), replacing the old `kind = 'guide'` value — placeability is now independent of audience. A `true` row is a fixed structural checklist (e.g. Invocation's Adoration → Humble Approach → Acceptance → Thanksgiving → Trinitarian Conclusion) shown as reference next to "Add Prayer," never stored as liturgy content itself. Defaults `false`. |
 | marks | jsonb | Library-level marking, same convention as `formulas.marks`/`scripture_selections.marks`. Copied into a new placement snapshot; defaults `[]`. |
 | translation | text | Added 2026-07-25 (`20260725010000_bilingual_tagging.sql`) — same shape/reasoning as `formulas.translation` above. |
@@ -270,12 +270,12 @@ The live union is `SelectionItem | FormulaItem | VerbalCueItem | PrayerItem | Se
 
 ### `songs` (v1.1, new)
 
-Shared Psalm/Hymn library — one table, tagged by kind, mirroring the `prayers`/`kind` pattern above.
+Shared Psalm/Hymn library — one table, tagged by kind. A Song can be available in more than one Section through `song_section_tags`; the Song's placement snapshot remains separate from this reusable library metadata.
 
 | Column | Type | Notes |
 | --- | --- | --- |
 | id | uuid | Primary key |
-| section_name | text | Section-scoped like `formulas`/`prayers` |
+| section_name | text | Legacy display/compatibility value, set to the first selected Section. It is not the placement authority; use `song_section_tags`. |
 | kind | text | `'psalm'` \| `'hymn'` |
 | title | text | Psalm: the reference itself, e.g. "Psalm 103:1-5". Hymn: the hymn's title. |
 | attribution | text | Psalm: versification (e.g. "Reformed Life Community Church"). Hymn: author. Same column, different meaning per `kind` — no lyric/body text stored either way. |
@@ -285,6 +285,15 @@ Shared Psalm/Hymn library — one table, tagged by kind, mirroring the `prayers`
 | paired_id | uuid | Added same migration — same shape/reasoning as `formulas.paired_id` above. |
 
 Congregation-facing output shows `title` only (Psalm: title case, italic, `text-citation` red; Hymn: title case, italic, no red). Leader Guide shows all columns.
+
+### `song_section_tags` (v3)
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| song_id | uuid | FK to `songs`, cascades on delete |
+| section_name | text | A Section where that Song may be selected and placed |
+
+`(song_id, section_name)` is the primary key. This join table is the sole source of truth for Song placement scope. Song creation and tag replacement run through one database transaction (`create_song_with_tags` / `update_song_with_tags`) so a failed tag write cannot leave a partial Song record or report success.
 
 ### `scripture_selections` (v1.1, new — "Existing Selections" / Scripture Text Library)
 
@@ -375,7 +384,7 @@ Rules the AI agent must never violate:
 - Editing a Formula's `default_text` must never retroactively change a Liturgy that used an `override_text` for that instance.
 - **A placed Prayer or Song displays its placement snapshot, never a current library lookup.** `prayerId`/`songId` remain provenance only. Records created before snapshot fields existed retain a compatibility lookup until that placed item is edited.
 - All liturgical text content (Selection, Formula, Prayer, Verbal Cue) is normalized to typographic quotation marks and apostrophes (' ' " ") at write-time, in `lib/text/typographic.ts` — never left as straight marks (' ") in storage. This runs once, on save, so the Compile View, Leader Guide, and Congregation Bulletin all inherit correct typography automatically rather than each needing to re-apply it. **Implemented 2026-07-14** — `normalizeTypography()` is wired into all six write paths (`addSelectionAction`, `addFormulaAction`'s override text, `formulaActions.createFormula`/`updateFormula`, `prayerActions.createPrayer`/`updatePrayer`, `verbalCueActions.addVerbalCue`/`updateVerbalCue`). This invariant was documented since the CTP planning stage but had zero implementation until a `/review` audit caught it.
-- Formula, Prayer, and Song placement actions independently validate the selected library row's Section scope. The existing-Scripture picker filters candidates by Section in the UI, while `addSelection()` validates the destination Section, citation, and deduplication; it does not re-fetch the selected library row or independently verify that row's original `section_name`.
+- Formula and Prayer placement actions independently validate the selected library row's Section scope; Song placement validates its `song_section_tags` membership, never the legacy `songs.section_name`. The existing-Scripture picker filters candidates by Section in the UI, while `addSelection()` validates the destination Section, citation, and deduplication; it does not re-fetch the selected library row or independently verify that row's original `section_name`.
 - No hardcoded hex values or raw Tailwind color classes in components — use tokens from ui-tokens.md.
 - Leader/Congregation/Minister/Small-Caps/Bold span tags are never baked into an item's raw saved `text`/`overrideText`/`default_text` — always stored separately, as the `marks` field on `SelectionItem`, `FormulaItem`, `Formula`, `Prayer`, and `ScriptureSelection`. Un-marking a span is a clean, lossless operation that never mutates the underlying prose. Editing the text after marks exist no longer wipes them (as it did through 2026-07-18's earlier passes) — `lib/text/marks.ts`'s `shiftMarksForEdit()` diffs old vs. new text and resizes/shifts only the marks actually touched by the edit. **Overlap rule (2026-07-23, corrected same day):** only `congregation`/`minister` are mutually exclusive with each other (a span can't be both at once — `leader` is the implicit default, never actually stored). `bold` and `small_caps` are both independent overlays that may freely combine with a Congregation/Minister span, with each other, or stand alone. Small Caps was originally grouped in with the exclusive set too, which was wrong: it's a typographic convention (reverential capitalization of a divine name), orthogonal to *who's speaking*, not a competing claim on the same range — treating it as exclusive meant marking a word inside an existing Congregation span split that span into two separate rendered blocks with the word visually isolated onto its own line between them (Congregation/Minister render as their own block-level element, so an inline word sandwiched between two blocks gets forced onto its own line by the surrounding breaks). Moving Small Caps into the same overlay treatment Bold already has removes this failure mode the same way promoting Bold off `**markdown**` did. `lib/text/marks.ts`'s `applyMarks()` is the single place that resolves all three layers (the exclusive Congregation/Minister split, plus the two independent overlays) together.
 - A Section only offers the Item types listed in its `templates.sections[].item_types` whitelist — "Add Selection" etc. must not appear on a Section that doesn't list it. Governs adding only; an already-placed item never disappears if its type later drops off the whitelist.
