@@ -93,7 +93,9 @@ export default function LiturgyDateRow({
         </span>
         <div className="flex items-center gap-2 min-w-0">
           <Link href={`/liturgy/${liturgy.id}`} className="flex-1 min-w-0 truncate text-sm text-text-primary hover:underline">
-            {[liturgy.sermonPassage, formatDateDisplay(liturgy.serviceDate)].filter(Boolean).join(" | ")}
+            {[liturgy.sermonTitle ?? liturgy.sermonPassage, formatDateDisplay(liturgy.serviceDate)]
+              .filter(Boolean)
+              .join(" | ")}
           </Link>
           {!readOnly && currentUser && (
             <LiturgyOptionsMenu

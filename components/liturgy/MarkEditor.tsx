@@ -128,6 +128,7 @@ export default function MarkEditor({
   const preview = applyTrinitarianSeal(text, marks, trinitarianSeal);
   const exclusiveMarks = availableMarks.filter((type): type is ExclusiveMark => type !== "small_caps");
   const hasSmallCaps = availableMarks.includes("small_caps");
+  const hasDialogueMarks = exclusiveMarks.length > 0;
 
   return (
     <div className="flex flex-col gap-2">
@@ -173,17 +174,15 @@ export default function MarkEditor({
             {SEAL_BUTTON_LABELS[trinitarianSeal ?? "off"]}
           </button>
         )}
-        {availableMarks.length > 0 && (
-          <button
-            type="button"
-            onClick={clearMarksInSelection}
-            aria-label="Clear marks in selection"
-            title="Clear marks in selection"
-            className="text-text-muted hover:text-accent-dark transition-colors duration-[var(--duration-tooltip)] ease"
-          >
-            <ClearIcon />
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={clearMarksInSelection}
+          aria-label="Clear marks in selection"
+          title="Clear marks in selection"
+          className="text-text-muted hover:text-accent-dark transition-colors duration-[var(--duration-tooltip)] ease"
+        >
+          <ClearIcon />
+        </button>
         <button
           type="button"
           onClick={() => setShowHelp((prev) => !prev)}
@@ -196,14 +195,18 @@ export default function MarkEditor({
       </div>
       {showHelp && (
         <p className="text-[13px] text-text-muted">
-          Select a range of text above, then click a label — unmarked text stays Leader (flush
-          left, no label). Marks stick through further edits; use Clear to remove one.
+          {hasDialogueMarks
+            ? "Select a range of text above, then click a label — unmarked text stays Leader (flush left, no label). "
+            : "Select a range of text above, then click a mark to apply it. "}
+          Marks stick through further edits; use Clear to remove one.
           {allowTrinitarianSeal && " Seal cycles Off → Filipino → English, appended at the very end."}
         </p>
       )}
-      <div className="bg-surface-secondary border border-border rounded-md p-3">
-        <MarkedText text={preview.text} marks={preview.marks} />
-      </div>
+      {preview.text.trim() && (
+        <div className="bg-surface-secondary border border-border rounded-md p-3">
+          <MarkedText text={preview.text} marks={preview.marks} />
+        </div>
+      )}
     </div>
   );
 }

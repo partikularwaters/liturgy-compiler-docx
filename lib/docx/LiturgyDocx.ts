@@ -246,6 +246,31 @@ function finalizeParagraphs(specs: ParagraphSpec[]): Paragraph[] {
   return normalized.map(toParagraph);
 }
 
+function sermonParagraphs(item: Extract<CompiledSection["items"][number], { type: "sermon" }>): Paragraph[] {
+  const lines = [
+    { text: item.title, smallCaps: true },
+    { text: item.series, smallCaps: false },
+    { text: item.passage, smallCaps: false },
+    { text: item.preacher, smallCaps: false },
+  ].filter((line): line is { text: string; smallCaps: boolean } => Boolean(line.text));
+
+  return lines.map(
+    (line) =>
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+          new TextRun({
+            text: line.text,
+            smallCaps: line.smallCaps,
+            size: BODY_SIZE,
+            font: DOCX_FONT_FAMILY,
+            color: docxColors.textPrimary,
+          }),
+        ],
+      })
+  );
+}
+
 interface RenderSectionArgs {
   section: CompiledSection;
   formulas: Formula[];
@@ -346,6 +371,11 @@ function renderSection({ section, formulas, prayers, songs, audience }: RenderSe
     }
 
     for (const { item, resolved } of visibleItems) {
+      if (item.type === "sermon") {
+        paragraphs.push(...sermonParagraphs(item));
+        continue;
+      }
+
       if (item.type === "song") {
         if (audience === "guide" && item.amenExpected) {
           paragraphs.push(

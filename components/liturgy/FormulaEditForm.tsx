@@ -56,7 +56,11 @@ export default function FormulaEditForm({
 
   return (
     <div className="bg-surface-secondary border border-border rounded-md p-4 flex flex-col gap-3">
+      <label className="text-[13px] font-medium text-text-secondary" htmlFor="formula-item-text">
+        Content <span aria-hidden="true">*</span>
+      </label>
       <textarea
+        id="formula-item-text"
         ref={textareaRef}
         value={text}
         onChange={(e) => {
@@ -83,7 +87,7 @@ export default function FormulaEditForm({
 
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="formula-item-visibility">
-          Visibility
+          Visibility <span aria-hidden="true">*</span>
         </label>
         <select
           id="formula-item-visibility"

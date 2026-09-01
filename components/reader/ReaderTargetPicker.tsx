@@ -8,31 +8,50 @@ import type { LiturgySummary } from "@/types/liturgy";
 
 interface ReaderTargetPickerProps {
   liturgies: LiturgySummary[];
-  // Gap #1 fix: Scripture Library Section-name tags (getSectionNames
-  // ("selection")) -- lets someone save a marked passage straight to the
-  // shared Library, without picking a Liturgy/Section first.
   librarySectionNames: string[];
+  lockedTarget: { templateName: string; sectionName: string } | null;
+  // The Scripture Library Section the page was already arrived at via
+  // ?librarySection= (e.g. a bookmarked or hand-built link) -- pre-selects
+  // "Scripture Library" mode with this Section active, without locking it:
+  // unlike lockedTarget, the user can still switch modes or Sections here.
+  initialLibrarySection?: string | null;
 }
 
-// Shown only when the Reader has no target yet (arrived via the top nav's
-// plain "Bible Reader" link, free-browsing) -- lets someone choose either a
-// liturgy + Section, or a Library Section tag, to add to right here, instead
-// of having to go back to the Compile View and click "+ Scripture" first
-// just to get this same page with a target pre-set in the URL.
+// Shown whenever a Scripture Selection can be added -- lets someone choose
+// either a liturgy + Section, or a Library Section tag, to add to right
+// here. A Compile View target is deliberately not editable here: the user
+// entered through that exact Section and should not accidentally place the
+// freshly selected passage elsewhere.
 export default function ReaderTargetPicker({
   liturgies,
   librarySectionNames,
+  lockedTarget,
+  initialLibrarySection = null,
 }: ReaderTargetPickerProps): React.ReactElement | null {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [mode, setMode] = useState<"section" | "library">(
-    liturgies.length === 0 && librarySectionNames.length > 0 ? "library" : "section"
+    initialLibrarySection || (liturgies.length === 0 && librarySectionNames.length > 0) ? "library" : "section"
   );
   const [liturgyId, setLiturgyId] = useState("");
   const [sections, setSections] = useState<SelectableSection[]>([]);
   const [sectionIndex, setSectionIndex] = useState<number | null>(null);
-  const [librarySectionName, setLibrarySectionName] = useState(librarySectionNames[0] ?? "");
+  const [librarySectionName, setLibrarySectionName] = useState(
+    initialLibrarySection ?? librarySectionNames[0] ?? ""
+  );
   const [isLoadingSections, startTransition] = useTransition();
+
+  if (lockedTarget) {
+    return (
+      <div className="bg-surface border border-border rounded-lg p-4 flex flex-col gap-2">
+        <p className="text-[13px] font-medium text-text-secondary">Adding this passage to a liturgy</p>
+        <p className="text-sm font-medium text-text-primary">
+          {lockedTarget.templateName} → {lockedTarget.sectionName}
+        </p>
+        <p className="text-[12px] text-text-muted">Target set by the Compile View.</p>
+      </div>
+    );
+  }
 
   if (liturgies.length === 0 && librarySectionNames.length === 0) return null;
 
@@ -66,7 +85,6 @@ export default function ReaderTargetPicker({
   };
 
   const showModeToggle = liturgies.length > 0 && librarySectionNames.length > 0;
-
   return (
     <div className="bg-surface border border-border rounded-lg p-4 flex flex-col gap-3">
       {showModeToggle && (

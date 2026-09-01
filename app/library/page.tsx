@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getFormulas } from "@/lib/formulas/getFormulas";
 import { getPrayers } from "@/lib/prayers/getPrayers";
 import { getScriptureSelections } from "@/lib/selections/getScriptureSelections";
@@ -12,7 +11,8 @@ import PrayerListRow from "@/components/prayers/PrayerListRow";
 import ScriptureSelectionRow from "@/components/selections/ScriptureSelectionRow";
 import SongListRow from "@/components/songs/SongListRow";
 import BilingualGrid from "@/components/library/BilingualGrid";
-import { PlusIcon } from "@/components/liturgy/icons";
+import AddScriptureFromReaderLink from "@/components/library/AddScriptureFromReaderLink";
+import AddLibraryItemButton from "@/components/library/AddLibraryItemButton";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import type { Formula, Prayer, ScriptureSelection, Song } from "@/types/liturgy";
 
@@ -103,20 +103,13 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
           <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">
             Existing Scripture
           </h2>
-          {currentUser && (
-            <Link
-              href="/selections/new"
-              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
-            >
-              <PlusIcon size={15} /> New Scripture
-            </Link>
-          )}
+          {currentUser && <AddScriptureFromReaderLink />}
         </div>
         <p className="text-[13px] text-text-muted">
-          Auto-saved from every Scripture item added via the Reader, or added directly here.
+          Scripture items are saved from the Bible Reader.
         </p>
         {scriptureSelections.length === 0 ? (
-          <p className="text-sm text-text-muted">No Scripture items added yet.</p>
+          <p className="text-sm text-text-muted">No Scripture items yet — use + New Scripture to add one.</p>
         ) : (
           <BilingualGrid
             cells={scriptureRows}
@@ -129,12 +122,7 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         <div className="flex items-center justify-between">
           <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Psalms</h2>
           {currentUser && (
-            <Link
-              href="/songs/new"
-              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
-            >
-              <PlusIcon size={15} /> New Song
-            </Link>
+            <AddLibraryItemButton type="song" label="New Song" sectionNames={songSectionNames} songs={allSongs} />
           )}
         </div>
         {psalms.length === 0 ? (
@@ -167,12 +155,12 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         <div className="flex items-center justify-between">
           <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Prayers</h2>
           {currentUser && (
-            <Link
-              href="/prayers/new"
-              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
-            >
-              <PlusIcon size={15} /> New Prayer
-            </Link>
+            <AddLibraryItemButton
+              type="prayer"
+              label="New Prayer"
+              sectionNames={prayerSectionNames}
+              prayers={allPrayers}
+            />
           )}
         </div>
         {prayers.length === 0 ? (
@@ -188,10 +176,14 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
       </div>
 
       <div className="flex flex-col gap-3">
-        <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Guides</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Guides</h2>
+          {currentUser && (
+            <AddLibraryItemButton type="guide" label="New Prayer Guide" sectionNames={prayerSectionNames} prayers={allPrayers} />
+          )}
+        </div>
         <p className="text-[13px] text-text-muted">
-          Reference outlines shown next to “Add Prayer” on the Sections that need one (redesign-plan-v1.1.md
-          §W) — never placed into a liturgy directly.
+          Reference material available in the Leader’s Guide for the Sections that use Prayer Guides.
         </p>
         {guides.length === 0 ? (
           <p className="text-sm text-text-muted">No guides yet.</p>
@@ -208,12 +200,12 @@ export default async function LibraryPage(): Promise<React.ReactElement> {
         <div className="flex items-center justify-between">
           <h2 className="text-[18px] font-semibold leading-[26px] text-text-primary">Formulas</h2>
           {currentUser && (
-            <Link
-              href="/formulas/new"
-              className="flex items-center gap-1 bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
-            >
-              <PlusIcon size={15} /> New Formula
-            </Link>
+            <AddLibraryItemButton
+              type="formula"
+              label="New Formula"
+              sectionNames={formulaSectionNames}
+              formulas={allFormulas}
+            />
           )}
         </div>
         {formulas.length === 0 ? (

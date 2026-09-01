@@ -6,6 +6,7 @@ import FormulaForm from "@/components/formulas/FormulaForm";
 import { updateFormula, deleteFormula } from "@/lib/formulas/formulaActions";
 import { PencilIcon, TrashIcon } from "@/components/liturgy/icons";
 import LibraryTextPreview from "@/components/library/LibraryTextPreview";
+import ConfirmDeleteLibraryItemDialog from "@/components/library/ConfirmDeleteLibraryItemDialog";
 import type { Formula, TextMark } from "@/types/liturgy";
 import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
@@ -37,6 +38,8 @@ export default function FormulaListRow({
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSave = (
     sectionName: string,
@@ -60,12 +63,12 @@ export default function FormulaListRow({
     });
   };
 
-  const handleDelete = (): void => {
-    if (!window.confirm(`Delete "${formula.name}"? This does not remove it from liturgies it's already placed in.`)) {
-      return;
-    }
+  const handleConfirmDelete = (): void => {
+    setIsDeleting(true);
     deleteFormula(formula.id).then((result) => {
+      setIsDeleting(false);
       if (result.success) {
+        setIsConfirmingDelete(false);
         router.refresh();
       } else {
         setError(result.error ?? "Unable to delete this Formula right now.");
@@ -109,7 +112,7 @@ export default function FormulaListRow({
     // reserved padding).
     <div className={`relative py-4 ${bordered ? "border-b border-border" : ""}`}>
       <div>
-        <p className="text-[13px] text-text-secondary pr-20">
+        <p className="text-[13px] font-medium text-text-secondary pr-20 mb-1">
           {formula.sectionName}
           {formula.translation && <> · {formula.translation === "en" ? "English" : "Filipino"}</>}
         </p>
@@ -129,12 +132,24 @@ export default function FormulaListRow({
           <button
             type="button"
             title="Delete"
-            onClick={handleDelete}
+            onClick={() => {
+              setError(null);
+              setIsConfirmingDelete(true);
+            }}
             className="text-text-muted hover:text-error transition-colors duration-[var(--duration-tooltip)] ease"
           >
             <TrashIcon size={16} />
           </button>
         </div>
+      )}
+      {isConfirmingDelete && (
+        <ConfirmDeleteLibraryItemDialog
+          itemLabel={`"${formula.name}"`}
+          isDeleting={isDeleting}
+          error={error}
+          onConfirm={handleConfirmDelete}
+          onClose={() => setIsConfirmingDelete(false)}
+        />
       )}
     </div>
   );

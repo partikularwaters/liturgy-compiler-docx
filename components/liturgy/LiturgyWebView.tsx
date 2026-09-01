@@ -55,6 +55,17 @@ function MarkedBody({ text, marks }: { text: string; marks: TextMark[] | undefin
   );
 }
 
+function SermonBody({ item }: { item: Extract<CompiledLiturgy["sections"][number]["items"][number], { type: "sermon" }> }): React.ReactElement {
+  return (
+    <div className="font-serif-body text-[16px] leading-[1.6] text-text-primary text-center md:max-w-[28rem] md:ml-12 whitespace-pre-wrap">
+      {item.title && <p className="[font-variant:small-caps]">{item.title}</p>}
+      {item.series && <p>{item.series}</p>}
+      <p>{item.passage}</p>
+      {item.preacher && <p>{item.preacher}</p>}
+    </div>
+  );
+}
+
 // Public, read-only, congregation-facing render of a compiled liturgy --
 // shareable by URL, mobile-first single column, no nav bar (hidden at the
 // layout level in TopNavLinks.tsx -- this page is meant to be the liturgy
@@ -123,7 +134,9 @@ export default function LiturgyWebView({
                     <MarkedBody text={prepared.mergedSelection.text} marks={prepared.mergedSelection.marks} />
                   )}
                   {visibleItems.map(({ item, resolved }, itemIndex) =>
-                    item.type === "song" ? (
+                    item.type === "sermon" ? (
+                      <SermonBody key={itemIndex} item={item} />
+                    ) : item.type === "song" ? (
                       <p
                         key={itemIndex}
                         className={

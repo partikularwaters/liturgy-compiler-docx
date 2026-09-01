@@ -53,7 +53,7 @@ export default function ScriptureSelectionForm({
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="scripture-section">
-          Section
+          Section <span aria-hidden="true">*</span>
         </label>
         <select
           id="scripture-section"
@@ -70,7 +70,7 @@ export default function ScriptureSelectionForm({
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="scripture-translation">
-          Translation
+          Translation <span aria-hidden="true">*</span>
         </label>
         <select
           id="scripture-translation"
@@ -84,7 +84,7 @@ export default function ScriptureSelectionForm({
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="scripture-citation">
-          Citation
+          Citation <span aria-hidden="true">*</span>
         </label>
         <input
           id="scripture-citation"

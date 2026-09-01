@@ -42,6 +42,7 @@ interface ReaderClientProps {
   // ReaderTargetPicker's "Scripture Library" mode, with no Liturgy involved.
   // Mutually exclusive with targetSection (see page.tsx).
   librarySection: string | null;
+  returnToLibrary: boolean;
   // v2 (BSB): "fil" (AB1905) or "en" (BSB) -- which translation the Reader
   // is currently browsing. Drives citation language (buildCitation/
   // parseCitationVerses) and what gets saved onto a new Selection.
@@ -64,6 +65,7 @@ export default function ReaderClient({
   initialHighlights,
   targetSection,
   librarySection,
+  returnToLibrary,
   language,
   liturgies,
   librarySectionNames,
@@ -96,6 +98,7 @@ export default function ReaderClient({
     } else if (librarySection) {
       params.set("librarySection", librarySection);
     }
+    if (returnToLibrary) params.set("from", "library");
     router.push(`/reader?${params.toString()}`);
   };
 
@@ -245,16 +248,16 @@ export default function ReaderClient({
         Bible Reader
       </h1>
 
-      {canBuildSelection && hasTarget && (
+      {canBuildSelection && (hasTarget || returnToLibrary) && (
         <div className="flex items-center justify-between bg-accent-light rounded-md px-3 py-1.5">
           <p className="flex items-center gap-1 text-[12px] text-accent-dark truncate" title={targetLabel}>
-            <ArrowRightIcon size={13} className="shrink-0" /> {targetSection ? targetSection.sectionName : librarySection}
+            <ArrowRightIcon size={13} className="shrink-0" /> {targetSection ? targetSection.sectionName : librarySection ?? "Scripture Library"}
           </p>
           <Link
             href={targetSection ? `/liturgy/${targetSection.liturgyId}#section-${targetSection.sectionIndex}` : "/library"}
             className="flex items-center gap-1 text-[12px] font-medium text-accent-dark underline shrink-0"
           >
-            <ArrowLeftIcon size={13} /> {targetSection ? "Liturgy" : "Library"}
+            <ArrowLeftIcon size={13} /> {targetSection ? "Back to Liturgy" : "Back to Library"}
           </Link>
         </div>
       )}
@@ -271,37 +274,50 @@ export default function ReaderClient({
           BSB toggle moved inline with the pane's own "{book} {chapter}"
           heading (see VerseDisplay's headingAccessory). */}
       <div className="flex flex-col md:flex-row items-start gap-6">
-        <div className="w-full md:w-[360px] shrink-0 md:sticky md:top-8 flex flex-col gap-4">
+        <div className="w-full md:w-[360px] shrink-0 md:sticky md:top-8 md:max-h-[calc(100vh-4rem)] md:overflow-y-auto md:pr-1 flex flex-col gap-4">
           {!canBuildSelection ? (
             // Gap #2 fix: hides the whole workflow, not just the final save
             // click -- an anonymous visitor never sees the target picker,
             // verse markers, or Add panel at all.
             <p className="text-sm text-text-muted">Sign in to build a Scripture Selection.</p>
-          ) : !hasTarget ? (
-            <ReaderTargetPicker liturgies={liturgies} librarySectionNames={librarySectionNames} />
-          ) : candidateCitation ? (
-            <AddSelectionPanel
-              key={candidateCitation}
-              targetLabel={targetLabel}
-              initialCitation={candidateCitation}
-              initialText={candidateText}
-              alreadySaved={alreadySaved}
-              isSaving={isSaving}
-              saveError={saveError}
-              onSave={handleSaveSelection}
-              textOptional={REFERENCE_ONLY_SECTIONS.includes(
-                targetSection ? targetSection.sectionName : (librarySection as string)
-              )}
-              amenPolicy={targetSection ? getAmenPolicy(targetSection.sectionName) : "none"}
-              availableMarks={getSelectionMarks(
-                targetSection ? targetSection.sectionName : (librarySection as string)
-              )}
-              allowTrinitarianSeal={
-                targetSection ? TRINITARIAN_SEAL_SECTIONS.includes(targetSection.sectionName) : false
-              }
-            />
           ) : (
-            <p className="text-sm text-text-muted">Click the + beside a verse to add it here.</p>
+            <>
+              <ReaderTargetPicker
+                liturgies={liturgies}
+                librarySectionNames={librarySectionNames}
+                lockedTarget={
+                  targetSection
+                    ? { templateName: targetSection.templateName, sectionName: targetSection.sectionName }
+                    : null
+                }
+                initialLibrarySection={librarySection}
+              />
+              {hasTarget &&
+                (candidateCitation ? (
+                  <AddSelectionPanel
+                    key={candidateCitation}
+                    targetLabel={targetLabel}
+                    initialCitation={candidateCitation}
+                    initialText={candidateText}
+                    alreadySaved={alreadySaved}
+                    isSaving={isSaving}
+                    saveError={saveError}
+                    onSave={handleSaveSelection}
+                    textOptional={REFERENCE_ONLY_SECTIONS.includes(
+                      targetSection ? targetSection.sectionName : (librarySection as string)
+                    )}
+                    amenPolicy={targetSection ? getAmenPolicy(targetSection.sectionName) : "none"}
+                    availableMarks={getSelectionMarks(
+                      targetSection ? targetSection.sectionName : (librarySection as string)
+                    )}
+                    allowTrinitarianSeal={
+                      targetSection ? TRINITARIAN_SEAL_SECTIONS.includes(targetSection.sectionName) : false
+                    }
+                  />
+                ) : (
+                  <p className="text-sm text-text-muted">Click the + beside a verse to add it here.</p>
+                ))}
+            </>
           )}
           {successMessage && (
             <div className="bg-success-light rounded-lg px-4 py-3 transition-[opacity,transform] duration-[var(--duration-dropdown)] ease-[var(--ease-out-strong)] starting:opacity-0 motion-safe:starting:-translate-y-1">

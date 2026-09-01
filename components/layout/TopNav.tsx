@@ -2,9 +2,13 @@ import { Suspense } from "react";
 import TopNavLinks from "@/components/layout/TopNavLinks";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import { getSessionStatus } from "@/lib/auth/getSessionStatus";
+import { getPendingCuratorCount } from "@/lib/auth/getPendingCuratorCount";
 
 export default async function TopNav(): Promise<React.ReactElement> {
   const [currentUser, sessionStatus] = await Promise.all([getCurrentUser(), getSessionStatus()]);
+  // Only a Curator can ever see this count (AccountMenu's own role gate),
+  // so skip the query entirely for every other visitor.
+  const pendingCuratorCount = currentUser?.role === "curator" ? await getPendingCuratorCount() : 0;
 
   return (
     <Suspense
@@ -14,7 +18,7 @@ export default async function TopNav(): Promise<React.ReactElement> {
         </div>
       }
     >
-      <TopNavLinks currentUser={currentUser} sessionStatus={sessionStatus} />
+      <TopNavLinks currentUser={currentUser} sessionStatus={sessionStatus} pendingCuratorCount={pendingCuratorCount} />
     </Suspense>
   );
 }

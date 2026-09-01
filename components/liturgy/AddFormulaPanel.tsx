@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { addFormula } from "@/lib/liturgy/addFormulaAction";
 import { XIcon } from "@/components/liturgy/icons";
+import MarkedText from "@/components/liturgy/MarkedText";
 import type { Formula } from "@/types/liturgy";
 
 interface AddFormulaPanelProps {
@@ -90,9 +91,7 @@ export default function AddFormulaPanel({
       </div>
 
       {selectedFormula && !useOverride && (
-        <p className="font-serif-body text-[17px] leading-[1.75] text-text-primary">
-          {selectedFormula.defaultText}
-        </p>
+        <MarkedText text={selectedFormula.defaultText} marks={selectedFormula.marks ?? []} />
       )}
 
       <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">

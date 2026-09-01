@@ -50,7 +50,7 @@ export default function VerbalCueForm({
     <div className="bg-surface-secondary border border-border rounded-md p-4 flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="verbal-cue-text">
-          Verbal Cue
+          Verbal Cue <span aria-hidden="true">*</span>
         </label>
         <textarea
           id="verbal-cue-text"
@@ -87,7 +87,7 @@ export default function VerbalCueForm({
 
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="verbal-cue-visibility">
-          Visibility
+          Visibility <span aria-hidden="true">*</span>
         </label>
         <select
           id="verbal-cue-visibility"

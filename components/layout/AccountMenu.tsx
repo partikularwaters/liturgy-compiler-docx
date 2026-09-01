@@ -10,6 +10,10 @@ import type { SessionStatus } from "@/lib/auth/getSessionStatus";
 interface AccountMenuProps {
   currentUser: CurrentUser | null;
   sessionStatus: SessionStatus;
+  // Combined Account Requests + Library Submissions count -- only ever
+  // non-zero for a Curator (the only role that can reach /curator-inbox at
+  // all, per contextHref below). Zero renders no badge, not a "0" badge.
+  pendingCuratorCount?: number;
 }
 
 // Replaces the previous inline "role badge + context link + Sign Out" (or
@@ -17,9 +21,14 @@ interface AccountMenuProps {
 // affordance -- one icon button, same footprint whether signed in or out,
 // opening a small dropdown for the actual choices. Matches how most apps
 // (GitHub, Google, etc.) keep the nav's account surface to one control.
-export default function AccountMenu({ currentUser, sessionStatus }: AccountMenuProps): React.ReactElement {
+export default function AccountMenu({
+  currentUser,
+  sessionStatus,
+  pendingCuratorCount = 0,
+}: AccountMenuProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const showPendingBadge = currentUser?.role === "curator" && pendingCuratorCount > 0;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -41,12 +50,23 @@ export default function AccountMenu({ currentUser, sessionStatus }: AccountMenuP
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-1 text-accent-foreground/70 hover:text-accent-foreground transition-[color,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
-        aria-label={isPending ? "Account menu -- pending approval" : "Account menu"}
+        className="relative flex items-center gap-1 text-accent-foreground/70 hover:text-accent-foreground transition-[color,transform] duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
+        aria-label={
+          isPending
+            ? "Account menu -- pending approval"
+            : showPendingBadge
+              ? `Account menu -- ${pendingCuratorCount} pending in Curator Inbox`
+              : "Account menu"
+        }
         aria-expanded={isOpen}
       >
         {isPending ? <ClockIcon size={22} /> : <UserCircleIcon size={22} />}
         <ChevronDownIcon size={14} />
+        {showPendingBadge && (
+          <span className="absolute -top-2 -right-2 rounded-full px-2 py-0.5 bg-accent-light text-accent-dark text-xs font-medium leading-none">
+            {pendingCuratorCount}
+          </span>
+        )}
       </button>
 
       {isOpen && (
@@ -82,9 +102,14 @@ export default function AccountMenu({ currentUser, sessionStatus }: AccountMenuP
               <Link
                 href={contextHref}
                 onClick={() => setIsOpen(false)}
-                className="block px-4 py-2 text-sm text-text-primary hover:bg-surface-secondary"
+                className="flex items-center justify-between px-4 py-2 text-sm text-text-primary hover:bg-surface-secondary"
               >
                 {contextLabel}
+                {showPendingBadge && (
+                  <span className="rounded-full px-2 py-0.5 bg-accent-light text-accent-dark text-xs font-medium leading-none">
+                    {pendingCuratorCount}
+                  </span>
+                )}
               </Link>
               <button
                 type="button"

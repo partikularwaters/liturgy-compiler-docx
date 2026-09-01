@@ -7,7 +7,9 @@ import type { Song } from "@/types/liturgy";
 
 interface SongFormProps {
   sectionNames: string[];
-  initialSectionName: string;
+  // Track B (2026-08-31): a Song can now be tagged for multiple Sections
+  // (song_section_tags) -- see songActions.ts's own comment.
+  initialSectionNames: string[];
   initialKind: "psalm" | "hymn";
   initialTitle: string;
   initialAttribution: string;
@@ -23,7 +25,7 @@ interface SongFormProps {
   error: string | null;
   submitLabel: string;
   onSubmit: (
-    sectionName: string,
+    sectionNames: string[],
     kind: "psalm" | "hymn",
     title: string,
     attribution: string,
@@ -36,11 +38,11 @@ interface SongFormProps {
 }
 
 // v2 Phase A: Songs library management, mirroring FormulaForm's shape --
-// shared between /songs/new (create) and SongListRow's inline edit, same
+// shared between the Library add-modal (create) and SongListRow's inline edit, same
 // pattern as Formula/Prayer.
 export default function SongForm({
   sectionNames,
-  initialSectionName,
+  initialSectionNames,
   initialKind,
   initialTitle,
   initialAttribution,
@@ -56,7 +58,9 @@ export default function SongForm({
   onSubmit,
   onCancel,
 }: SongFormProps): React.ReactElement {
-  const [sectionName, setSectionName] = useState(initialSectionName || sectionNames[0] || "");
+  const [selectedSectionNames, setSelectedSectionNames] = useState<string[]>(
+    initialSectionNames.length > 0 ? initialSectionNames : sectionNames.slice(0, 1)
+  );
   const [kind, setKind] = useState<"psalm" | "hymn">(initialKind);
   const [title, setTitle] = useState(initialTitle);
   const [attribution, setAttribution] = useState(initialAttribution);
@@ -67,40 +71,50 @@ export default function SongForm({
 
   const attributionLabel = kind === "psalm" ? "Versification" : "Author";
 
+  const toggleSection = (name: string): void => {
+    setSelectedSectionNames((prev) =>
+      prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name]
+    );
+  };
+
   const opposite = translation === "fil" ? "en" : "fil";
   const pairCandidates = translation
     ? allSongs
-        .filter((s) => s.id !== id && s.sectionName === sectionName && s.kind === kind && s.translation === opposite)
+        .filter((s) => s.id !== id && s.kind === kind && s.translation === opposite)
         .map((s) => ({ id: s.id, label: s.title }))
     : [];
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
-        <label className="text-[13px] font-medium text-text-secondary" htmlFor="song-form-section">
-          Section
-        </label>
-        <select
-          id="song-form-section"
-          value={sectionName}
-          onChange={(e) => setSectionName(e.target.value)}
-          className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
-        >
+        <label className="text-[13px] font-medium text-text-secondary">Sections <span aria-hidden="true">*</span></label>
+        <div className="flex flex-col gap-1 max-h-40 overflow-y-auto border border-border rounded-md p-2">
           {sectionNames.map((s) => (
-            <option key={s} value={s}>
+            <label key={s} className="flex items-center gap-2 text-sm text-text-primary">
+              <input
+                type="checkbox"
+                checked={selectedSectionNames.includes(s)}
+                onChange={() => toggleSection(s)}
+              />
               {s}
-            </option>
+            </label>
           ))}
-        </select>
+        </div>
+        {selectedSectionNames.length === 0 && (
+          <p className="text-[13px] text-error">Select at least one Section.</p>
+        )}
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="song-form-kind">
-          Kind
+          Kind <span aria-hidden="true">*</span>
         </label>
         <select
           id="song-form-kind"
           value={kind}
-          onChange={(e) => setKind(e.target.value as "psalm" | "hymn")}
+          onChange={(e) => {
+            setKind(e.target.value as "psalm" | "hymn");
+            setPairedId(null);
+          }}
           className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
         >
           <option value="psalm">Psalm</option>
@@ -109,7 +123,7 @@ export default function SongForm({
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="song-form-title">
-          Title
+          Title <span aria-hidden="true">*</span>
         </label>
         <input
           id="song-form-title"
@@ -142,7 +156,7 @@ export default function SongForm({
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="song-form-notes">
-          Notes (optional, Leader Guide only)
+          Additional Information (optional, Leader Guide only)
         </label>
         <textarea
           id="song-form-notes"
@@ -166,8 +180,10 @@ export default function SongForm({
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(sectionName, kind, title, attribution, yearPublished, notes, translation, pairedId)}
-          disabled={isSaving}
+          onClick={() =>
+            onSubmit(selectedSectionNames, kind, title, attribution, yearPublished, notes, translation, pairedId)
+          }
+          disabled={isSaving || selectedSectionNames.length === 0}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
         >
           {isSaving ? "Saving…" : submitLabel}

@@ -19,7 +19,7 @@ import SermonForm from "@/components/liturgy/SermonForm";
 import { addVerbalCue, updateVerbalCue } from "@/lib/liturgy/verbalCueActions";
 import { updateFormulaItem } from "@/lib/liturgy/addFormulaAction";
 import { updateSelectionItem } from "@/lib/liturgy/addSelectionAction";
-import { saveSermonPassage } from "@/lib/liturgy/sermonActions";
+import { saveSermon } from "@/lib/liturgy/sermonActions";
 import { resolveItemText, resolveBase } from "@/lib/liturgy/resolveItemText";
 import { sectionTitle } from "@/lib/liturgy/sectionTitle";
 import { sortSectionItems } from "@/lib/liturgy/sortSectionItems";
@@ -32,6 +32,8 @@ import { toEnglishCitation } from "@/lib/bible/bookNamesTagalog";
 import { TRINITARIAN_SEAL_SECTIONS } from "@/lib/liturgy/trinitarianSeal";
 import { getAmenPolicy, type AmenPolicy } from "@/lib/liturgy/amenPolicy";
 import { SILENT_CONFESSION_SECTION, SILENT_CONFESSION_RUBRIC_TEXT } from "@/lib/liturgy/silentConfessionRubric";
+import { NATURAL_FLOW_TOGGLE_SECTIONS } from "@/lib/liturgy/naturalFlowSections";
+import NaturalFlowToggle from "@/components/liturgy/NaturalFlowToggle";
 import { applyMarks, shiftMarksForEdit } from "@/lib/text/marks";
 import { updatePrayerItem } from "@/lib/liturgy/addPrayerAction";
 import { updateSongItem } from "@/lib/liturgy/addSongAction";
@@ -55,16 +57,6 @@ type PanelKey =
   | "addPsalm"
   | "addHymn";
 type OpenTarget = { type: "panel"; key: PanelKey } | { type: "edit"; itemId: string } | null;
-
-// 2026-08-25: Benediction's Formula slot only ever existed to hand-author
-// the Trinitarian closing line -- the Selection's own Trinitarian Seal
-// toggle (trinitarianSeal.ts) already appends that exact text, and having
-// both meant TRINITARIAN_SEAL_SECTIONS ambiguously applied to either item
-// type in the same Section (the same problem Assurance of Pardon hit and
-// resolved by dropping the toggle there instead -- see that file's
-// comment). Benediction takes the opposite fix: drop Formula, keep the
-// toggle scoped to the one item type that's actually left.
-const FORMULA_EXCLUDED_SECTIONS = ["Benediction"];
 
 // Feature 22: mirrors addSelectionAction.ts's REFERENCE_ONLY_SECTIONS -- kept
 // as a separate constant since this is a client component and can't import
@@ -168,6 +160,17 @@ function BodyText({ text, rubric = false }: { text: string; rubric?: boolean }):
   );
 }
 
+function SermonBody({ item }: { item: Extract<Item, { type: "sermon" }> }): React.ReactElement {
+  return (
+    <div className="font-serif-body text-[16px] leading-[1.6] text-text-primary text-center whitespace-pre-wrap">
+      {item.title && <p className="[font-variant:small-caps]">{item.title}</p>}
+      {item.series && <p>{item.series}</p>}
+      <p>{item.passage}</p>
+      {item.preacher && <p>{item.preacher}</p>}
+    </div>
+  );
+}
+
 // A Verbal Cue's substituted {{scripture}}/{{song}} token renders in
 // citation-red (matching a Selection header/Psalm title elsewhere), never
 // Small Caps -- the rest of the cue's hand-written prose stays plain.
@@ -219,18 +222,23 @@ function LeaderOnlyBadge(): React.ReactElement {
 interface PrayerEditFormProps {
   initialText: string;
   initialMarks: TextMark[];
+  // Track B (2026-08-31): audience is now a per-placement fact (this
+  // Section instance's own PrayerItem.leaderOnly), not a property of the
+  // shared library Prayer -- see prayerKindPolicy.ts.
+  initialLeaderOnly: boolean;
   isSaving: boolean;
   error: string | null;
   // v3: only a Compiler ever sees the "save to my Library" checkbox -- a
   // Curator edits the shared master directly via the Library page instead.
   offerPersonalLibrarySave: boolean;
-  onSubmit: (text: string, marks: TextMark[], saveToPersonalLibrary: boolean) => void;
+  onSubmit: (text: string, marks: TextMark[], leaderOnly: boolean, saveToPersonalLibrary: boolean) => void;
   onCancel: () => void;
 }
 
 function PrayerEditForm({
   initialText,
   initialMarks,
+  initialLeaderOnly,
   isSaving,
   error,
   offerPersonalLibrarySave,
@@ -239,6 +247,7 @@ function PrayerEditForm({
 }: PrayerEditFormProps): React.ReactElement {
   const [text, setText] = useState(initialText);
   const [marks, setMarks] = useState<TextMark[]>(initialMarks);
+  const [leaderOnly, setLeaderOnly] = useState(initialLeaderOnly);
   const [saveToPersonalLibrary, setSaveToPersonalLibrary] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -264,6 +273,10 @@ function PrayerEditForm({
       <p className="text-[13px] text-text-muted">
         Editing here only changes this one placement -- the shared Library entry is never touched.
       </p>
+      <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">
+        <input type="checkbox" checked={!leaderOnly} onChange={(e) => setLeaderOnly(!e.target.checked)} />
+        Corporate (whole church prays it — Bulletin + Guide). Off means Leader/minister’s own material — Guide only.
+      </label>
       {offerPersonalLibrarySave && (
         <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">
           <input
@@ -278,7 +291,7 @@ function PrayerEditForm({
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => onSubmit(text, marks, saveToPersonalLibrary)}
+          onClick={() => onSubmit(text, marks, leaderOnly, saveToPersonalLibrary)}
           disabled={isSaving}
           className="self-start bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 transition-transform duration-[var(--duration-press)] ease-[var(--ease-out-strong)] motion-safe:active:scale-[0.97]"
         >
@@ -461,10 +474,10 @@ export default function SectionCard({
   );
   const sectionGuides = prayers.filter((p) => p.sectionName === section.name && p.isGuide);
   const sectionPsalms = songs.filter(
-    (s) => s.sectionName === section.name && s.kind === "psalm" && isVisibleToCurrentUser(s.ownerId)
+    (s) => s.sectionNames.includes(section.name) && s.kind === "psalm" && isVisibleToCurrentUser(s.ownerId)
   );
   const sectionHymns = songs.filter(
-    (s) => s.sectionName === section.name && s.kind === "hymn" && isVisibleToCurrentUser(s.ownerId)
+    (s) => s.sectionNames.includes(section.name) && s.kind === "hymn" && isVisibleToCurrentUser(s.ownerId)
   );
   // Only one Add panel or item editor can be open in a Section at once --
   // Madrid reported that clicking a second "+ X" button while a first one
@@ -609,7 +622,15 @@ export default function SectionCard({
   // being edited, rather than trying to splice an edit form into the middle
   // of a merged paragraph.
   const isAnySelectionBeingEdited = selectionItems.some((item) => item.id === editingItemId);
-  const shouldMergeSelections = selectionItems.length > 1 && !isAnySelectionBeingEdited;
+  // Track B: merging is opt-in (section.mergeSelections) on the three named
+  // Sections; every other Section (Assurance of Pardon included) keeps the
+  // old unconditional behavior -- see naturalFlowSections.ts. Mirrors
+  // prepareSectionRender.ts's identical gating so the two can't drift.
+  const isNaturalFlowToggleGated = NATURAL_FLOW_TOGGLE_SECTIONS.includes(section.name);
+  const shouldMergeSelections =
+    selectionItems.length > 1 &&
+    !isAnySelectionBeingEdited &&
+    (!isNaturalFlowToggleGated || section.mergeSelections);
   let combinedSelectionText = "";
   const combinedSelectionMarks: TextMark[] = [];
   if (shouldMergeSelections) {
@@ -723,11 +744,12 @@ export default function SectionCard({
     itemId: string,
     text: string,
     marks: TextMark[],
+    leaderOnly: boolean,
     saveToPersonalLibrary: boolean
   ): void => {
     setIsSaving(true);
     setError(null);
-    updatePrayerItem(liturgyId, sectionIndex, itemId, text, marks, saveToPersonalLibrary).then((result) => {
+    updatePrayerItem(liturgyId, sectionIndex, itemId, text, marks, leaderOnly, saveToPersonalLibrary).then((result) => {
       setIsSaving(false);
       if (result.success) {
         closeOpenTarget();
@@ -786,16 +808,16 @@ export default function SectionCard({
     });
   };
 
-  const handleSaveSermon = (passage: string): void => {
+  const handleSaveSermon = (fields: { title: string; series: string; passage: string; preacher: string }): void => {
     setIsSaving(true);
     setError(null);
-    saveSermonPassage(liturgyId, sectionIndex, passage).then((result) => {
+    saveSermon(liturgyId, sectionIndex, fields).then((result) => {
       setIsSaving(false);
       if (result.success) {
         closeOpenTarget();
         router.refresh();
       } else {
-        setError(result.error ?? "Unable to save the Sermon passage right now.");
+        setError(result.error ?? "Unable to save the Sermon right now.");
       }
     });
   };
@@ -866,7 +888,7 @@ export default function SectionCard({
             )}
           </>
         )}
-        {allowedTypes.includes("formula") && !FORMULA_EXCLUDED_SECTIONS.includes(section.name) && (
+        {allowedTypes.includes("formula") && (
           <button
             type="button"
             onClick={() => requestOpenChange({ type: "panel", key: "addFormula" })}
@@ -1020,7 +1042,10 @@ export default function SectionCard({
           {...dirtyCaptureProps}
         >
           <SermonForm
+            initialTitle=""
+            initialSeries=""
             initialPassage=""
+            initialPreacher=""
             isSaving={isSaving}
             error={error}
             submitLabel="Add Sermon"
@@ -1161,11 +1186,12 @@ export default function SectionCard({
                   <PrayerEditForm
                     initialText={resolved.text}
                     initialMarks={resolved.marks ?? []}
+                    initialLeaderOnly={resolved.leaderOnly}
                     isSaving={isSaving}
                     error={error}
                     offerPersonalLibrarySave={currentUser?.role === "compiler"}
-                    onSubmit={(text, marks, saveToPersonalLibrary) =>
-                      handleSavePrayerEdit(item.id, text, marks, saveToPersonalLibrary)
+                    onSubmit={(text, marks, leaderOnly, saveToPersonalLibrary) =>
+                      handleSavePrayerEdit(item.id, text, marks, leaderOnly, saveToPersonalLibrary)
                     }
                     onCancel={closeOpenTarget}
                   />
@@ -1220,7 +1246,10 @@ export default function SectionCard({
               return (
                 <li key={item.id} {...dirtyCaptureProps}>
                   <SermonForm
+                    initialTitle={item.title ?? ""}
+                    initialSeries={item.series ?? ""}
                     initialPassage={item.passage}
+                    initialPreacher={item.preacher ?? ""}
                     isSaving={isSaving}
                     error={error}
                     submitLabel="Save"
@@ -1241,7 +1270,8 @@ export default function SectionCard({
 
             const labelAlreadyShownInHeader =
               (item.type === "selection" && headerReference !== null) ||
-              (item === creedFormulaItem && showCreedTitleInHeader);
+              (item === creedFormulaItem && showCreedTitleInHeader) ||
+              item.type === "sermon";
 
             return (
               <li key={item.id}>
@@ -1281,7 +1311,9 @@ export default function SectionCard({
                     </>
                   )}
                 </div>
-                {item.type === "song" ? (
+                {item.type === "sermon" ? (
+                  <SermonBody item={item} />
+                ) : item.type === "song" ? (
                   <SongTitle song={resolved.song} />
                 ) : item.type === "verbal_cue" && resolved.verbalCueRuns ? (
                   <VerbalCueBody runs={resolved.verbalCueRuns} rubric={resolved.rubric} />
@@ -1313,6 +1345,14 @@ export default function SectionCard({
             {SILENT_CONFESSION_RUBRIC_TEXT[section.silentConfessionLanguage]}
           </p>
         </div>
+      )}
+      {isNaturalFlowToggleGated && (
+        <NaturalFlowToggle
+          liturgyId={liturgyId}
+          sectionIndex={sectionIndex}
+          mergeSelections={section.mergeSelections}
+          canEdit={currentUser !== null}
+        />
       )}
     </div>
   );

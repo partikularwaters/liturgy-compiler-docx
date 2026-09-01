@@ -6,6 +6,7 @@ import PrayerForm from "@/components/prayers/PrayerForm";
 import { updatePrayer, deletePrayer } from "@/lib/prayers/prayerActions";
 import { PencilIcon, TrashIcon } from "@/components/liturgy/icons";
 import LibraryTextPreview from "@/components/library/LibraryTextPreview";
+import ConfirmDeleteLibraryItemDialog from "@/components/library/ConfirmDeleteLibraryItemDialog";
 import type { Prayer, TextMark } from "@/types/liturgy";
 import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
@@ -32,11 +33,12 @@ export default function PrayerListRow({
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSave = (
     sectionName: string,
     text: string,
-    kind: "corporate" | "leader",
     marks: TextMark[],
     isGuide: boolean,
     translation: "fil" | "en" | null,
@@ -44,7 +46,7 @@ export default function PrayerListRow({
   ): void => {
     setIsSaving(true);
     setError(null);
-    updatePrayer(prayer.id, sectionName, text, kind, marks, isGuide, translation, pairedId).then((result) => {
+    updatePrayer(prayer.id, sectionName, text, marks, isGuide, translation, pairedId).then((result) => {
       setIsSaving(false);
       if (result.success) {
         setIsEditing(false);
@@ -55,13 +57,12 @@ export default function PrayerListRow({
     });
   };
 
-  const handleDelete = (): void => {
-    const label = prayer.isGuide ? "guide" : "prayer";
-    if (!window.confirm(`Delete this ${label}? This does not remove it from liturgies it's already placed in.`)) {
-      return;
-    }
+  const handleConfirmDelete = (): void => {
+    setIsDeleting(true);
     deletePrayer(prayer.id).then((result) => {
+      setIsDeleting(false);
       if (result.success) {
+        setIsConfirmingDelete(false);
         router.refresh();
       } else {
         setError(result.error ?? "Unable to delete this Prayer right now.");
@@ -76,8 +77,7 @@ export default function PrayerListRow({
           sectionNames={sectionNames}
           initialSectionName={prayer.sectionName}
           initialText={prayer.text}
-          initialKind={prayer.kind}
-          initialIsGuide={prayer.isGuide ?? false}
+          isGuide={prayer.isGuide ?? false}
           initialMarks={prayer.marks ?? []}
           initialTranslation={prayer.translation}
           initialPairedId={prayer.pairedId}
@@ -98,12 +98,12 @@ export default function PrayerListRow({
     // FormulaListRow's own comment for the full reasoning.
     <div className={`relative py-4 ${bordered ? "border-b border-border" : ""}`}>
       <div>
-        <p className="text-[13px] text-text-secondary pr-20">
+        <p className="text-[13px] font-medium text-text-secondary pr-20 mb-1">
           {prayer.sectionName}
           {prayer.translation && <> · {prayer.translation === "en" ? "English" : "Filipino"}</>}
         </p>
         <LibraryTextPreview
-          title={prayer.isGuide ? "Prayer Guide" : `Prayer (${prayer.kind === "corporate" ? "Corporate" : "Leader"})`}
+          title={prayer.isGuide ? "Prayer Guide" : "Prayer"}
           text={prayer.text}
           marks={prayer.marks}
           className="mt-1"
@@ -122,12 +122,24 @@ export default function PrayerListRow({
           <button
             type="button"
             title="Delete"
-            onClick={handleDelete}
+            onClick={() => {
+              setError(null);
+              setIsConfirmingDelete(true);
+            }}
             className="text-text-muted hover:text-error transition-colors duration-[var(--duration-tooltip)] ease"
           >
             <TrashIcon size={16} />
           </button>
         </div>
+      )}
+      {isConfirmingDelete && (
+        <ConfirmDeleteLibraryItemDialog
+          itemLabel={`this ${prayer.isGuide ? "guide" : "prayer"}`}
+          isDeleting={isDeleting}
+          error={error}
+          onConfirm={handleConfirmDelete}
+          onClose={() => setIsConfirmingDelete(false)}
+        />
       )}
     </div>
   );

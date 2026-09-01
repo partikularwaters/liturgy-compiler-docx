@@ -18,6 +18,7 @@ interface ReaderPageProps {
     liturgyId?: string;
     sectionIndex?: string;
     translation?: string;
+    from?: string;
     // Gap #1 fix: an alternative to liturgyId/sectionIndex -- names a
     // Scripture Library Section tag (from getSectionNames("selection"))
     // directly, with no Liturgy involved, so a marked passage can be saved
@@ -44,8 +45,9 @@ export default async function ReaderPage({ searchParams }: ReaderPageProps): Pro
       : Promise.resolve(null),
   ]);
 
-  // Only fetched when there's no target yet -- someone who arrived via
-  // "+ Scripture" already has a target pre-set, and never needs these lists.
+  // A Compile deep link has a locked, server-resolved target and does not
+  // need alternative target choices. Targetless Reader/Library arrivals load
+  // the choices needed by the active target picker instead.
   const [liturgies, librarySectionNames] = targetSection
     ? [[], []]
     : await Promise.all([getLiturgies(), getSectionNames("selection")]);
@@ -66,12 +68,13 @@ export default async function ReaderPage({ searchParams }: ReaderPageProps): Pro
 
   return (
     <ReaderClient
-      key={`${chapterData.book}-${chapterData.chapter}`}
+      key={`${chapterData.book}-${chapterData.chapter}-${params.liturgyId ?? ""}-${params.sectionIndex ?? ""}-${librarySection ?? ""}-${params.from ?? ""}`}
       books={canon}
       chapter={chapterData}
       initialHighlights={highlights}
       targetSection={targetSection}
       librarySection={librarySection}
+      returnToLibrary={params.from === "library"}
       librarySectionNames={librarySectionNames}
       language={language}
       liturgies={liturgies}

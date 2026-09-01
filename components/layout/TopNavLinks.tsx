@@ -11,9 +11,16 @@ import type { SessionStatus } from "@/lib/auth/getSessionStatus";
 interface TopNavLinksProps {
   currentUser: CurrentUser | null;
   sessionStatus: SessionStatus;
+  // Combined Account Requests + Library Submissions count -- always 0 for a
+  // non-Curator (see TopNav.tsx's own role check before fetching this).
+  pendingCuratorCount?: number;
 }
 
-export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksProps): React.ReactElement | null {
+export default function TopNavLinks({
+  currentUser,
+  sessionStatus,
+  pendingCuratorCount = 0,
+}: TopNavLinksProps): React.ReactElement | null {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -24,20 +31,41 @@ export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksP
   // instant you start scrolling from rest.
   const [isHidden, setIsHidden] = useState(false);
   const lastScrollY = useRef(0);
+  const previousScrollY = useRef(0);
+  const scrollDirection = useRef<"up" | "down" | null>(null);
 
   useEffect(() => {
     lastScrollY.current = window.scrollY;
+    previousScrollY.current = window.scrollY;
     const handleScroll = (): void => {
       const currentScrollY = window.scrollY;
-      const delta = currentScrollY - lastScrollY.current;
       if (currentScrollY < 80) {
         setIsHidden(false);
-      } else if (delta > 8) {
+        lastScrollY.current = currentScrollY;
+        previousScrollY.current = currentScrollY;
+        scrollDirection.current = null;
+        return;
+      }
+
+      const priorScrollY = previousScrollY.current;
+      const eventDelta = currentScrollY - priorScrollY;
+      if (eventDelta === 0) return;
+
+      const nextDirection = eventDelta > 0 ? "down" : "up";
+      if (scrollDirection.current && scrollDirection.current !== nextDirection) {
+        lastScrollY.current = priorScrollY;
+      }
+      scrollDirection.current = nextDirection;
+      previousScrollY.current = currentScrollY;
+
+      const delta = currentScrollY - lastScrollY.current;
+      if (delta > 8) {
         setIsHidden(true);
+        lastScrollY.current = currentScrollY;
       } else if (delta < -8) {
         setIsHidden(false);
+        lastScrollY.current = currentScrollY;
       }
-      lastScrollY.current = currentScrollY;
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -246,7 +274,7 @@ export default function TopNavLinks({ currentUser, sessionStatus }: TopNavLinksP
               <PlusIcon size={14} /> Create Liturgy
             </Link>
           )}
-          <AccountMenu currentUser={currentUser} sessionStatus={sessionStatus} />
+          <AccountMenu currentUser={currentUser} sessionStatus={sessionStatus} pendingCuratorCount={pendingCuratorCount} />
         </div>
           </div>
         </nav>

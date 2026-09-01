@@ -7,6 +7,7 @@ interface ModalProps {
   onClose: () => void;
   children: React.ReactNode;
   size?: "default" | "compact";
+  closeOnOverlayClick?: boolean;
 }
 
 const FOCUSABLE_SELECTOR =
@@ -17,7 +18,13 @@ const FOCUSABLE_SELECTOR =
 // aria-modal/aria-labelledby, Escape to dismiss, initial focus on open,
 // Tab/Shift+Tab contained within the dialog, focus restored to whatever
 // triggered it on close) so any future caller gets it for free.
-export default function Modal({ title, onClose, children, size = "default" }: ModalProps): React.ReactElement {
+export default function Modal({
+  title,
+  onClose,
+  children,
+  size = "default",
+  closeOnOverlayClick = true,
+}: ModalProps): React.ReactElement {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -67,7 +74,7 @@ export default function Modal({ title, onClose, children, size = "default" }: Mo
   return (
     <div
       className="fixed inset-0 bg-text-primary/40 flex items-center justify-center p-6 z-50 transition-opacity duration-[var(--duration-modal)] ease-[var(--ease-out-strong)] starting:opacity-0"
-      onClick={onClose}
+      onClick={closeOnOverlayClick ? onClose : undefined}
     >
       <div
         ref={dialogRef}

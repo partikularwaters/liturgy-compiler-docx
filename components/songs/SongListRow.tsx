@@ -5,6 +5,7 @@ import { useState } from "react";
 import SongForm from "@/components/songs/SongForm";
 import { updateSong, deleteSong } from "@/lib/songs/songActions";
 import { PencilIcon, TrashIcon } from "@/components/liturgy/icons";
+import ConfirmDeleteLibraryItemDialog from "@/components/library/ConfirmDeleteLibraryItemDialog";
 import type { Song } from "@/types/liturgy";
 import type { CurrentUser } from "@/lib/auth/getCurrentUser";
 
@@ -29,9 +30,11 @@ export default function SongListRow({
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSave = (
-    sectionName: string,
+    sectionNames: string[],
     kind: "psalm" | "hymn",
     title: string,
     attribution: string,
@@ -42,7 +45,7 @@ export default function SongListRow({
   ): void => {
     setIsSaving(true);
     setError(null);
-    updateSong(song.id, sectionName, kind, title, attribution, yearPublished, notes, translation, pairedId).then(
+    updateSong(song.id, sectionNames, kind, title, attribution, yearPublished, notes, translation, pairedId).then(
       (result) => {
         setIsSaving(false);
         if (result.success) {
@@ -55,12 +58,12 @@ export default function SongListRow({
     );
   };
 
-  const handleDelete = (): void => {
-    if (!window.confirm(`Delete "${song.title}"? This does not remove it from liturgies it's already placed in.`)) {
-      return;
-    }
+  const handleConfirmDelete = (): void => {
+    setIsDeleting(true);
     deleteSong(song.id).then((result) => {
+      setIsDeleting(false);
       if (result.success) {
+        setIsConfirmingDelete(false);
         router.refresh();
       } else {
         setError(result.error ?? "Unable to delete this Song right now.");
@@ -73,7 +76,7 @@ export default function SongListRow({
       <div className="border-b border-border py-4">
         <SongForm
           sectionNames={sectionNames}
-          initialSectionName={song.sectionName}
+          initialSectionNames={song.sectionNames}
           initialKind={song.kind}
           initialTitle={song.title}
           initialAttribution={song.attribution ?? ""}
@@ -98,8 +101,8 @@ export default function SongListRow({
     // FormulaListRow's own comment for the full reasoning.
     <div className={`relative py-4 ${bordered ? "border-b border-border" : ""}`}>
       <div>
-        <p className="text-[13px] text-text-secondary pr-20">
-          {song.sectionName}
+        <p className="text-[13px] font-medium text-text-secondary pr-20 mb-1">
+          {song.sectionNames.join(", ")}
           {song.translation && <> · {song.translation === "en" ? "English" : "Filipino"}</>}
         </p>
         <p className="text-sm font-medium text-text-primary">
@@ -120,12 +123,24 @@ export default function SongListRow({
           <button
             type="button"
             title="Delete"
-            onClick={handleDelete}
+            onClick={() => {
+              setError(null);
+              setIsConfirmingDelete(true);
+            }}
             className="text-text-muted hover:text-error transition-colors duration-[var(--duration-tooltip)] ease"
           >
             <TrashIcon size={16} />
           </button>
         </div>
+      )}
+      {isConfirmingDelete && (
+        <ConfirmDeleteLibraryItemDialog
+          itemLabel={`"${song.title}"`}
+          isDeleting={isDeleting}
+          error={error}
+          onConfirm={handleConfirmDelete}
+          onClose={() => setIsConfirmingDelete(false)}
+        />
       )}
     </div>
   );

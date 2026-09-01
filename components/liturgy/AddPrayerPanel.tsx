@@ -7,6 +7,7 @@ import { createPrayer, updatePrayer } from "@/lib/prayers/prayerActions";
 import { prayerEntryUnchanged } from "@/lib/liturgy/pickedLibraryEntryUnchanged";
 import { shiftMarksForEdit } from "@/lib/text/marks";
 import { XIcon } from "@/components/liturgy/icons";
+import TranslationPairFields from "@/components/library/TranslationPairFields";
 import type { Prayer } from "@/types/liturgy";
 
 interface AddPrayerPanelProps {
@@ -46,8 +47,17 @@ export default function AddPrayerPanel({
   const activeList = mode === "shared" ? sharedPrayers : mode === "mine" ? myPrayers : [];
   const [prayerId, setPrayerId] = useState(activeList[0]?.id ?? "");
   const [text, setText] = useState(activeList[0]?.text ?? "");
+  const [translation, setTranslation] = useState<"fil" | "en" | null>(null);
+  const [pairedId, setPairedId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Same-Section, opposite-language candidates -- same filter PrayerForm.tsx
+  // uses, since this "Write New" mode is creating the same kind of row.
+  const opposite = translation === "fil" ? "en" : "fil";
+  const pairCandidates = translation
+    ? prayers.filter((p) => p.sectionName === sectionName && p.translation === opposite).map((p) => ({ id: p.id, label: previewText(p.text) }))
+    : [];
 
   const handleSelectPrayer = (id: string, list: Prayer[]): void => {
     setPrayerId(id);
@@ -60,6 +70,10 @@ export default function AddPrayerPanel({
     const list = next === "shared" ? sharedPrayers : next === "mine" ? myPrayers : [];
     setPrayerId(list[0]?.id ?? "");
     setText(list[0]?.text ?? "");
+    if (next === "new") {
+      setTranslation(null);
+      setPairedId(null);
+    }
   };
 
   const handleSave = (): void => {
@@ -80,7 +94,7 @@ export default function AddPrayerPanel({
     };
 
     if (mode === "new") {
-      createPrayer(sectionName, text).then((result) => {
+      createPrayer(sectionName, text, [], false, translation, pairedId).then((result) => {
         if (result.success && result.data) {
           finish(result.data.id);
         } else {
@@ -108,7 +122,7 @@ export default function AddPrayerPanel({
       // for a Curator (prayerActions.ts's own gate) -- a Compiler editing a
       // shared entry gets a clear error instead, same as everywhere else.
       const shiftedMarks = shiftMarksForEdit(original?.text ?? "", text, original?.marks ?? []);
-      updatePrayer(prayerId, sectionName, text, undefined, shiftedMarks).then((result) => {
+      updatePrayer(prayerId, sectionName, text, shiftedMarks).then((result) => {
         if (result.success) {
           finish(prayerId);
         } else {
@@ -176,6 +190,19 @@ export default function AddPrayerPanel({
           </p>
         )}
       </div>
+
+      {mode === "new" && (
+        <TranslationPairFields
+          translation={translation}
+          onTranslationChange={(t) => {
+            setTranslation(t);
+            setPairedId(null);
+          }}
+          pairedId={pairedId}
+          onPairedIdChange={setPairedId}
+          candidates={pairCandidates}
+        />
+      )}
 
       {error && <p className="text-sm text-error">{error}</p>}
 

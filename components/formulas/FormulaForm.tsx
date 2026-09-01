@@ -39,7 +39,7 @@ interface FormulaFormProps {
   onCancel?: () => void;
 }
 
-// v2: library-level marking toolbar -- this form is shared by /formulas/new
+// v2: library-level marking toolbar -- this form is shared by the Library add-modal
 // (create) and FormulaListRow's edit path, so marking a Formula here (e.g.
 // Absolution's Minister/Congregation dialogue) happens once in the library
 // instead of being redone from scratch on every placement (addFormulaAction
@@ -76,7 +76,13 @@ export default function FormulaForm({
   const opposite = translation === "fil" ? "en" : "fil";
   const pairCandidates = translation
     ? allFormulas
-        .filter((f) => f.id !== id && f.sectionName === sectionName && f.translation === opposite)
+        .filter(
+          (f) =>
+            f.id !== id &&
+            f.sectionName === sectionName &&
+            f.kind === (sectionName === "Affirmation of Faith" ? kind ?? "affirmation" : null) &&
+            f.translation === opposite
+        )
         .map((f) => ({ id: f.id, label: f.name }))
     : [];
 
@@ -88,12 +94,15 @@ export default function FormulaForm({
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="formula-section">
-          Section
+          Section <span aria-hidden="true">*</span>
         </label>
         <select
           id="formula-section"
           value={sectionName}
-          onChange={(e) => setSectionName(e.target.value)}
+          onChange={(e) => {
+            setSectionName(e.target.value);
+            setPairedId(null);
+          }}
           className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
         >
           {sectionNames.map((s) => (
@@ -106,12 +115,15 @@ export default function FormulaForm({
       {sectionName === "Affirmation of Faith" && (
         <div className="flex flex-col gap-1">
           <label className="text-[13px] font-medium text-text-secondary" htmlFor="formula-kind">
-            Which is this?
+            Which is this? <span aria-hidden="true">*</span>
           </label>
           <select
             id="formula-kind"
             value={kind ?? "affirmation"}
-            onChange={(e) => setKind(e.target.value as "affirmation" | "covenant")}
+            onChange={(e) => {
+              setKind(e.target.value as "affirmation" | "covenant");
+              setPairedId(null);
+            }}
             className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
           >
             <option value="affirmation">Affirmation of Faith</option>
@@ -124,7 +136,7 @@ export default function FormulaForm({
       )}
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="formula-name">
-          Name
+          Title <span aria-hidden="true">*</span>
         </label>
         <input
           id="formula-name"
@@ -135,7 +147,7 @@ export default function FormulaForm({
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-[13px] font-medium text-text-secondary" htmlFor="formula-default-text">
-          Default Text
+          Content <span aria-hidden="true">*</span>
         </label>
         <textarea
           id="formula-default-text"

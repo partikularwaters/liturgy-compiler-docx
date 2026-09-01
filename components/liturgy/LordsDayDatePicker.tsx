@@ -14,7 +14,7 @@ export default function LordsDayDatePicker({
   return (
     <div className="flex flex-col gap-1">
       <label className="text-[13px] font-medium leading-[18px] text-text-secondary" htmlFor="liturgy-date">
-        Date
+        Date <span aria-hidden="true">*</span>
       </label>
       <input
         id="liturgy-date"

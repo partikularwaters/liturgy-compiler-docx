@@ -77,7 +77,7 @@ export default function AddSelectionPanel({
           <CitationField value={citation} onChange={setCitation} />
           <div className="flex flex-col gap-1">
             <label className="text-[13px] font-medium text-text-secondary" htmlFor="selection-text">
-              {textOptional ? "Text (optional — this Section is read aloud in full)" : "Text"}
+              {textOptional ? "Text (optional — this Section is read aloud in full)" : "Text *"}
             </label>
             <textarea
               id="selection-text"

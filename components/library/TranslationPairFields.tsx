@@ -17,8 +17,9 @@ interface TranslationPairFieldsProps {
 // canonical key to auto-match a translation companion against (see
 // lib/liturgy/translationPairing.ts), so this is a plain language tag plus
 // an explicit "link to" picker, never auto-detection. `candidates` is
-// pre-filtered by the caller to same-Section, opposite-language entries of
-// the same library type, excluding this entry itself.
+// pre-filtered by the caller to entries valid for that library type
+// (including opposite language, and where applicable matching Section/type),
+// excluding this entry itself.
 export default function TranslationPairFields({
   translation,
   onTranslationChange,

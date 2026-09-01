@@ -30,7 +30,7 @@ export default function CitationField({ value, onChange }: CitationFieldProps): 
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-[13px] font-medium text-text-secondary">Citation</label>
+      <label className="text-[13px] font-medium text-text-secondary">Citation <span aria-hidden="true">*</span></label>
       {isEditing ? (
         <div className="flex items-center gap-2">
           <input

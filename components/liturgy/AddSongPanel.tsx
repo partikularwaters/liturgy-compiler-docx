@@ -7,6 +7,7 @@ import { createSong, updateSong } from "@/lib/songs/songActions";
 import { songEntryUnchanged } from "@/lib/liturgy/pickedLibraryEntryUnchanged";
 import { getAmenPolicy } from "@/lib/liturgy/amenPolicy";
 import { XIcon } from "@/components/liturgy/icons";
+import TranslationPairFields from "@/components/library/TranslationPairFields";
 import type { Song } from "@/types/liturgy";
 
 interface AddSongPanelProps {
@@ -48,11 +49,22 @@ export default function AddSongPanel({
   const [attribution, setAttribution] = useState(activeList[0]?.attribution ?? "");
   const [yearPublished, setYearPublished] = useState(activeList[0]?.yearPublished ?? "");
   const [notes, setNotes] = useState(activeList[0]?.notes ?? "");
+  const [translation, setTranslation] = useState<"fil" | "en" | null>(null);
+  const [pairedId, setPairedId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const amenPolicy = getAmenPolicy(sectionName);
   const [amenExpected, setAmenExpected] = useState(amenPolicy === "default-on");
+
+  // A Song's translation companion is defined by its kind and language;
+  // Section tags describe availability, not the identity of the Song pair.
+  const opposite = translation === "fil" ? "en" : "fil";
+  const pairCandidates = translation
+    ? songs
+        .filter((s) => s.kind === kind && s.translation === opposite)
+        .map((s) => ({ id: s.id, label: s.title }))
+    : [];
 
   const attributionLabel = kind === "psalm" ? "Versification" : "Author";
 
@@ -73,6 +85,10 @@ export default function AddSongPanel({
     setError(null);
     const list = next === "shared" ? sharedSongs : next === "mine" ? mySongs : [];
     applySong(list[0]);
+    if (next === "new") {
+      setTranslation(null);
+      setPairedId(null);
+    }
   };
 
   const handleSave = (): void => {
@@ -93,7 +109,7 @@ export default function AddSongPanel({
     };
 
     if (mode === "new") {
-      createSong(sectionName, kind, title, attribution, yearPublished, notes).then((result) => {
+      createSong([sectionName], kind, title, attribution, yearPublished, notes, translation, pairedId).then((result) => {
         if (result.success && result.data) {
           finish(result.data.id);
         } else {
@@ -116,7 +132,11 @@ export default function AddSongPanel({
 
       // Editing a Shared entry here only succeeds for a Curator
       // (songActions.ts's own gate) -- a Compiler gets a clear error.
-      updateSong(songId, sectionName, kind, title, attribution, yearPublished, notes).then((result) => {
+      // Passes the Song's own existing full tag set (not just this Section)
+      // -- this is an incidental field edit while placing, not a re-tagging
+      // action, so it must never silently collapse a Song's other Section
+      // tags down to just this one (updateSong replaces the whole set).
+      updateSong(songId, original?.sectionNames ?? [sectionName], kind, title, attribution, yearPublished, notes).then((result) => {
         if (result.success) {
           finish(songId);
         } else {
@@ -210,6 +230,19 @@ export default function AddSongPanel({
           className="bg-surface border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:ring-1 focus:ring-accent focus:border-accent"
         />
       </div>
+
+      {mode === "new" && (
+        <TranslationPairFields
+          translation={translation}
+          onTranslationChange={(t) => {
+            setTranslation(t);
+            setPairedId(null);
+          }}
+          pairedId={pairedId}
+          onPairedIdChange={setPairedId}
+          candidates={pairCandidates}
+        />
+      )}
 
       {amenPolicy !== "none" && (
         <label className="flex items-center gap-2 text-[13px] font-medium text-text-secondary">

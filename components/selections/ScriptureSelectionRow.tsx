@@ -9,6 +9,7 @@ import { getSelectionMarks } from "@/lib/liturgy/markableSections";
 import MarkEditor from "@/components/liturgy/MarkEditor";
 import { PencilIcon, TrashIcon, XIcon } from "@/components/liturgy/icons";
 import LibraryTextPreview from "@/components/library/LibraryTextPreview";
+import ConfirmDeleteLibraryItemDialog from "@/components/library/ConfirmDeleteLibraryItemDialog";
 import ScriptureCitationLink from "@/components/liturgy/ScriptureCitationLink";
 import type { ScriptureSelection, TextMark } from "@/types/liturgy";
 import type { CurrentUser } from "@/lib/auth/getCurrentUser";
@@ -41,6 +42,8 @@ export default function ScriptureSelectionRow({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // This component toggles its own edit view in place (isEditing flips the
   // same component's JSX, unlike Formula/Prayer which mount a separate child
@@ -68,12 +71,12 @@ export default function ScriptureSelectionRow({
     );
   };
 
-  const handleDelete = (): void => {
-    if (!window.confirm(`Delete "${selection.citation}"? This does not remove it from liturgies it's already placed in.`)) {
-      return;
-    }
+  const handleConfirmDelete = (): void => {
+    setIsDeleting(true);
     deleteScriptureSelection(selection.id).then((result) => {
+      setIsDeleting(false);
       if (result.success) {
+        setIsConfirmingDelete(false);
         router.refresh();
       } else {
         setError(result.error ?? "Unable to delete this Scripture item right now.");
@@ -142,7 +145,7 @@ export default function ScriptureSelectionRow({
     // FormulaListRow's own comment for the full reasoning.
     <div className={`relative py-4 ${bordered ? "border-b border-border" : ""}`}>
       <div>
-        <p className="text-[13px] text-text-secondary pr-20">
+        <p className="text-[13px] font-medium text-text-secondary pr-20 mb-1">
           {selection.sectionName} · {selection.translation === "en" ? "BSB" : "AB"}
         </p>
         <ScriptureCitationLink
@@ -163,11 +166,28 @@ export default function ScriptureSelectionRow({
             <PencilIcon size={15} /> Edit
           </button>
           {currentUser.role === "curator" && (
-            <button type="button" title="Delete" onClick={handleDelete} className="text-text-muted hover:text-error transition-colors duration-[var(--duration-tooltip)] ease">
+            <button
+              type="button"
+              title="Delete"
+              onClick={() => {
+                setError(null);
+                setIsConfirmingDelete(true);
+              }}
+              className="text-text-muted hover:text-error transition-colors duration-[var(--duration-tooltip)] ease"
+            >
               <TrashIcon size={16} />
             </button>
           )}
         </div>
+      )}
+      {isConfirmingDelete && (
+        <ConfirmDeleteLibraryItemDialog
+          itemLabel={`"${selection.citation}"`}
+          isDeleting={isDeleting}
+          error={error}
+          onConfirm={handleConfirmDelete}
+          onClose={() => setIsConfirmingDelete(false)}
+        />
       )}
     </div>
   );
