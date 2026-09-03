@@ -7,7 +7,7 @@
 --
 -- Real data migration: 4 Morning Worship liturgies exist at the time of this
 -- migration (2 with real content in the combined Charge & Benediction
--- Section, 2 empty). Confirmed with Madrid before writing this: the first
+-- Section, 2 empty). Confirmed before writing this: the first
 -- existing item in that Section becomes the new Charge Section's item, the
 -- second becomes the new Benediction Section's item (matches the
 -- exhortation/doxology pattern already present in both real liturgies'

@@ -162,7 +162,7 @@ These two templates are the entirety of the fixed structure for v1. Sections are
 
 ## 8. Definition of Done (v1)
 
-Madrid personally compiles a real Sunday liturgy — selecting and adapting Scripture through the reader, assigning Selections and Formulas to Sections of either the Morning or Vesper template, writing any needed custom prose and rubrical notes — and exports both a Leader Guide and a Congregation Bulletin as PDFs from that single compiled liturgy, start to finish, in one sitting.
+The project owner personally compiles a real Sunday liturgy — selecting and adapting Scripture through the reader, assigning Selections and Formulas to Sections of either the Morning or Vesper template, writing any needed custom prose and rubrical notes — and exports both a Leader Guide and a Congregation Bulletin as PDFs from that single compiled liturgy, start to finish, in one sitting.
 
 ---
 

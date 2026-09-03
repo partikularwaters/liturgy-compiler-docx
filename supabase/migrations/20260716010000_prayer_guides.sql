@@ -5,7 +5,7 @@
 -- 'prayer' so every existing row keeps its current meaning unchanged; only
 -- newly-created 'guide' rows opt into the new reference-panel display.
 -- No seed data here either, same discipline as the original prayers table:
--- real guide content (per §W's structural checklists) is Madrid's to author
+-- real guide content (per §W's structural checklists) is to be authored
 -- through the app, not fabricated in a migration.
 
 alter table prayers

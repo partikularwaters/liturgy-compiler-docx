@@ -11,7 +11,7 @@ interface LibrarySubmissionsTabProps {
 }
 
 // Word-level diff rendering: removed words struck-through in one color,
-// added words highlighted in another -- Madrid's own comparison to how code
+// added words highlighted in another -- comparable to how code
 // edits show in a different color before committing.
 function DiffView({ oldText, newText }: { oldText: string; newText: string }): React.ReactElement {
   const tokens = wordDiff(oldText, newText);

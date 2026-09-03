@@ -38,7 +38,7 @@
 -- only the `item_types` key is added/overwritten at each index.
 -- This project has no direct Postgres connection in this environment (see
 -- 20260721030000_column_break_before.sql's note) -- applied via Supabase's
--- SQL editor by Madrid, kept here as the documented, auditable source.
+-- SQL editor directly, kept here as the documented, auditable source.
 
 update templates
 set sections = (

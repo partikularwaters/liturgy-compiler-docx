@@ -92,8 +92,8 @@ export async function updateScriptureSelection(
   return { success: true, companionSaved };
 }
 
-// Reversed 2026-07-28 (Madrid, running this live as Curator, wants full
-// delete access across the Library for management). Curator-only, flat --
+// Reversed 2026-07-28 (running this live as Curator, full delete access
+// across the Library was wanted for management). Curator-only, flat --
 // unlike Formula/Prayer/Song's "your own row or a Curator" rule, Scripture
 // has no owner_id/fork model at all, so there's no "your own row" case to
 // carve out; a Compiler still can't delete here, consistent with never

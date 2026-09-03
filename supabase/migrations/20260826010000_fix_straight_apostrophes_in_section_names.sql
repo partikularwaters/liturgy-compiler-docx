@@ -14,7 +14,7 @@
 --
 -- Idempotent and safe to re-run: only rewrites a Section's `name` field when
 -- it actually contains a straight apostrophe, leaves every other field and
--- every other Section untouched. Confirmed by Madrid via the same inspect
+-- every other Section untouched. Confirmed via the same inspect
 -- query before/after running this by hand in the SQL Editor; captured here
 -- so the fix is tracked in the repo, not just applied live.
 update templates t

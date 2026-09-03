@@ -1,4 +1,4 @@
--- v3 Curator/Compiler RBAC (2026-07-25). Two roles only, per Madrid's own
+-- v3 Curator/Compiler RBAC (2026-07-25). Two roles only, per this
 -- framing: this isn't about liturgical seniority (presider/deacon/preacher
 -- are all equally "Compiler" here) -- it's about who can be trusted not to
 -- accidentally destroy hand-curated Library work. A user with no row in

@@ -2,7 +2,7 @@
 --
 -- One new column on `sections` (the per-liturgy instance row, NOT
 -- `templates.sections` jsonb) -- "push this Section to the start of the
--- next Word column" is a decision Madrid makes per liturgy, based on that
+-- next Word column" is a decision made per liturgy, based on that
 -- week's actual content volume, not a fixed per-template default. That's
 -- the whole point of continuous flow replacing the old fixed page/column
 -- assignment: content varies week to week, so the break points should too.
@@ -15,7 +15,7 @@
 -- section flow (see lib/docx/columnLayout.ts) makes per-Section page/column
 -- assignment unnecessary; Section order + this one boolean is enough.
 --
--- This file is applied via Supabase's SQL editor by Madrid -- this project
+-- This file is applied via Supabase's SQL editor directly -- this project
 -- has no linked Supabase CLI project / direct Postgres connection string
 -- (see 20260715010000_charge_benediction_split.sql's note), so DDL can't run
 -- through supabase-js's REST interface. Kept here as the documented,

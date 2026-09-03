@@ -21,8 +21,8 @@ full story behind one of them.
   Production's privileged Supabase key) and BA-002 (`main` didn't reflect real
   project state — Phase 0/Phase 1 work sat uncommitted).
 - **BA-002 closed first.** The uncommitted working tree was split into 5
-  reviewed commits, each proposed with a full commit message and confirmed by
-  Madrid individually before the next was staged: `0e43007` (require sign-in
+  reviewed commits, each proposed with a full commit message and confirmed
+  individually before the next was staged: `0e43007` (require sign-in
   for Vesper-reading/column-break/Prayer-Guide actions — the Phase 1
   authorization fix), `c2a4e16` (remove hardcoded production `auth.users`
   UUIDs from the `user_roles` migration), `de8dc52` (add Vitest, Supabase CLI,
@@ -64,8 +64,8 @@ full story behind one of them.
      real recent-liturgies data, and `/reader` rendered real AB1905 Filipino
      verse text (Psalms 95) — genuine end-to-end database reads on the new
      key, not cached or placeholder content.
-  7. Only after both new keys were confirmed live did Madrid disable the
-     legacy `anon`/`service_role` JWT-based key pair in Supabase's dashboard
+  7. Only after both new keys were confirmed live was the legacy
+     `anon`/`service_role` JWT-based key pair disabled in Supabase's dashboard
      ("Disable JWT-based API keys").
 - Net effect: Production now runs on Supabase's newer publishable/secret key
   pair, scoped Production-only; Preview deployments no longer exist for this
@@ -73,13 +73,13 @@ full story behind one of them.
 
 **2026-08-24 — Banka adoption**
 
-- `Ready for Banka` status (above) plus Madrid's explicit election to
+- `Ready for Banka` status (above) plus an explicit election to
   continue triggered Banka adoption per `/Users/madridj1689/Code/projects/banka-docking-protocol/handoff/BANKA-HANDOFF.md`
   and current Banka protocol 1.1.0 at `/Users/madridj1689/Code/projects/Banka`.
 - Classified as a legacy Standard-tier Banka authority (`CLAUDE.md` carried
   the `# Project Operating Protocol` heading; `/context/` already held all 9
   required Standard-tier files) — migrated via Section 3.2's explicit
-  sequence, previewed and confirmed by Madrid before any file was touched.
+  sequence, previewed and confirmed before any file was touched.
 - Complexity rubric re-confirmed Standard tier at 5/5 yes, matching the
   shape already in place.
 - Migration applied: `AGENTS.md` created as the new schema-2 canonical
@@ -89,7 +89,7 @@ full story behind one of them.
   `context/project-overview.md`/`architecture.md`/`build-plan.md` as the
   permanent origin record; all 9 `context/*.md` files (plus the extra
   `redesign-plan-v1.1.md`, not one of the required 9) left untouched.
-- Skills decision: Madrid chose to switch from this project's prior local
+- Skills decision: the project switched from its prior local
   skill set (`/architect`, `/review`, `/recover`, `/remember`, `/imprint`)
   to Banka's canonical Skills Kit (`charter`, `survey`, `dredge`, `remember`,
   `moor`, `scale`, `delegate`, `watershed`, `linis`) — installed at

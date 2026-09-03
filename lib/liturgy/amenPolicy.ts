@@ -14,7 +14,7 @@
 // Keyed by Section name so it applies identically regardless of which
 // template the Section belongs to, or which item type (Song, or a Scripture
 // Selection standing in for one) actually occupies the slot -- confirmed
-// with Madrid that the question is "is there a song here, should it end in
+// that the question is "is there a song here, should it end in
 // Amen," not "which add-flow was used" or "which item type is this."
 export type AmenPolicy = "default-on" | "default-off" | "none";
 
@@ -33,7 +33,7 @@ const AMEN_POLICY: Record<string, AmenPolicy> = {
   "Psalm of Proclamation": "default-on",
   "Hymn of Dedication": "default-on",
   // Handbook states no rule at all for Vesper's Hymn of Communion --
-  // Madrid's call: defaults off, same as the other unforced song slots.
+  // decision: defaults off, same as the other unforced song slots.
   "Hymn of Communion": "default-off",
   // Every other Section name, including "Psalm of Thanksgiving" ("...
   // executed entirely without an Amen at the conclusion" -- a strict

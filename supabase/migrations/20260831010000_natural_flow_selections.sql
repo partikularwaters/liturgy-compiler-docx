@@ -12,6 +12,6 @@
 --
 -- This project has no direct Postgres connection in this environment (see
 -- 20260721030000_column_break_before.sql's note) -- applied via Supabase's
--- SQL editor by Madrid, kept here as the documented, auditable source.
+-- SQL editor directly, kept here as the documented, auditable source.
 alter table sections
   add column merge_selections boolean not null default false;

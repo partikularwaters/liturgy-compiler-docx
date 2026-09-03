@@ -44,7 +44,7 @@ export async function getLiturgies(): Promise<LiturgySummary[]> {
 
     // Morning's own "Sermon" section holds a real SermonItem. Vesper has no
     // Sermon section at all -- "The Lord's Discourses" (a Selection) is its
-    // closest equivalent for this summary line, per Madrid's own framing
+    // closest equivalent for this summary line, per this framing
     // (the Liturgies list's middle/side text next to the template name and
     // date). `sermonPassage` carries either value; the field wasn't renamed
     // since every consumer already treats it as "whatever goes in that

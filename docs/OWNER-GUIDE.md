@@ -20,7 +20,7 @@ database work belongs to Codex unless a step below explicitly says otherwise.
 No owner action is needed to repeat local tests. Codex can start and stop the
 local services when needed.
 
-## What Madrid needs to confirm now
+## What the owner needs to confirm now
 
 1. Sign in to the Supabase Dashboard and open the production project.
 2. Check the organization or project billing page and confirm that the project
@@ -35,9 +35,9 @@ passwords, or environment-variable values.
 Vercel Hobby is already confirmed, so no additional Vercel action is needed
 now.
 
-Supabase Free was confirmed by Madrid on 2026-08-15.
+Supabase Free was confirmed on 2026-08-15.
 
-Environment review confirmed by Madrid on 2026-08-15:
+Environment review confirmed on 2026-08-15:
 
 - Production contains all three required variables.
 - The production service-role variable is marked Sensitive in Vercel.
@@ -68,7 +68,7 @@ Production backup checkpoint completed on 2026-08-15 at 02:21 PHT:
 - The data file is 10,487,098 bytes and contains 38 `COPY` data sections; the
   schema contains 11 table definitions.
 - The Supabase CLI access token was deleted immediately after verification.
-- Madrid confirmed on 2026-08-15 that macOS FileVault is On, so the owner-only
+- Confirmed on 2026-08-15 that macOS FileVault is On, so the owner-only
   backup files are also protected by full-disk encryption when the Mac is off or
   locked.
 
@@ -161,15 +161,15 @@ recommends that Free projects make a logical backup with `supabase db dump` and
 keep it off-site. Therefore every production migration batch must stop until
 these steps are complete:
 
-1. Madrid confirms that the correct Supabase project is open.
+1. The owner confirms that the correct Supabase project is open.
 2. Codex starts `npx supabase login`.
-3. Madrid completes the browser authorization personally. Never paste an access
+3. The owner completes the browser authorization personally. Never paste an access
    token into chat or put it in the repository.
 4. Codex links the repository to the hosted project read-only first and shows
    the resolved project identity before any write is proposed.
 5. Codex creates a dated logical backup outside the Git repository and verifies
    that the backup is non-empty.
-6. Madrid chooses where that backup should be retained privately.
+6. The owner chooses where that backup should be retained privately.
 
 CLI login stores its authorization in the operating system's credential
 storage when available. A production push still requires a separate, explicit
@@ -207,7 +207,7 @@ Environment Variables:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
-Madrid may confirm that the names exist but should not copy their values into
+The owner may confirm that the names exist but should not copy their values into
 chat. If a variable is added or changed, it affects only new deployments, so
 Codex must run or request a new deployment afterward.
 

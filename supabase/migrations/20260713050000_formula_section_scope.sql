@@ -1,6 +1,6 @@
 -- Phase 3, Feature 08: Formula Library (retrofit — Section scoping)
--- Formulas are scoped per Section name, not one global catalog. Madrid's
--- explicit direction (2026-07-13): "You don't need an Absolution formula
+-- Formulas are scoped per Section name, not one global catalog. Explicit
+-- direction (2026-07-13): "You don't need an Absolution formula
 -- to appear in other sections. Make formulas per section."
 -- formulas table is empty (confirmed live before writing this migration),
 -- so this is a safe structural change with no data to migrate.

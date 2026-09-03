@@ -1,4 +1,4 @@
--- In-app notification center (not real push -- Madrid confirmed a visual
+-- In-app notification center (not real push -- confirmed a visual
 -- cue + list is what's wanted, not OS-level alerts). Fired from four
 -- trusted server-side mutation points: account approval (grantRole) and
 -- the three Library Submission review outcomes (amendExisting/createAsNew/

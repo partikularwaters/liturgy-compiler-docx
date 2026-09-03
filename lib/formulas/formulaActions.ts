@@ -8,7 +8,7 @@ import type { TextMark } from "@/types/liturgy";
 
 // v3 Curator/Compiler RBAC (2026-07-25): Formula is the one Library type
 // locked down completely -- "Formulas should never be edited except by the
-// Curator" (Madrid's own words). This uses the service-role client (see
+// Curator." This uses the service-role client (see
 // lib/db/supabase.ts), which bypasses RLS entirely, so the real enforcement
 // has to happen here, not just in the database policies -- those are
 // defense-in-depth against someone bypassing the app, not the primary gate.

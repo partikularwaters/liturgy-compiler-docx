@@ -3,7 +3,7 @@
 -- surfaced while converting the old **bold** markdown convention to real
 -- TextMark[] marks (Bold is now a mark type, not raw-text asterisks). The
 -- two Confession of Sin prayers currently rely on **wrapping their entire
--- text** for intentional full-prayer bold (confirmed with Madrid: the
+-- text** for intentional full-prayer bold (confirmed: the
 -- congregational response, prayed by all, not a bug) -- with nowhere to
 -- store an equivalent bold mark, that formatting would simply be lost.
 -- Default '[]' so every pre-existing row means "no marks," same convention

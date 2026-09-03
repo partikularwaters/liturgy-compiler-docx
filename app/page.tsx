@@ -32,7 +32,7 @@ export default async function Home(): Promise<React.ReactElement> {
           of staying anchored on "Assurance of Pardon."
           ASPECT_RATIO: width/height of the crop window itself. The source
             image is roughly square (2329x2152) and this box is 30:7 (~4.29:1
-            -- 30% shorter than the original 3:1, at Madrid's request: "the
+            -- 30% shorter than the original 3:1, per feedback that "the
             banner on PC is too much"), so showing only a slice of the
             image's height is unavoidable -- same as any full-bleed
             background image (object-fit: cover is the standard,

@@ -22,7 +22,7 @@
   --font-serif-body: var(--font-ibarra-real-nova), serif;
 
   /* 2026-07-28: background flattened to pure white, kept from the
-     accent-color trial (Madrid confirmed this piece, reverted the rest --
+     accent-color trial (this piece was confirmed, the rest was reverted --
      the yellow accent swap itself didn't work out). --color-surface is
      ALSO white already, so cards have zero background separation from the
      page -- border-border is doing all the work distinguishing a card from
@@ -74,7 +74,7 @@
      Neither existing --color-warning nor --color-info gives correct
      contrast for this pairing (warning-foreground is white, meant for the
      solid warning bg, not warning-light -- a real bug the first version of
-     this tag shipped with). Madrid asked for a light "highlighter" yellow
+     this tag shipped with). A light "highlighter" yellow was requested
      for Morning and a dark navy for Vesper specifically, not a reuse of
      an existing semantic token. */
   --color-morning: #FDE68A;

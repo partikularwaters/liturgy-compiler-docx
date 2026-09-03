@@ -267,7 +267,7 @@ Verbal Cue applies to every Section below **except** where noted "no Verbal Cue.
 
 ---
 
-## AA. Morning Worship Visual Refinement (2026-07-15, Madrid's direct spec)
+## AA. Morning Worship Visual Refinement (2026-07-15, direct spec)
 
 Applies to Morning's Compile View **and** its PDF export (Leader Guide/Bulletin) — both must match, per the standing invariant that the Compile View and PDF can never drift.
 
@@ -308,7 +308,7 @@ Ibarra Real Nova everywhere in the Compiler and its exports — no more Old Stan
 
 ## AB. Reference sample bulletin — extracted ground truth (2026-07-16)
 
-Madrid supplied `G:\My Drive\_Works\Liturgy\Reformed Life Bulletins\UPDATED SAMPLE Bulletin.docx` as the definitive target. Read directly via `python-docx` (real run-level formatting, not eyeballed). This **confirms and sharpens §AA** with exact values, and surfaces one real structural mismatch against what Feature 17 already built.
+`G:\My Drive\_Works\Liturgy\Reformed Life Bulletins\UPDATED SAMPLE Bulletin.docx` was supplied as the definitive target. Read directly via `python-docx` (real run-level formatting, not eyeballed). This **confirms and sharpens §AA** with exact values, and surfaces one real structural mismatch against what Feature 17 already built.
 
 ### Confirmed exact values (supersede §AA's approximations)
 
@@ -333,7 +333,7 @@ Madrid supplied `G:\My Drive\_Works\Liturgy\Reformed Life Bulletins\UPDATED SAMP
 
 ### Layout model — resolved 2026-07-16, no rework needed
 
-Madrid's own bulletin-authoring process (typed directly in Word, using blank paragraphs to manually push Sections into the column he wants — not real column breaks; confirmed via the docx XML, zero `w:type="column"` markers exist) means the *reference sample's* column boundaries are hand-curated, not auto-flowed. Asked Madrid whether to switch to true CSS auto-flow or keep the fixed per-Section assignment; his answer: he wants exactly the curated "these Sections belong together in this column" control he already has in Word — i.e. **the fixed model, not auto-flow**.
+The bulletin-authoring process (typed directly in Word, using blank paragraphs to manually push Sections into the desired column — not real column breaks; confirmed via the docx XML, zero `w:type="column"` markers exist) means the *reference sample's* column boundaries are hand-curated, not auto-flowed. The choice between switching to true CSS auto-flow or keeping the fixed per-Section assignment was raised; the answer: keep exactly the curated "these Sections belong together in this column" control already available in Word — i.e. **the fixed model, not auto-flow**.
 
 Rendered the actual reference PDF (`soffice` + PyMuPDF, since the skill's default `pdftoppm` path wasn't available in this environment — `soffice.exe` converted the docx to PDF directly, `fitz`/PyMuPDF rasterized it) to check the real column boundaries against what Feature 17 already shipped. **They match exactly, no rework needed:**
 
@@ -345,7 +345,7 @@ Rendered the actual reference PDF (`soffice` + PyMuPDF, since the skill's defaul
 This is identical to §F's table already implemented in Feature 17 — **Feature 17's fixed `page`/`column` data model is correct as-is** and needs no architectural change. Feature 28 Part A can proceed directly against the existing grouping.
 
 **Two real naming/structural differences surfaced by the visual comparison — both resolved 2026-07-16:**
-1. **"Confession of Sin" stays as-is** (Madrid: leave it — not renaming to "Corporate Confession of Sin" despite the reference sample's title).
+1. **"Confession of Sin" stays as-is** (decision: leave it — not renaming to "Corporate Confession of Sin" despite the reference sample's title).
 2. **"Offertory & Thanksgiving" split into two separate Sections** — "Offertory Call" and "Psalm of Thanksgiving" — matching the reference exactly. Built: backed up the Morning template + all 5 liturgies' `sections` rows first (same practice as the Charge/Benediction split), then migrated. The two real liturgies with existing content there (2 Corinthians 9:6-8 and 9:9-11, both giving-related verses) had it preserved under the new "Offertory Call" — a reasonable, low-risk interpretation since both existing Selections are clearly offertory-admonition verses, not psalm/hymn content; "Psalm of Thanksgiving" starts empty for every liturgy since nothing distinctly psalm-of-thanksgiving-shaped existed in the combined Section before. Morning goes from 18 to 19 Sections. Verified live: all 19 headings render in the correct order, existing content intact, `tsc`/`next build` clean.
 
 ---
@@ -365,7 +365,7 @@ This is identical to §F's table already implemented in Feature 17 — **Feature
 
 ## Status
 
-Fully approved by Madrid, 2026-07-16. No open items. **Folded into `architecture.md`, `project-overview.md`, `ui-rules.md`, `ui-tokens.md`, and `build-plan.md` (new Phases 6-7, Features 15-27) as of 2026-07-16.** `ui-registry.md` intentionally not touched yet — it's an as-built component registry, updated only as each component is actually implemented, same as every prior feature.
+Fully approved 2026-07-16. No open items. **Folded into `architecture.md`, `project-overview.md`, `ui-rules.md`, `ui-tokens.md`, and `build-plan.md` (new Phases 6-7, Features 15-27) as of 2026-07-16.** `ui-registry.md` intentionally not touched yet — it's an as-built component registry, updated only as each component is actually implemented, same as every prior feature.
 
 **This file is now archival/reference** — the live source of truth for what to build is the five context files above. Read this document when you need the full reasoning/decision trail behind a choice; read the other context files for what's actually authoritative to implement against.
 

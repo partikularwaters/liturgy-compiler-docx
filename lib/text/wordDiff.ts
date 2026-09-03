@@ -4,7 +4,7 @@ export interface DiffToken {
 }
 
 // Word-level diff for the Curator Inbox's Library Submission review screen
-// (Madrid's own request: highlight like a code diff / Google Docs suggested
+// (Requested: highlight like a code diff / Google Docs suggested
 // edits, word-level so a one-word change doesn't highlight a whole
 // paragraph). Small custom LCS-based diff rather than a dependency -- the
 // inputs are always two short Library entries, never large documents.

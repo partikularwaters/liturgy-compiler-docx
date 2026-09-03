@@ -23,7 +23,7 @@ export interface DiscourseReading {
 }
 
 // The 12 rows of "The Lord's Discourse" column, top to bottom. Confirmed
-// 2026-08-24 (BA-007) against Madrid's own source document ("Vesper
+// 2026-08-24 (BA-007) against the source document ("Vesper
 // Service and Lord's Table.docx", not the OCR'd handbook PDF this file
 // originally transcribed), which corrected three things:
 // - Row 6 was missing a second citation -- the Good Shepherd half of the
@@ -105,7 +105,7 @@ export const VESPER_DISCOURSE_OPTIONS: readonly DiscourseReading[] = DISCOURSE_C
 export const VESPER_WORDS_OF_INSTITUTION_OPTIONS: readonly string[] = WORDS_OF_INSTITUTION_CYCLE;
 export const VESPER_CLOSING_OF_TABLE_OPTIONS: readonly string[] = Object.values(CLOSING_OF_TABLE_BY_GROUP);
 // 2026-08-26: Great Commission Text gets the same treatment as Words of
-// Institution (Madrid's explicit call -- both are fixed purely by
+// Institution (explicit decision -- both are fixed purely by
 // Sunday-of-month, same 4-week shape, no reason to treat them differently).
 export const VESPER_GREAT_COMMISSION_OPTIONS: readonly string[] = GREAT_COMMISSION_CYCLE;
 

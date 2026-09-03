@@ -25,7 +25,7 @@ alter table songs enable row level security;
 alter table scripture_selections enable row level security;
 
 -- Everyone (including anonymous/public visitors) can read every Library
--- table -- browsing is never gated, per Madrid's explicit "public users can
+-- table -- browsing is never gated, per the explicit "public users can
 -- browse the Library" rule.
 create policy "formulas_select_all" on formulas for select using (true);
 create policy "prayers_select_all" on prayers for select using (true);
@@ -68,7 +68,7 @@ create policy "songs_update_delete" on songs for all using (
 -- independent canonical key (the citation itself), so a deleted/edited row
 -- never permanently loses hand-curated pairing work the way Formula/
 -- Prayer/Song can. Any authenticated user (Curator or Compiler) may
--- insert/update. No delete policy at all -- Madrid's own call ("they can't
+-- insert/update. No delete policy at all -- the decision ("they can't
 -- delete from the Library") is enforced by simply having no delete policy
 -- to allow it; RLS defaults to deny.
 create policy "scripture_selections_insert" on scripture_selections for insert with check (auth.role() = 'authenticated');

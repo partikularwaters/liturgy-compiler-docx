@@ -6,7 +6,7 @@
 
 -- user_roles: Supabase Auth has no built-in name field, and the Inbox needs
 -- a real name (not just an email) for an Account Request to review at a
--- glance. Split first/last per Madrid's own choice over one combined field.
+-- glance. Split first/last over one combined field, per decision.
 alter table user_roles add column if not exists first_name text;
 alter table user_roles add column if not exists last_name text;
 

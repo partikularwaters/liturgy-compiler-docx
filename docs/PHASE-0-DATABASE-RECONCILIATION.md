@@ -98,8 +98,8 @@ Live anonymous verification passed for Home, Library, Reader, Compile View,
 public Web View, and the signed-out New Liturgy guard. Both the Leader Guide and
 Bulletin returned HTTP 200 as valid, non-empty Word documents.
 
-Madrid completed the existing-account sign-in, role display, Compile View,
-sign-out, and public-homepage checks on 2026-08-16. No credential was shared
+The existing-account sign-in, role display, Compile View,
+sign-out, and public-homepage checks were completed on 2026-08-16. No credential was shared
 with Codex, and no new Production account or throwaway worship content was
 created for verification. Phase 0 is complete.
 
@@ -109,9 +109,9 @@ The existing verified backup is the required safety checkpoint:
 
 `~/Documents/Liturgy Compiler Backups/2026-08-15-0221-PHT/`
 
-When Madrid explicitly approves the Production maintenance window, Codex will:
+When the Production maintenance window is explicitly approved, Codex will:
 
-1. Start a short-lived Supabase CLI login. Madrid completes browser approval;
+1. Start a short-lived Supabase CLI login. Browser approval is completed directly;
    no token or database password is pasted into chat.
 2. Confirm the linked project is `Liturgy Compiler` with project reference
    `mzprbjrxgfjljlmsdxcy`.

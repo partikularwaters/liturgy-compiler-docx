@@ -480,7 +480,7 @@ export default function SectionCard({
     (s) => s.sectionNames.includes(section.name) && s.kind === "hymn" && isVisibleToCurrentUser(s.ownerId)
   );
   // Only one Add panel or item editor can be open in a Section at once --
-  // Madrid reported that clicking a second "+ X" button while a first one
+  // clicking a second "+ X" button while a first one
   // was still open left both stacked, and repeating this across several
   // Sections/items produced a long run of open panels stretching down the
   // page. `openTarget` replaces what used to be eight independent booleans

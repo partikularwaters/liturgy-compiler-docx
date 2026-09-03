@@ -1,7 +1,7 @@
 -- Scope verse_highlights to the signed-in user (2026-07-27)
 -- Previously global -- one highlight state shared by literally every
 -- visitor, since the table predates auth entirely (Phase 1, before
--- Curator/Compiler roles existed). Madrid's own report: highlighting a
+-- Curator/Compiler roles existed). Reported: highlighting a
 -- verse on one account showed up on every other account too.
 
 -- Old rows have no owner under the new model and aren't high-risk data

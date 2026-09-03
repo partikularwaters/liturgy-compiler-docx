@@ -85,7 +85,7 @@ export async function addPrayer(
 // v3 Personal Library (task 4): a Compiler can opt in (saveToPersonalLibrary)
 // to also keep this edit as a reusable entry in their own Library, separate
 // from this one placement's frozen snapshot -- "override per-instance and
-// save to their Personal Library," per Madrid's own framing. Repeat edits of
+// save to their Personal Library." Repeat edits of
 // the same original Prayer update the same fork (matched by
 // owner_id + forked_from_id) rather than piling up duplicates. A Curator
 // editing a placement never forks -- they have direct write access to the

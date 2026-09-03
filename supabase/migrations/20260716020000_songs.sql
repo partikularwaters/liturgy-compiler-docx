@@ -2,7 +2,7 @@
 -- Shared library like Formula/Prayer, tagged by kind (psalm | hymn),
 -- Section-scoped. Replaces Selection entirely in the 5 dynamic song
 -- Sections (redesign-plan-v1.1.md §L). No seed data -- real song metadata
--- is Madrid's to author through the app, not to fabricate.
+-- is to be authored through the app, not fabricated.
 
 create table if not exists songs (
   id uuid primary key default gen_random_uuid(),

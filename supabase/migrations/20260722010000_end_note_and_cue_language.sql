@@ -1,7 +1,7 @@
 -- v2 items 1-2, direct feedback (2026-07-22):
 --
--- 1. "End of [Service]" note toggle -- a per-liturgy on/off setting Madrid
---    had been adding by hand at the bottom of the exported doc. Default
+-- 1. "End of [Service]" note toggle -- a per-liturgy on/off setting that
+--    had been added by hand at the bottom of the exported doc. Default
 --    true: matches the observed real usage (added every time so far, with
 --    manual removal only as the rare exception when space is tight).
 --
@@ -10,8 +10,8 @@
 --    on VerbalCueItem (not a Confession-of-Sin-specific column) matching
 --    every other optional per-item field's pattern (rubric, amenExpected) --
 --    the UI gates which Sections actually show the toggle, same as those.
---    Both text values are freely authored by Madrid through the existing
+--    Both text values are freely authored through the existing
 --    Verbal Cue form (nothing hardcoded/fabricated here, unlike the fixed
 --    Trinitarian Seal wording), so no default text -- textAlternate stays
---    null until Madrid actually types a second-language version.
+--    null until a second-language version is actually typed.
 alter table liturgies add column show_end_note boolean not null default true;

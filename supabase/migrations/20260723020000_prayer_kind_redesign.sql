@@ -2,7 +2,7 @@
 --
 -- `kind` used to conflate two unrelated facts: who a prayer is for
 -- ("corporate" vs "leader") and whether it's placeable content at all vs a
--- reference-only checklist ("guide"). Madrid: "I don't think the Guide is
+-- reference-only checklist ("guide"). Feedback: "I don't think the Guide is
 -- relevant any more since we have guides already... The Guide, if we're
 -- talking about the outline, can be triggered in the Compile view already."
 -- Splitting these into two independent facts -- `kind` (audience) and
@@ -22,7 +22,7 @@ update prayers set is_guide = true where kind = 'guide';
 
 alter table prayers drop constraint if exists prayers_kind_check;
 
--- Reclassification confirmed with Madrid (2026-07-23/24): the 2 Confession
+-- Reclassification confirmed (2026-07-23/24): the 2 Confession
 -- of Sin prayers are corporate (prayed by the whole church); everything
 -- else -- including the 6 real `is_guide` checklist rows, for which `kind`
 -- is now meaningless -- gets 'leader'.

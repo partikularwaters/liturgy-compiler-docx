@@ -122,7 +122,7 @@ export default function TopNavLinks({
     <>
       {/* Floating pill nav (task 24): fixed and rounded, not full-bleed, so it
           reads as an element sitting on top of the page rather than a bar
-          clipping across it -- Madrid's own framing, specifically about the
+          clipping across it -- specifically about the
           homepage banner. Since this is fixed (out of document flow), the
           spacer below reserves its height on every OTHER page so the pill
           doesn't overlap that page's own content -- the homepage's banner is
