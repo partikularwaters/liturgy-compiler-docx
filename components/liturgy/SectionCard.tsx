@@ -19,6 +19,7 @@ import SermonForm from "@/components/liturgy/SermonForm";
 import { addVerbalCue, updateVerbalCue } from "@/lib/liturgy/verbalCueActions";
 import { updateFormulaItem } from "@/lib/liturgy/addFormulaAction";
 import { updateSelectionItem } from "@/lib/liturgy/addSelectionAction";
+import { sectionsShareLibrary } from "@/lib/liturgy/librarySectionGroups";
 import { saveSermon } from "@/lib/liturgy/sermonActions";
 import { resolveItemText, resolveBase } from "@/lib/liturgy/resolveItemText";
 import { sectionTitle } from "@/lib/liturgy/sectionTitle";
@@ -458,7 +459,12 @@ export default function SectionCard({
 }: SectionCardProps): React.ReactElement {
   const router = useRouter();
   const sectionFormulas = formulas.filter((f) => f.sectionName === section.name);
-  const sectionScriptureSelections = scriptureSelections.filter((s) => s.sectionName === section.name);
+  // Group-aware, not exact-match: a Scripture Selection saved under any
+  // Section name that shares a Library group with this Section (see
+  // librarySectionGroups.ts) is visible here too -- this is how Morning's
+  // "Offertory Call" and Vesper's combined "Offertory & Thanksgiving" share
+  // one Scripture catalog without either template's Sections changing shape.
+  const sectionScriptureSelections = scriptureSelections.filter((s) => sectionsShareLibrary(s.sectionName, section.name));
   // `isGuide` entries are reference
   // material, never placeable as an actual liturgy item -- keep them out of
   // AddPrayerPanel's picker entirely.

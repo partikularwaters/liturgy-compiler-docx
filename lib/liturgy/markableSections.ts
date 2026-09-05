@@ -5,7 +5,12 @@ import type { TextMark } from "@/types/liturgy";
 // speaking parts -- unlike Small Caps, which is a per-word typesetting
 // convention (reverential capitalization of a divine name like "the LORD")
 // that's meaningful on any Scripture text, not just these two Sections.
-const DIALOGUE_MARK_SECTIONS = ["Call to Worship", "Prayer of Invocation", "Words of Thanksgiving"];
+// "Confession of Sin" added 2026-09-05, direct product decision: not used
+// in Morning's actual liturgical practice today, but Vesper's needs the same
+// Congregation dialogue treatment as the other three. Harmless to leave on
+// in both templates -- Section names are shared, and Morning simply never
+// exercises it.
+const DIALOGUE_MARK_SECTIONS = ["Call to Worship", "Prayer of Invocation", "Words of Thanksgiving", "Confession of Sin"];
 
 // Every Section that can hold a Selection at all gets Small Caps; dialogue
 // Sections additionally get Congregation. Shared between the Reader (add

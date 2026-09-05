@@ -37,6 +37,14 @@ export async function createPrayer(
 
   const ownerId = currentUser.role === "curator" ? null : currentUser.id;
 
+  // Auto-submission (2026-09-05, direct product decision): a Compiler's new
+  // Prayer proposal used to sit at the DB's own 'draft' default until a
+  // separate manual "Submit for Review" trip on /my-library -- now it lands
+  // straight in the Curator Inbox. A Curator's own creation (owner_id null)
+  // is already canonical/shared, so status is moot there; the column's own
+  // default ('draft') applies.
+  const status = ownerId ? "submitted" : undefined;
+
   // `kind` deliberately omitted -- no longer a meaningful Library-level
   // fact (Track B, 2026-08-31; see prayerKindPolicy.ts). The DB column's
   // own default applies.
@@ -49,6 +57,7 @@ export async function createPrayer(
       is_guide: isGuide,
       translation,
       owner_id: ownerId,
+      ...(status ? { status } : {}),
     })
     .select("id")
     .single();
