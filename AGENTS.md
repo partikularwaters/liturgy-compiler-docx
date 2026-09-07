@@ -50,4 +50,10 @@ the older names are retired for this project.
 Before proposing, creating, amending, or squashing a commit, read and follow
 `CONTRIBUTING.md`. It is the canonical commit-message and AI-attribution policy
 for this repository.
+
+Before tagging or classifying a release, read and follow
+`RELEASE-GOVERNANCE.md`. It is the canonical versioning policy for this
+repository — adopted 2026-09-07, since the project previously (2026-08-25)
+deliberately declined Banka's release-governance convention while it had no
+real SemVer practice.
 <!-- BANKA:END -->
