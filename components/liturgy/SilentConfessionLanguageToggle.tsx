@@ -19,6 +19,11 @@ interface SilentConfessionLanguageToggleProps {
 // toggle is deliberately unanimated (very-high-frequency surface per this
 // app's frequency map), while the Compile View is an occasional surface
 // that gets the standard animated recipe everywhere else.
+//
+// A failed save used to fail completely silently -- clicking EN just did
+// nothing and the toggle stayed on FIL, indistinguishable from the click
+// not registering at all. Now surfaces the real error, matching
+// EndNoteToggle.tsx's established fix for this exact failure class.
 export default function SilentConfessionLanguageToggle({
   liturgyId,
   sectionIndex,
@@ -27,15 +32,21 @@ export default function SilentConfessionLanguageToggle({
 }: SilentConfessionLanguageToggleProps): React.ReactElement | null {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!canEdit) return null;
 
   const handleChange = (next: "fil" | "en"): void => {
     if (next === language || isSaving) return;
     setIsSaving(true);
+    setError(null);
     setSilentConfessionLanguage(liturgyId, sectionIndex, next).then((result) => {
       setIsSaving(false);
-      if (result.success) router.refresh();
+      if (result.success) {
+        router.refresh();
+      } else {
+        setError(result.error ?? "Unable to update this setting right now.");
+      }
     });
   };
 
@@ -46,13 +57,16 @@ export default function SilentConfessionLanguageToggle({
     ].join(" ");
 
   return (
-    <div className="inline-flex items-center rounded-md border border-border overflow-hidden shrink-0">
-      <button type="button" onClick={() => handleChange("fil")} disabled={isSaving} className={buttonClass(language === "fil")}>
-        FIL
-      </button>
-      <button type="button" onClick={() => handleChange("en")} disabled={isSaving} className={buttonClass(language === "en")}>
-        EN
-      </button>
+    <div className="flex flex-col items-center gap-1">
+      <div className="inline-flex items-center rounded-md border border-border overflow-hidden shrink-0">
+        <button type="button" onClick={() => handleChange("fil")} disabled={isSaving} className={buttonClass(language === "fil")}>
+          FIL
+        </button>
+        <button type="button" onClick={() => handleChange("en")} disabled={isSaving} className={buttonClass(language === "en")}>
+          EN
+        </button>
+      </div>
+      {error && <p className="text-[11px] text-error">{error}</p>}
     </div>
   );
 }

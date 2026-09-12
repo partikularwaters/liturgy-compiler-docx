@@ -38,14 +38,23 @@ export default function PrayerGuidePanel({
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (guides.length === 0) return null;
 
+  // A failed save used to fail completely silently -- the checkbox just
+  // snapped back with no explanation. Now surfaces the real error, matching
+  // EndNoteToggle.tsx's established pattern for this exact failure class.
   const handleToggleIncluded = (): void => {
     setIsSaving(true);
+    setError(null);
     setShowPrayerGuide(liturgyId, sectionIndex, !showPrayerGuide).then((result) => {
       setIsSaving(false);
-      if (result.success) router.refresh();
+      if (result.success) {
+        router.refresh();
+      } else {
+        setError(result.error ?? "Unable to update this setting right now.");
+      }
     });
   };
 
@@ -72,6 +81,7 @@ export default function PrayerGuidePanel({
               Add this Prayer Guide to the Leader’s Guide
             </label>
           )}
+          {error && <p className="text-[11px] text-error">{error}</p>}
           {guides.map((guide) => (
             <p key={guide.id} className="text-sm text-text-primary whitespace-pre-line">
               {guide.text}

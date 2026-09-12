@@ -25,6 +25,7 @@ export default function LiturgyOptionsMenu({ liturgyId, canMarkReady, onDeleteCl
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isMarkingReady, setIsMarkingReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,13 +46,20 @@ export default function LiturgyOptionsMenu({ liturgyId, canMarkReady, onDeleteCl
     });
   };
 
+  // A failed mark-ready used to fail completely silently -- the menu just
+  // closed with no explanation, indistinguishable from success. Now keeps
+  // the menu open and surfaces the real error, matching EndNoteToggle.tsx's
+  // established pattern for this exact failure class.
   const handleMarkReady = (): void => {
     setIsMarkingReady(true);
+    setError(null);
     markReady(liturgyId).then((result) => {
       setIsMarkingReady(false);
-      setIsOpen(false);
       if (result.success) {
+        setIsOpen(false);
         router.refresh();
+      } else {
+        setError(result.error ?? "Unable to mark this Liturgy ready right now.");
       }
     });
   };
@@ -78,6 +86,7 @@ export default function LiturgyOptionsMenu({ liturgyId, canMarkReady, onDeleteCl
               <CircleCheckIcon size={15} /> Mark as Ready
             </button>
           )}
+          {error && <p className="px-4 py-1 text-[11px] text-error">{error}</p>}
           <button type="button" onClick={handleCopyLink} className={itemClass}>
             {copied ? <CheckIcon size={15} /> : <CopyLinkIcon size={15} />} {copied ? "Copied!" : "Web Link"}
           </button>
