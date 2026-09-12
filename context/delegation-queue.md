@@ -18,7 +18,7 @@ need a specific completed ticket's original spec detail.
 Generated from: n8n Liturgy Automation — Implementation Plan (confirmed via `charter` 2026-08-27)
 
 Source charter: `docs/N8N-LITURGY-AUTOMATION-CHARTER-DRAFT.md`
-Full confirmed Implementation Plan: see `context/progress-tracker.md`'s Session Notes for 2026-08-27, or the conversation that produced this queue.
+Full confirmed Implementation Plan: see `context/session-notes.md` for the 2026-08-27 charter narrative, or the conversation that produced this queue.
 
 **Scope note carried over from chartering:** this feature is not named in `IDEA-SCOPE.md` — it is a genuine, acknowledged expansion of the project's original boundary (a Bible-reader/liturgy-compiler/docx-export app for one church), not something already scoped. This was confirmed as fine; flagging again here so a future session doesn't mistake this queue for in-original-scope work.
 
@@ -59,7 +59,7 @@ per-ticket spec text (pattern to match, files to touch, done-when criteria).
 
 Generated from: Track B — Implementation Plan (confirmed via `charter` 2026-08-31)
 
-Full confirmed Implementation Plan: see the conversation that produced this queue (2026-08-30/31 session), and `context/progress-tracker.md`'s next Session Notes entry once saved via `remember`.
+Full confirmed Implementation Plan: see the conversation that produced this queue (2026-08-30/31 session), and `context/session-notes.md` once saved via `remember`.
 
 Ticket numbering continues from the n8n queue above — Ticket 10 onward. Read the shared "Execution rules" section at the top of this file before starting any ticket below; it applies to every ticket in this file, not just the n8n batch.
 

@@ -1,0 +1,3 @@
+# Migrated historical decision 0027
+
+2026-07-12** — Reader data-fetch architecture: `app/reader/page.tsx` is a Server Component reading `book`/`chapter` from `searchParams`, fetching via `lib/bible` + `lib/bible/highlights` server-side; interactivity (picker, highlight clicks) lives in a client wrapper (`ReaderClient.tsx`) that calls a Server Action (`lib/bible/highlightActions.ts`) to persist highlights. This closes the "Server Actions vs. API routes" open item for reads/writes generally — Server Components for reads, Server Actions for mutations, matching code-standards.md's proposed default.

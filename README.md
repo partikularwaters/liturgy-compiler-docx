@@ -133,7 +133,10 @@ The `context/` folder is the source of truth for this project and should be read
 - `context/code-standards.md` — conventions, deployment notes
 - `context/ui-tokens.md` / `context/ui-rules.md` — design system
 - `context/ui-registry.md` — catalog of built components
-- `context/progress-tracker.md` — current status, decisions log, session history
+- `context/progress-tracker.md` — current status and task tracking
+- `context/session-notes.md` — session-to-session narrative
+- `context/decisions-index.md` — Logbook routing table for durable decisions
+- `context/verified-index.md` — mechanically checked reconciliation evidence
 
 `context/project-overview.md`'s `## Pages` section lists every route in the app.
 

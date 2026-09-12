@@ -1,0 +1,3 @@
+# Migrated historical decision 0003
+
+2026-08-27** — n8n Liturgy Automation implementation narrative (setup steps, OAuth troubleshooting, what was tested and how) is deliberately tracked in a personal file outside this repo, `~/Code/learning/n8n-liturgy-automation/JOURNAL.md`, not in this tracker — an explicit request, since it doubles as a personal automation-concepts learning record, not project documentation. This tracker still owns the app-side facts (migration/env-var/API state, what's built vs. not) per the Completed/In Progress entries above; the journal owns the how-it-was-built narrative. Kept in sync via a standing cross-session note so `/remember save` updates both when n8n work happens in a session.

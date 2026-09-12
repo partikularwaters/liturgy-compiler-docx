@@ -1,0 +1,3 @@
+# Migrated historical decision 0005
+
+2026-08-26** — Local Supabase dev ports must be project-unique on this host, not left at Supabase's shared defaults: `supabase/config.toml` moved this project's API/DB/shadow/pooler/Studio/Inbucket/analytics ports to a dedicated 5532x block after confirming they collided with an unrelated `oykon-local` project's default ports and silently misrouted local requests. Any future local Supabase project on this machine should get its own dedicated port block the same way, rather than relying on Supabase's per-project `project_id` isolation, which only scopes Docker resources, not host port bindings.

@@ -1,6 +1,5 @@
-<!-- BANKA:START -->
-<!-- BANKA:STATE-SCHEMA: 2 -->
-<!-- BANKA:TIER: Standard -->
+<!-- GALLEON:START -->
+<!-- GALLEON:STATE-SCHEMA: 1 -->
 # Project Operating Protocol
 
 ## Persona
@@ -18,42 +17,23 @@ Read the Standard file relevant to the work before acting:
 - `context/library-docs.md` — project-specific third-party library patterns
 - `context/ui-tokens.md` and `context/ui-rules.md` — design system
 - `context/ui-registry.md` — living catalog of built components
-- `context/progress-tracker.md` — current status, decisions, and session memory
+- `context/progress-tracker.md` — current status and task tracking
+- `context/session-notes.md` — thread-tagged session narrative
+- `context/decisions-index.md` — routing table into the Logbook (`decisions/`)
+- `context/verified-index.md` — mechanically-checked record of what survey verdicts the repo actually shows
+- `context/plans/` — confirmed implementation plans; `context/incidents/` — diagnosis records
 
 If `IDEA-SCOPE.md` exists, consult it for original intent. Never overwrite it.
 
-`progress-tracker.md` follows Banka Protocol §2.9's session-state shape:
-current-state sections plus Decisions Made in full live in the file itself;
-older build narrative lives in `context/overflow/session-notes/`, indexed by
-the file's own Overflow Index. **Never read an overflow file wholesale on
-`/remember restore` or by default** — grep it for a specific keyword/date
-only. Protocol §2.9 itself is defined in Banka's own repo,
-`https://github.com/partikularwaters/Banka/blob/v2.0.0/protocol/Banka.md`
-(public; this project runs Banka `v2.0.0`, updated 2026-08-30) — see
-`progress-tracker.md`'s Decisions Made for the migration history and
-rationale.
-
 ## Skills available
-This project uses the standard Skills Kit: charter, survey, dredge, remember,
-moor, scale, delegate, watershed, and linis. Installed at ~/.claude/skills/;
-do not create a project-local copy. Follow each skill's own instructions
-exactly. The moor skill writes UI patterns to `context/ui-registry.md` and
-general outcomes to `context/progress-tracker.md`; remember updates session
-state in `context/progress-tracker.md`.
-
-Note: this project previously referenced a different local skill set
-(/architect, /review, /recover, /remember, /imprint). As of 2026-08-24 Banka
-adoption, the project switched to the canonical Skills Kit above instead —
-the older names are retired for this project.
-
-## Contributing
-Before proposing, creating, amending, or squashing a commit, read and follow
-`CONTRIBUTING.md`. It is the canonical commit-message and AI-attribution policy
-for this repository.
-
-Before tagging or classifying a release, read and follow
-`RELEASE-GOVERNANCE.md`. It is the canonical versioning policy for this
-repository — adopted 2026-09-07, since the project previously (2026-08-25)
-deliberately declined Banka's release-governance convention while it had no
-real SemVer practice.
-<!-- BANKA:END -->
+This project uses the standard Skills Kit: charter, survey, diagnose, remember,
+pin, delegate, deliberate, tidy, reconcile, adopt, and release. Install it once per
+runtime; do not create a project-local copy. Follow each skill's own
+instructions exactly.
+The pin skill writes git-observed UI patterns to `context/ui-registry.md`
+and invariant/token changes to their owning file, never session-state;
+remember updates task state in `context/progress-tracker.md`, session
+narrative in `context/session-notes.md`, and the Logbook routing table in
+`context/decisions-index.md`; reconcile writes to `context/verified-index.md`
+only.
+<!-- GALLEON:END -->

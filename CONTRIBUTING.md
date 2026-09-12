@@ -51,7 +51,8 @@ local-only by construction, with no per-file `.gitignore` entry required. Delete
 a coordination file when the work it supports has shipped; `dev/` is scratch
 space, not an archive.
 
-Durable project state belongs in `context/progress-tracker.md`. Settled session
-history belongs in `context/overflow/session-notes/` through the project's
-established Banka workflow. Do not use `dev/` as a substitute for either
-location.
+Durable task state belongs in `context/progress-tracker.md`; session narrative
+belongs in `context/session-notes.md`; and durable decision rationale belongs
+in the Logbook routed by `context/decisions-index.md`. Settled narrative may
+move to `context/overflow/session-notes/` through the established Galleon
+workflow. Do not use `dev/` as a substitute for any of those locations.

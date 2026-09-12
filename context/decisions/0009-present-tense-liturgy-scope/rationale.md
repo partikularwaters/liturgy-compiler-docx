@@ -1,0 +1,3 @@
+# Migrated historical decision 0009
+
+2026-08-25** — Present-tense reconciliation clarified: Morning Compile View remains fixed two-page/three-column; Vesper Compile View remains flat; Template/Section editing is v3; DOCX is the default active export and PDF is buried explicit-opt-in compatibility behavior. `Vesper Service and Lord's Table.docx` is the canonical content authority for recurring Vesper readings. BA-007 closed the source-data transcription discrepancies but did not close the whole automation contract; Great Commission placement, calendar-quarter anchoring, and fifth-Sunday handling remain open. **Superseded by the entry above (same day)** for the calendar-quarter/fifth-Sunday portion — Great Commission placement is still open.
