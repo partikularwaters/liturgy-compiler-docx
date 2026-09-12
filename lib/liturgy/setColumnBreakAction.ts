@@ -20,15 +20,23 @@ export async function setColumnBreak(
     return { success: false, error: "Sign in to change this column setting." };
   }
 
-  const { error } = await supabase
+  // .select("id") so a zero-row match is detectable -- see
+  // setSilentConfessionLanguageAction.ts's identical comment and
+  // context/incidents/0002 for the real report this class of gap caused.
+  const { data, error } = await supabase
     .from("sections")
     .update({ column_break_before: columnBreakBefore })
     .eq("liturgy_id", liturgyId)
-    .eq("template_section_index", sectionIndex);
+    .eq("template_section_index", sectionIndex)
+    .select("id");
 
   if (error) {
     console.error("[lib/liturgy/setColumnBreakAction]", error.message);
     return { success: false, error: "Unable to update the column break right now." };
+  }
+  if (!data || data.length === 0) {
+    console.error("[lib/liturgy/setColumnBreakAction] no matching Section row", { liturgyId, sectionIndex });
+    return { success: false, error: "Couldn't find that Section -- try reloading the page." };
   }
   return { success: true };
 }

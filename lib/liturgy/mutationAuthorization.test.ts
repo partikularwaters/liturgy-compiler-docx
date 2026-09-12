@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   update: vi.fn(),
   firstEq: vi.fn(),
   secondEq: vi.fn(),
+  select: vi.fn(),
   getSectionContext: vi.fn(),
   addSelection: vi.fn(),
   updateSelectionItem: vi.fn(),
@@ -35,7 +36,8 @@ import { setShowPrayerGuide } from "@/lib/liturgy/setShowPrayerGuideAction";
 describe("liturgy mutation authorization", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.secondEq.mockResolvedValue({ error: null });
+    mocks.select.mockResolvedValue({ data: [{ id: "section-id" }], error: null });
+    mocks.secondEq.mockReturnValue({ select: mocks.select });
     mocks.firstEq.mockReturnValue({ eq: mocks.secondEq });
     mocks.update.mockReturnValue({ eq: mocks.firstEq });
     mocks.from.mockReturnValue({ update: mocks.update });

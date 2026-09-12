@@ -19,15 +19,25 @@ export async function setSilentConfessionLanguage(
     return { success: false, error: "Sign in to change this rubric's language." };
   }
 
-  const { error } = await supabase
+  // .select("id") so a zero-row match is detectable -- Supabase/PostgREST
+  // reports success (no `error`) even when the filter matches nothing, so
+  // without this a stale/misaligned sectionIndex silently writes to no row
+  // at all while the caller sees {success: true}. See context/incidents/
+  // 0002 for the real report this closes.
+  const { data, error } = await supabase
     .from("sections")
     .update({ silent_confession_language: language })
     .eq("liturgy_id", liturgyId)
-    .eq("template_section_index", sectionIndex);
+    .eq("template_section_index", sectionIndex)
+    .select("id");
 
   if (error) {
     console.error("[lib/liturgy/setSilentConfessionLanguageAction]", error.message);
     return { success: false, error: "Unable to update this setting right now." };
+  }
+  if (!data || data.length === 0) {
+    console.error("[lib/liturgy/setSilentConfessionLanguageAction] no matching Section row", { liturgyId, sectionIndex });
+    return { success: false, error: "Couldn't find that Section -- try reloading the page." };
   }
   return { success: true };
 }
