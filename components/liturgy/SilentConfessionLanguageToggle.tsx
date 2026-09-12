@@ -40,14 +40,23 @@ export default function SilentConfessionLanguageToggle({
     if (next === language || isSaving) return;
     setIsSaving(true);
     setError(null);
-    setSilentConfessionLanguage(liturgyId, sectionIndex, next).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to update this setting right now.");
-      }
-    });
+    setSilentConfessionLanguage(liturgyId, sectionIndex, next)
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to update this setting right now.");
+        }
+      })
+      // A thrown error (not a returned {success: false}) previously left
+      // isSaving stuck true forever -- the button looked permanently frozen
+      // with zero feedback. The most common real trigger: a page loaded
+      // before a deploy calling a Server Action bound to the old build.
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   const buttonClass = (isActive: boolean): string =>

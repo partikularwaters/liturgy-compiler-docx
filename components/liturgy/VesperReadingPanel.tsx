@@ -63,15 +63,20 @@ export default function VesperReadingPanel({
   const handleSave = (): void => {
     setIsSaving(true);
     setError(null);
-    chooseVesperReading(liturgyId, sectionIndex, citation).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        router.refresh();
-        onDone();
-      } else {
-        setError(result.error ?? "Unable to set this reading right now.");
-      }
-    });
+    chooseVesperReading(liturgyId, sectionIndex, citation)
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          router.refresh();
+          onDone();
+        } else {
+          setError(result.error ?? "Unable to set this reading right now.");
+        }
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   return (

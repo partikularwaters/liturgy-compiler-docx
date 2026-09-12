@@ -30,14 +30,22 @@ export default function EndNoteToggle({ liturgyId, templateName, showEndNote }: 
   const handleToggle = (): void => {
     setIsSaving(true);
     setError(null);
-    setShowEndNote(liturgyId, !showEndNote).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to update this setting right now.");
-      }
-    });
+    setShowEndNote(liturgyId, !showEndNote)
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to update this setting right now.");
+        }
+      })
+      // A thrown (not returned) error used to leave isSaving stuck true
+      // forever, freezing the checkbox with zero feedback -- the same gap
+      // this file's own success-vs-failure fix didn't originally cover.
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   return (

@@ -48,14 +48,22 @@ export default function PrayerGuidePanel({
   const handleToggleIncluded = (): void => {
     setIsSaving(true);
     setError(null);
-    setShowPrayerGuide(liturgyId, sectionIndex, !showPrayerGuide).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to update this setting right now.");
-      }
-    });
+    setShowPrayerGuide(liturgyId, sectionIndex, !showPrayerGuide)
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to update this setting right now.");
+        }
+      })
+      // See SilentConfessionLanguageToggle.tsx's identical comment -- a
+      // thrown (not returned) error used to leave isSaving stuck true
+      // forever, freezing the checkbox with zero feedback.
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   return (

@@ -96,27 +96,35 @@ export default function AddSongPanel({
     setIsSaving(true);
     setError(null);
 
+    const onFailure = (message: string): void => {
+      setIsSaving(false);
+      setError(message);
+    };
+
     const finish = (id: string): void => {
-      addSong(liturgyId, sectionIndex, id, amenExpected).then((result) => {
-        setIsSaving(false);
-        if (result.success) {
-          router.refresh();
-          onDone();
-        } else {
-          setError(result.error ?? "Unable to place this Song right now.");
-        }
-      });
+      addSong(liturgyId, sectionIndex, id, amenExpected)
+        .then((result) => {
+          setIsSaving(false);
+          if (result.success) {
+            router.refresh();
+            onDone();
+          } else {
+            setError(result.error ?? "Unable to place this Song right now.");
+          }
+        })
+        .catch(() => onFailure("Something went wrong -- try again."));
     };
 
     if (mode === "new") {
-      createSong([sectionName], kind, title, attribution, yearPublished, notes, translation, pairedId).then((result) => {
-        if (result.success && result.data) {
-          finish(result.data.id);
-        } else {
-          setIsSaving(false);
-          setError(result.error ?? "Unable to save this Song right now.");
-        }
-      });
+      createSong([sectionName], kind, title, attribution, yearPublished, notes, translation, pairedId)
+        .then((result) => {
+          if (result.success && result.data) {
+            finish(result.data.id);
+          } else {
+            onFailure(result.error ?? "Unable to save this Song right now.");
+          }
+        })
+        .catch(() => onFailure("Something went wrong -- try again."));
     } else {
       // Placing an existing entry unmodified is not the same operation as
       // editing it -- only route through updateSong (Curator-only for a
@@ -136,14 +144,15 @@ export default function AddSongPanel({
       // -- this is an incidental field edit while placing, not a re-tagging
       // action, so it must never silently collapse a Song's other Section
       // tags down to just this one (updateSong replaces the whole set).
-      updateSong(songId, original?.sectionNames ?? [sectionName], kind, title, attribution, yearPublished, notes).then((result) => {
-        if (result.success) {
-          finish(songId);
-        } else {
-          setIsSaving(false);
-          setError(result.error ?? "Unable to update this Song right now.");
-        }
-      });
+      updateSong(songId, original?.sectionNames ?? [sectionName], kind, title, attribution, yearPublished, notes)
+        .then((result) => {
+          if (result.success) {
+            finish(songId);
+          } else {
+            onFailure(result.error ?? "Unable to update this Song right now.");
+          }
+        })
+        .catch(() => onFailure("Something went wrong -- try again."));
     }
   };
 

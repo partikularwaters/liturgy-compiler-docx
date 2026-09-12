@@ -662,15 +662,20 @@ export default function SectionCard({
   ): void => {
     setIsSaving(true);
     setError(null);
-    addVerbalCue(liturgyId, sectionIndex, text, visibility, rubric, textAlternate, showAlternate).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        closeOpenTarget();
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to add this Verbal Cue right now.");
-      }
-    });
+    addVerbalCue(liturgyId, sectionIndex, text, visibility, rubric, textAlternate, showAlternate)
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          closeOpenTarget();
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to add this Verbal Cue right now.");
+        }
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   const handleUpdateVerbalCue = (
@@ -683,8 +688,8 @@ export default function SectionCard({
   ): void => {
     setIsSaving(true);
     setError(null);
-    updateVerbalCue(liturgyId, sectionIndex, itemId, text, visibility, rubric, textAlternate, showAlternate).then(
-      (result) => {
+    updateVerbalCue(liturgyId, sectionIndex, itemId, text, visibility, rubric, textAlternate, showAlternate)
+      .then((result) => {
         setIsSaving(false);
         if (result.success) {
           closeOpenTarget();
@@ -692,8 +697,11 @@ export default function SectionCard({
         } else {
           setError(result.error ?? "Unable to update this Verbal Cue right now.");
         }
-      }
-    );
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   const handleUpdateFormulaItem = (
@@ -705,15 +713,20 @@ export default function SectionCard({
   ): void => {
     setIsSaving(true);
     setError(null);
-    updateFormulaItem(liturgyId, sectionIndex, itemId, text, visibility, marks, trinitarianSeal).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        closeOpenTarget();
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to update this Formula right now.");
-      }
-    });
+    updateFormulaItem(liturgyId, sectionIndex, itemId, text, visibility, marks, trinitarianSeal)
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          closeOpenTarget();
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to update this Formula right now.");
+        }
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   const handleUpdateSelectionItem = (
@@ -735,15 +748,20 @@ export default function SectionCard({
       amenExpected,
       marks,
       trinitarianSeal
-    ).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        closeOpenTarget();
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to update this Scripture item right now.");
-      }
-    });
+    )
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          closeOpenTarget();
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to update this Scripture item right now.");
+        }
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   const handleSavePrayerEdit = (
@@ -755,15 +773,20 @@ export default function SectionCard({
   ): void => {
     setIsSaving(true);
     setError(null);
-    updatePrayerItem(liturgyId, sectionIndex, itemId, text, marks, leaderOnly, saveToPersonalLibrary).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        closeOpenTarget();
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to update this Prayer right now.");
-      }
-    });
+    updatePrayerItem(liturgyId, sectionIndex, itemId, text, marks, leaderOnly, saveToPersonalLibrary)
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          closeOpenTarget();
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to update this Prayer right now.");
+        }
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   const handleSaveSongEdit = (
@@ -787,8 +810,8 @@ export default function SectionCard({
       notes,
       amenExpected,
       saveToPersonalLibrary
-    ).then(
-      (result) => {
+    )
+      .then((result) => {
         setIsSaving(false);
         if (result.success) {
           closeOpenTarget();
@@ -796,36 +819,49 @@ export default function SectionCard({
         } else {
           setError(result.error ?? "Unable to update this Song right now.");
         }
-      }
-    );
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   const handleRemoveItem = (itemId: string): void => {
     if (!window.confirm("Remove this item from the Section?")) return;
     setIsSaving(true);
     setError(null);
-    removeItem(liturgyId, sectionIndex, itemId).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to remove this item right now.");
-      }
-    });
+    removeItem(liturgyId, sectionIndex, itemId)
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to remove this item right now.");
+        }
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   const handleSaveSermon = (fields: { title: string; series: string; passage: string; preacher: string }): void => {
     setIsSaving(true);
     setError(null);
-    saveSermon(liturgyId, sectionIndex, fields).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        closeOpenTarget();
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to save the Sermon right now.");
-      }
-    });
+    saveSermon(liturgyId, sectionIndex, fields)
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          closeOpenTarget();
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to save the Sermon right now.");
+        }
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   return (

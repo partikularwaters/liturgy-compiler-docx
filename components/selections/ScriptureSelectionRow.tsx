@@ -58,8 +58,8 @@ export default function ScriptureSelectionRow({
   const handleSave = (): void => {
     setIsSaving(true);
     setError(null);
-    updateScriptureSelection(selection.id, selection.sectionName, citation, text, selection.translation, marks).then(
-      (result) => {
+    updateScriptureSelection(selection.id, selection.sectionName, citation, text, selection.translation, marks)
+      .then((result) => {
         setIsSaving(false);
         if (result.success) {
           setIsEditing(false);
@@ -67,21 +67,29 @@ export default function ScriptureSelectionRow({
         } else {
           setError(result.error ?? "Unable to update this Scripture item right now.");
         }
-      }
-    );
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   const handleConfirmDelete = (): void => {
     setIsDeleting(true);
-    deleteScriptureSelection(selection.id).then((result) => {
-      setIsDeleting(false);
-      if (result.success) {
-        setIsConfirmingDelete(false);
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to delete this Scripture item right now.");
-      }
-    });
+    deleteScriptureSelection(selection.id)
+      .then((result) => {
+        setIsDeleting(false);
+        if (result.success) {
+          setIsConfirmingDelete(false);
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to delete this Scripture item right now.");
+        }
+      })
+      .catch(() => {
+        setIsDeleting(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   if (isEditing) {

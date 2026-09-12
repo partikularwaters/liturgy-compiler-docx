@@ -106,15 +106,20 @@ export default function AddExistingSelectionPanel({
       selected.marks ?? [],
       trinitarianSeal,
       selected.translation
-    ).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        router.refresh();
-        onDone();
-      } else {
-        setError(result.error ?? "Unable to place this Selection right now.");
-      }
-    });
+    )
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          router.refresh();
+          onDone();
+        } else {
+          setError(result.error ?? "Unable to place this Selection right now.");
+        }
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   return (

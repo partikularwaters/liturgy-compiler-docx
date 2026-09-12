@@ -61,8 +61,8 @@ export default function AddLibraryItemModal({
           onSubmit={(sectionNames, kind, title, attribution, yearPublished, notes, translation, pairedId) => {
             setIsSaving(true);
             setError(null);
-            createSong(sectionNames, kind, title, attribution, yearPublished, notes, translation, pairedId).then(
-              (result) => {
+            createSong(sectionNames, kind, title, attribution, yearPublished, notes, translation, pairedId)
+              .then((result) => {
                 setIsSaving(false);
                 if (result.success) {
                   router.refresh();
@@ -70,8 +70,11 @@ export default function AddLibraryItemModal({
                 } else {
                   setError(result.error ?? "Unable to save this Song right now.");
                 }
-              }
-            );
+              })
+              .catch(() => {
+                setIsSaving(false);
+                setError("Something went wrong -- try again.");
+              });
           }}
           onCancel={onClose}
         />
@@ -89,15 +92,20 @@ export default function AddLibraryItemModal({
           onSubmit={(sectionName, text, marks, isGuide, translation, pairedId) => {
             setIsSaving(true);
             setError(null);
-            createPrayer(sectionName, text, marks, isGuide, translation, pairedId).then((result) => {
-              setIsSaving(false);
-              if (result.success) {
-                router.refresh();
-                onClose();
-              } else {
-                setError(result.error ?? "Unable to create this Prayer right now.");
-              }
-            });
+            createPrayer(sectionName, text, marks, isGuide, translation, pairedId)
+              .then((result) => {
+                setIsSaving(false);
+                if (result.success) {
+                  router.refresh();
+                  onClose();
+                } else {
+                  setError(result.error ?? "Unable to create this Prayer right now.");
+                }
+              })
+              .catch(() => {
+                setIsSaving(false);
+                setError("Something went wrong -- try again.");
+              });
           }}
           onCancel={onClose}
         />
@@ -115,15 +123,20 @@ export default function AddLibraryItemModal({
           onSubmit={(sectionName, name, defaultText, marks, translation, pairedId, kind) => {
             setIsSaving(true);
             setError(null);
-            createFormula(sectionName, name, defaultText, marks, translation, pairedId, kind).then((result) => {
-              setIsSaving(false);
-              if (result.success) {
-                router.refresh();
-                onClose();
-              } else {
-                setError(result.error ?? "Unable to save this Formula right now.");
-              }
-            });
+            createFormula(sectionName, name, defaultText, marks, translation, pairedId, kind)
+              .then((result) => {
+                setIsSaving(false);
+                if (result.success) {
+                  router.refresh();
+                  onClose();
+                } else {
+                  setError(result.error ?? "Unable to save this Formula right now.");
+                }
+              })
+              .catch(() => {
+                setIsSaving(false);
+                setError("Something went wrong -- try again.");
+              });
           }}
           onCancel={onClose}
         />

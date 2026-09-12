@@ -81,27 +81,35 @@ export default function AddPrayerPanel({
     setIsSaving(true);
     setError(null);
 
+    const onFailure = (message: string): void => {
+      setIsSaving(false);
+      setError(message);
+    };
+
     const finish = (id: string): void => {
-      addPrayer(liturgyId, sectionIndex, id).then((result) => {
-        setIsSaving(false);
-        if (result.success) {
-          router.refresh();
-          onDone();
-        } else {
-          setError(result.error ?? "Unable to place this Prayer right now.");
-        }
-      });
+      addPrayer(liturgyId, sectionIndex, id)
+        .then((result) => {
+          setIsSaving(false);
+          if (result.success) {
+            router.refresh();
+            onDone();
+          } else {
+            setError(result.error ?? "Unable to place this Prayer right now.");
+          }
+        })
+        .catch(() => onFailure("Something went wrong -- try again."));
     };
 
     if (mode === "new") {
-      createPrayer(sectionName, text, [], false, translation, pairedId).then((result) => {
-        if (result.success && result.data) {
-          finish(result.data.id);
-        } else {
-          setIsSaving(false);
-          setError(result.error ?? "Unable to save this Prayer right now.");
-        }
-      });
+      createPrayer(sectionName, text, [], false, translation, pairedId)
+        .then((result) => {
+          if (result.success && result.data) {
+            finish(result.data.id);
+          } else {
+            onFailure(result.error ?? "Unable to save this Prayer right now.");
+          }
+        })
+        .catch(() => onFailure("Something went wrong -- try again."));
     } else {
       // Placing an existing entry unmodified is not the same operation as
       // editing it -- only route through updatePrayer (Curator-only for a
@@ -122,14 +130,15 @@ export default function AddPrayerPanel({
       // for a Curator (prayerActions.ts's own gate) -- a Compiler editing a
       // shared entry gets a clear error instead, same as everywhere else.
       const shiftedMarks = shiftMarksForEdit(original?.text ?? "", text, original?.marks ?? []);
-      updatePrayer(prayerId, sectionName, text, shiftedMarks).then((result) => {
-        if (result.success) {
-          finish(prayerId);
-        } else {
-          setIsSaving(false);
-          setError(result.error ?? "Unable to update this Prayer right now.");
-        }
-      });
+      updatePrayer(prayerId, sectionName, text, shiftedMarks)
+        .then((result) => {
+          if (result.success) {
+            finish(prayerId);
+          } else {
+            onFailure(result.error ?? "Unable to update this Prayer right now.");
+          }
+        })
+        .catch(() => onFailure("Something went wrong -- try again."));
     }
   };
 

@@ -53,15 +53,23 @@ export default function LiturgyOptionsMenu({ liturgyId, canMarkReady, onDeleteCl
   const handleMarkReady = (): void => {
     setIsMarkingReady(true);
     setError(null);
-    markReady(liturgyId).then((result) => {
-      setIsMarkingReady(false);
-      if (result.success) {
-        setIsOpen(false);
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to mark this Liturgy ready right now.");
-      }
-    });
+    markReady(liturgyId)
+      .then((result) => {
+        setIsMarkingReady(false);
+        if (result.success) {
+          setIsOpen(false);
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to mark this Liturgy ready right now.");
+        }
+      })
+      // See SilentConfessionLanguageToggle.tsx's identical comment -- a
+      // thrown (not returned) error used to leave isMarkingReady stuck true
+      // forever, freezing the menu item with zero feedback.
+      .catch(() => {
+        setIsMarkingReady(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   return (

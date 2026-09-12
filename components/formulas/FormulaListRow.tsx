@@ -52,28 +52,38 @@ export default function FormulaListRow({
   ): void => {
     setIsSaving(true);
     setError(null);
-    updateFormula(formula.id, sectionName, name, defaultText, marks, translation, pairedId, kind).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        setIsEditing(false);
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to update this Formula right now.");
-      }
-    });
+    updateFormula(formula.id, sectionName, name, defaultText, marks, translation, pairedId, kind)
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          setIsEditing(false);
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to update this Formula right now.");
+        }
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   const handleConfirmDelete = (): void => {
     setIsDeleting(true);
-    deleteFormula(formula.id).then((result) => {
-      setIsDeleting(false);
-      if (result.success) {
-        setIsConfirmingDelete(false);
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to delete this Formula right now.");
-      }
-    });
+    deleteFormula(formula.id)
+      .then((result) => {
+        setIsDeleting(false);
+        if (result.success) {
+          setIsConfirmingDelete(false);
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to delete this Formula right now.");
+        }
+      })
+      .catch(() => {
+        setIsDeleting(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   if (isEditing) {

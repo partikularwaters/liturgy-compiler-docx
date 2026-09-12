@@ -46,28 +46,38 @@ export default function PrayerListRow({
   ): void => {
     setIsSaving(true);
     setError(null);
-    updatePrayer(prayer.id, sectionName, text, marks, isGuide, translation, pairedId).then((result) => {
-      setIsSaving(false);
-      if (result.success) {
-        setIsEditing(false);
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to update this Prayer right now.");
-      }
-    });
+    updatePrayer(prayer.id, sectionName, text, marks, isGuide, translation, pairedId)
+      .then((result) => {
+        setIsSaving(false);
+        if (result.success) {
+          setIsEditing(false);
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to update this Prayer right now.");
+        }
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   const handleConfirmDelete = (): void => {
     setIsDeleting(true);
-    deletePrayer(prayer.id).then((result) => {
-      setIsDeleting(false);
-      if (result.success) {
-        setIsConfirmingDelete(false);
-        router.refresh();
-      } else {
-        setError(result.error ?? "Unable to delete this Prayer right now.");
-      }
-    });
+    deletePrayer(prayer.id)
+      .then((result) => {
+        setIsDeleting(false);
+        if (result.success) {
+          setIsConfirmingDelete(false);
+          router.refresh();
+        } else {
+          setError(result.error ?? "Unable to delete this Prayer right now.");
+        }
+      })
+      .catch(() => {
+        setIsDeleting(false);
+        setError("Something went wrong -- try again.");
+      });
   };
 
   if (isEditing) {
